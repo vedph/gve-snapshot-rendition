@@ -31,15 +31,20 @@ The base text is rendered in a rather predictable and simple way:
 - the text is drawn by rendering **one character after the other**, along the same baseline, until a LF character is found. Each character corresponds to a text node in the operation's output, and is thus a single `text` SVG element.
 - when a LF character is found, a new line starts below the previous one, left-aligned with it. The baseline of specific lines can anyway be offset by init features.
 
-Text **never wraps**, whatever the container size. Anyway, the container supports zooming and panning for the whole rendition area.
+Text **never wraps**, whatever the container size. Anyway, the container supports zooming and panning for the whole text rendition area.
 
-## Added Text
+## Additional Text
 
-TODO
+In addition, new text often comes from insert or replace operations. This text has the same model of the base text: each segment of text added is a sequence of character nodes, each with its unique ID and its set of features. Anyway, differently from the base text, their style, size and position are completely defined by its [text rendition features](#text-rendition-features).
 
-## Rendition Features
+Thus, the display procedure for text is:
 
-Rendition features are used to override the default rendering settings for text, either it is the base text (when used as [init-features](#init-features)), or text added by an insert/replace operation.
+1. first draw all the base text.
+2. then, whenever an operation adding some text (i.e. insert or replace operations) must be rendered, draw its nodes on top of the existing text area surface. Text accumulates, like when you write on a material sheet of paper; once you have written the base text, you write other text wherever you find some room for it: maybe above the line, or below it, or next to it at its left or right, or at a corner with some callout pointing to the intended location, etc. In the end, the text drawn will be a faithful representation of what is seen on that sheet. Note that this also implies that deleted text does not disappear. It just stays there, maybe decorated by some hints like a strikethrough. Once the text is displayed, it stays there forever, even if the whole text might accommodate to fit newly added text, e.g. by making more room between two lines when a new text must be displayed above one of them and below the another one.
+
+## Text Rendition Features
+
+Text rendition features are used to override the default rendering settings for text, whether it is the base text (when used as [init-features](#init-features)), or the text progressively added by an insert/replace operation.
 
 All rendering features have their name starting with `r_`. These are the only features taken into account by the renderer component for rendition purposes. Their list follows.
 
@@ -82,7 +87,7 @@ In other terms, this is a way of changing the corresponding settings of the rend
 
 ## Hints
 
-Each hint is an SVG fragment representing something to be rendered on the component text surface and corresponding to a specific operation. Hints are linked to operations via a special `r_hints` [rendition feature](#rendition-features), and they are designed to be rendered before adding the text possibly introduced by that operation.
+Each hint is an SVG fragment representing something to be rendered on the component text surface and corresponding to a specific operation. Hints are linked to operations via a special `r_hints` [text rendition feature](#text-rendition-features), and they are designed to be rendered before adding the text possibly introduced by that operation.
 
 ### SVG Content
 
