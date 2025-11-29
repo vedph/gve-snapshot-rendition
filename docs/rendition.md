@@ -69,6 +69,12 @@ All rendering features have their name starting with `r_`. These are the only fe
 - `r_rotate`: the rotation amount to be applied to each single character.
 - `r_canvas_rotate` ⭐: the rotation to be applied to the whole text rendition surface. This is used when the whole text is rotated with reference to its sheet.
 - `r_hints`: this feature is used to link the operation to any number of hints. The value is a space-delimited list of hint IDs, in the order they should be rendered for that operation.
+- `r_border`: the border to draw around the text. This is essentially a shortcut to draw one or more edges as an imaginary rectangle wrapping the text. In reality, the component just draws lines along the edges of this imaginary rectangle, one line per edge (top, left, right, bottom), as requested. Its value pattern is `EDGES THICKNESS PADDING TYPE COLOR`, where:
+  - `EDGES` is any combination of characters `tlbr` where `t`=top, `l`=left, `b`=bottom, `r`=right.
+  - `SIZE` is a number (representing `px`).
+  - `TYPE` is an SVG line type among `solid`, `dotted`, `dashed`, `wavy`.
+  - `COLOR` is a color.
+So for `r_border`, for instance `tl 1 4 solid silver` means that the text will have two edges, one at top and one at left, each with 1px thickness and silver color, both offset by 4px (padding) from the bounding rectangle of the text.
 
 >All these features can be combined, so characters are displayed only after evaluating all of them, and their size and text layout changes accordingly to fit all the characters with their size, which may depend on one or more of these features.
 
@@ -87,7 +93,12 @@ In other terms, this is a way of changing the corresponding settings of the rend
 
 ## Hints
 
-Each hint is an SVG fragment representing something to be rendered on the component text surface and corresponding to a specific operation. Hints are linked to operations via a special `r_hints` [text rendition feature](#text-rendition-features), and they are designed to be rendered before adding the text possibly introduced by that operation.
+Each hint is an SVG fragment representing something to be rendered on the component text surface and corresponding to a specific operation. This rendering always happens before adding the text possibly introduced by that operation, when there is any.
+
+As for hints **definition**:
+
+- hints are **defined** in a dictionary in the component's settings. The dictionary has a string key equal to the hint's ID, and a string value equal to its SVG code.
+- hints are **linked** to operations via a special `r_hints` [text rendition feature](#text-rendition-features), which contains the IDs of all the hints to use for that operation.
 
 ### SVG Content
 
@@ -99,11 +110,8 @@ The SVG content of a hint has these characteristics:
 - inside this root `g` element we can have **any SVG code** with groups, shapes, lines, text, etc. Apart from sizing and positioning it, and possibly overriding some of its properties dynamically (e.g. color, text decorations, etc.), the component will just render it as it is.
 - it may contain a **handle** element (often drawn with opacity=0 so it is not visible, but this is up to the SVG code you get from the hint) with `id`=`handle`. This represents the "handle" for the SVG code, i.e. the point in it which is used as the reference for positioning it. If there is no such handle element, then the component just uses the center of the bounding rectangle for the whole SVG (i.e. its root `g` element, which is always present).
 - it may contain a **placeholder** element with id=`placeholder`. This is usually an SVG shape, like a rectangle including a `text` SVG element which represents the text to draw, or directly a `text` element. Whatever the placeholder element is, in the end it either is a `text` element, or it contains a `text` element. This text element has this behavior:
-  - its text value is resolved at runtime:
-    - when equal to the special value `$TEXT`, it represents the _text being added by the operation_ itself (=the text value of an insert or replace operation). In this case, the text element will be completely replaced by the rendition of the text nodes added by the operation, just like the component renders the text nodes of the base text, one node after another, using all the current settings for text (as determined by the component's settings, possibly overridden by rendition features of this specific operation).
-    - otherwise, it is the _name of a variable_ containing the text. This is equal to the name of a feature which is supposed to be provided by the same operation the hints belongs to. If a feature with this name is not found, the text value will just be the feature name, so that users will be able to understand that there are issues in their data.
-  - as for its size, it is determined as follows:
-    - if the placeholder element is not `text`, and it has its attribute `class`=`fit`, the size is calculated so that its content fits the container element with the `placeholder` ID. For instance, the SVG code of the hint might represent a callout for insertion, where the balloon is a rectangle with id=`placeholder`, and the line ends into the handle point. This way, the text being added will appear inside the balloon.
+  - its _text value_ is resolved at runtime: in the hint SVG, it is just the _name of the variable_ containing the text. This is equal to the name of a _feature_ which is supposed to be provided by the same operation the hints belongs to. If a feature with this name is not found, the text value will just be the feature name, so that users will be able to understand that there are issues in their data.
+  - as for its _size_, the size is calculated so that its content fits the container element with the `placeholder` ID. For instance, the SVG code of the hint might represent a callout for insertion, where the balloon is a rectangle with id=`placeholder`, and the line ends into the handle point. This way, the text being added will appear inside the balloon.
     - else, the text value and the settings for drawing it determine the resulting size.
 
 >In the documentation, we refer to hints whose SVG include a placeholder element as _placeholder hints_. There can be only either 0 or 1 placeholder hints per operation.
@@ -145,20 +153,11 @@ The **hint's model** has the following properties:
 - `rotation`: the rotation for drawing the hint, done with reference to the origin of the reference bounding rectangle. Default=0 (no rotation).
 - `animation`: GSAP code for animating the hint's SVG so that it gets an "enter" animation. The GSAP animation targets the hint's element which is passed to the function wrapping its code (with name `hintEl`), together with other arguments referred to the metrics of the RBR. This is required to let GSAP find the animation target element (=the root `g` element in the hint's SVG), because the custom web component uses Shadow DOM and thus GSAP would not be able to use `getElementById`.
 
-So, the general procedure for drawing prolog is:
-
-- get the hints for the operation type. If there is none, there will be no prolog.
-- get the reference bounding rectangles from the tracing features in current step, as described above. In most cases there will be just 1, unless the text is split in 2 or more lines.
-- for each reference bounding rectangle (sorted from top to bottom and from left to right):
-  - for each hint (in the order they are specified in settings):
-    - draw the hint with opacity=0 if there is a GSAP animation for that hint. This avoids a "flash" before GSAP enter animation kicks in.
-    - if there is a GSAP animation, get its JS code, then run it synchronously, i.e. wait until GSAP animation has completed before continuing.
-
 #### Designing Hints
 
-Hints can be freely replaced by others designed by users. The whole component is designed to allow for maximum flexibility and customization, and hints play a special role here because they can be customized not only for each operation type, but also for each single operation (based on its ID). Also, as reminded above, users might also provide an adapter layer for dynamically build settings, by mapping selected operation features to specific hints.
+Hints can be freely replaced by others designed by users. The whole component is designed to allow for maximum flexibility and customization, and hints play a special role here because they can be customized not only for each operation type, but also for each single operation (based on its ID).
 
-To this end, the hints logic in prolog is designed to be very predictable and do most of the math. Users should just be able to design their hints and animations, and copy-paste their code into settings.
+To this end, the hints logic is designed to be very predictable and do most of the math. Users should just be able to design their hints and animations, and copy-paste their code into settings.
 
 Ideally, users would just use any JS playground, like CodePen, to design and test each hint, and then use them when ready. Or inversely, copy hints from other users code into a playground, modify it, and paste them back.
 
