@@ -8,6 +8,14 @@ Each operation has a set of features, which are name=value pairs where both name
 
 The component is completely based on **SVG** on a **text rendition area**, which is complemented by other areas used for toolbars and other purposes.
 
+The idea for this web component is to represent the changes to the text in a symbolic, yet fully diplomatic way. So we do not want to just output the text generated each time we execute an operation; we want to represent how it appears on the original sheet. Everything gets accumulated on the same display surface, operation after operation; just like everything accumulates on the same sheet, editing after editing.
+
+The display starts with the base text. Now, say a delete operation removes a word. Say this is represented in the original sheet by a line drawn on top of that word. This line hints at the deletion operation. So, while the delete operation effectively generates a text which no longer contains that word, graphically we still have that word, with a line on it.
+
+Thus, the component will display right this: a line on top of the word. The generated text is displayed in the text version area, but in the main text rendition area, we just have that: a line.
+
+Now, say the next operation replaces a word X with another one Y: in the sheet, this happens to be graphically represented by word Y written in smaller characters right above word X. Again, the operation generates a new text with the replaced word, but the main text rendition area just shows word Y above word X. And so forth. These "hints" about operations get accumulated, thus reproducing the original sheet and its signs; while the new text appears in another area of the same component.
+
 ## Rendered Entities
 
 The component renders these entities:
