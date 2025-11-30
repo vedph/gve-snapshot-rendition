@@ -12,13 +12,13 @@ The component is completely based on **SVG** on a **text drawing surface**, whic
 
 The component UI contains these areas:
 
-- the toolbar area. This contains navigation and other commands. Its buttons and other controls should reflow (you can use CSS flex and flex-wrap) when there is not enough horizontal space.
-- the text rendering area. This is the main area, which takes most of the available space.
-- the versions list area. This lists the versions generated for the snapshot text and can be collapsed.
-- the details area. This contains details about the current selection, and can be collapsed.
-- the version text area. This contains the plain text for the currently selected version, and can be collapsed.
+- the **toolbar** area. This contains navigation and other commands. Its buttons and other controls should reflow (you can use CSS flex and flex-wrap) when there is not enough horizontal space.
+- the **text rendition** area. This is the main area, which takes most of the available space.
+- the **versions** list area. This lists the versions generated for the snapshot text and can be collapsed.
+- the **details** area. This contains details about the current selection, and can be collapsed.
+- the **version text** area. This contains the plain text for the currently selected version, and can be collapsed.
 
-These areas are part of a responsive CSS grid layout, which adapts to the available size. In it, each region covers an area. In a normal layout, grid areas are placed in this way:
+These areas are part of a **responsive** CSS grid layout, which adapts to the available size. In it, each region covers an area. In a normal layout, grid areas are placed in this way:
 
 - row 1: toolbar at top, full width.
 - row 2:
@@ -37,6 +37,27 @@ When the available width is too small, the areas are repositioned so that each o
 - row 3: versions list.
 - row 4: version text.
 - row 5: details.
+
+The **toolbar** contains these buttons and labels:
+
+- the current step tag (e.g. `v0`) and position (e.g. `1/N`). If the step is a _staged version_ (=the text has a `version` feature), also display the `version`'s value and emphasize this with a different background or similar accent hints.
+- navigation buttons (disabled when not applicable):
+  - move to next version.
+  - move to previous version.
+  - move to next staged version. This goes through all the versions up to the next staged version (if there is any after the current version; else it's disabled). It is equivalent to a slideshow from the current version to the next staged version.
+  - move to previous staged version. As above.
+  - move to first version.
+  - move to last version.
+  - start/stop slideshow: when slideshow is on, the component moves forward automatically one version after another after a specified time interval. When done, you either stop or cycle according to the settings. Intervals, cycle and other relevant parameters must be read from component `settings`.
+- display buttons:
+  - zoom in.
+  - zoom out.
+  - center and fit.
+  - download the currently displayed text as an SVG image.
+- custom buttons:
+  - an optional set of custom buttons whose icons, labels, tooltips and callback actions can be defined in `settings`.
+
+Note: wherever possible, provide support for consistent theming the web component by using standard _CSS variables_ (all prefixed with `--gve-`) instead of literal values.
 
 ## Rendered Entities
 
@@ -64,6 +85,13 @@ The base text is rendered in a rather predictable and simple way:
 
 Note that text **never wraps**, whatever the container size. Anyway, the container supports zooming and panning for the whole text rendition area.
 
+The only non-printable characters used in text of any sort (both base text and additional text) are:
+
+- **LF** (U+000A): this is used to signal the end of a line, and is already taken into account by text rendition. Whenever this is found, we move to the next line and align new text to the start of the previous line.
+- **space** (U+0020): as SVG has no intrinsic rendition for a `text` element including only one space, this must be rendered by just offsetting the position of the next character by a specific amount. The amount must be calculated according to the width of a reference character, as rendered with the current text settings (font family, size, style, etc.). So, to this end, the component must:
+  - use `m` as the reference character. Make this a constant, so I can change the reference character.
+  - make the space width a fraction of the computed width of the reference character, once all the current text rendition settings have been applied to it. This is defined by component setting `spaceWidthFraction` which defaults to 0.33 as usually the space is 1/3 of the `m` width.
+
 ## Additional Text
 
 In addition, new text often comes from insert or replace operations. This text has the same model of the base text: each segment of text added is a sequence of character nodes, each with its unique ID and its set of features. Anyway, differently from the base text, their style, size and position are completely defined by specific rendition logic combined with its [text rendition features](#text-rendition-features).
@@ -80,7 +108,7 @@ Like for base text, each SVG `text` element representing one character of the ad
   - `node`, meaning this `text` element represents a character node (other `text` elements might be added from hints).
   - `vN`, where `N`=number of the version output by the operation which added the `text` element. For instance, if the operation being processed tags its output version as `v3`, then the `text` elements for all the characters added by this operation will get a `v3` class.
 
->So in the end the `vN` class attribute in any SVG `text` element specifies which operation first introduced it in the text surface area (the version output number is univocally linked to a specific operation). It is `v0` for the base text, and any positive number for text elements added by operations. This is also used to identify all the portions of text introduced by a specific version.
+> So in the end the `vN` class attribute in any SVG `text` element specifies which operation first introduced it in the text surface area (the version output number is univocally linked to a specific operation). It is `v0` for the base text, and any positive number for text elements added by operations. This is also used to identify all the portions of text introduced by a specific version.
 
 ## Text Rendition Features
 
@@ -88,7 +116,7 @@ Text rendition features are used to override the default rendering settings for 
 
 All rendering features have their name starting with `r_`. These are the only features taken into account by the renderer component for rendition purposes. Their list follows.
 
->Note: some of these features are meaningful only when used as init-features, i.e. in the very first operation (an annotation operation). In this case they are marked by ⭐ in the list which follows. If found later in an operation, such features will be simply ignored.
+> Note: some of these features are meaningful only when used as init-features, i.e. in the very first operation (an annotation operation). In this case they are marked by ⭐ in the list which follows. If found later in an operation, such features will be simply ignored.
 
 - `r_line-offsets` ⭐: the line offsets for rendering the base text. Base text is rendered in a regular, predictable way, just like text is usually rendered in frame: one character after another on the same baseline, until a newline character is found. When this happens, a new line starts below the previous one, left-aligned with it. This is the default layout which assigns the position to each baseline, according to general settings defined in the component's settings (default font size, default spacing between lines, etc.). This default position can be changed by the value of this feature, whose format repeats the pattern `N:y=...,x=...` (where we can specify only `x`, only `y`, or both, in any order; values represent `px` units). In this pattern:
   - `N`=line number. This is the ordinal number of the base text line: 1=first, 2=second, etc. In multiline base text, the character LF is used to represent the end of each line. So, we can change the offset of each line in the text.
@@ -113,9 +141,9 @@ All rendering features have their name starting with `r_`. These are the only fe
   - `SIZE` is a number (representing `px`).
   - `TYPE` is an SVG line type among `solid`, `dotted`, `dashed`, `wavy`.
   - `COLOR` is a color.
-So for `r_border`, for instance `tl 1 4 solid silver` means that the text will have two edges, one at top and one at left, each with 1px thickness and silver color, both offset by 4px (padding) from the bounding rectangle of the text.
+    So for `r_border`, for instance `tl 1 4 solid silver` means that the text will have two edges, one at top and one at left, each with 1px thickness and silver color, both offset by 4px (padding) from the bounding rectangle of the text.
 
->All these features can be combined, so characters are displayed only after evaluating all of them, and their size and text layout changes accordingly to fit all the characters with their size, which may depend on one or more of these features.
+> All these features can be combined, so characters are displayed only after evaluating all of them, and their size and text layout changes accordingly to fit all the characters with their size, which may depend on one or more of these features.
 
 ## Init Features
 
@@ -190,7 +218,7 @@ The hint's `svg` property (`OperationHint.svg`) is a string representing the SVG
     - when the hint's placeholder element has a `class` attribute equal to `fit`, the text's size is calculated so that its content fits the container element with the `placeholder` ID. For instance, the SVG code of the hint might represent a callout for insertion, where the balloon is a rectangle with id=`placeholder`, and the line ends into the handle point. This way, the text being added will appear inside the balloon. So, here the text must fit into the container.
     - else, the text value and the settings for drawing it determine the resulting size of `text`. This implies that all the SVG elements containing this `text` element, including the root `g` element, must scale to fit it inside them. So, this is the inverse case with reference to the default one: here the container must fit the text.
 
->In the documentation, we refer to hints whose SVG include a placeholder element as _placeholder hints_. There can be only either 0 or 1 placeholder hints per operation.
+> In the documentation, we refer to hints whose SVG include a placeholder element as _placeholder hints_. There can be only either 0 or 1 placeholder hints per operation.
 
 ### Hint Transformation Properties
 
@@ -236,7 +264,7 @@ Then, **positioning hints** is driven by these properties:
 - `offsetX`: the X offset. This offsets the calculated start position of the hint (as per its `position` property) by an X amount. Default=0. Offsets use either a simple number, e.g. `10`, or a suffixed number, using these suffixes for metrics derived from the reference text bounds:
   - `th` = reference text bounds height.
   - `tw` = reference text bounds width.
-This way we can offset proportionally to the reference text. So, `10`=offset by 10, but `0.5th` = offset by half of the reference text height.
+    This way we can offset proportionally to the reference text. So, `10`=offset by 10, but `0.5th` = offset by half of the reference text height.
 - `offsetY`: the Y offset, like `offsetX`. This offsets the calculated start position of the hint (as per its `position` property) by an Y amount. Default=0.
 
 ### Hint Animation Property
@@ -246,7 +274,7 @@ The hint's `animation` property contains:
 - the JS code using the GSAP library for animating the hint's SVG, so that it gets an "enter" animation.
 - the identifier of a preset animation JS code using the GSAP library for animating the hint's SVG, prefixed by `#`. So, if the string starts with `#`, it is assumed that it just contains the ID of a preset animation which must be retrieved to get the corresponding JS code. Such preset animations can be defined in the component's settings. Of course, whatever the way used to get it, in the end what we have is JS animation code.
 
->We use GSAP for animations because it's robust and powerful, and has many powerful plugins available. Note that while plugins first were limited to paid subscriptions, they are now _freely available_ for everyone. All what is required to use a plugin is registering it once in code, e.g.:
+> We use GSAP for animations because it's robust and powerful, and has many powerful plugins available. Note that while plugins first were limited to paid subscriptions, they are now _freely available_ for everyone. All what is required to use a plugin is registering it once in code, e.g.:
 
 ```ts
 // register a plugin for use
@@ -325,9 +353,87 @@ Users would just open a new CodePen, copy-paste the template code for HTML, CSS,
 
 ## Component Settings
 
+Component settings are modeled in a `GveRenditionSettings` class; a `DEFAULT_SETTINGS` constant then provides defaults for the component. Settings are passed via binding to the web component's `settings` property.
+
+TODO
+
+```ts
+/**
+ * Settings for a custom button added to the toolbar.
+ * A custom button provides an easy way to add more logic
+ * to the web component.
+ */
+export interface CustomButtonSettings {
+  icon: string; // the icon to use for the button
+  label: string; // the text label for the button
+  tooltip: string; // a tooltip for the button, appears on hovering
+  callback: (svg: SVGElement) => void; // callback invoked when button is pressed; svg parameter is the root svg element of text rendition area
+}
+
+export interface GveRenditionSettings {
+  // display settings
+  fontSize: number; // default=16
+  fontFamily: string; // default=monospace
+  defaultForeground: string; // default=#000000
+  defaultBackground: string; // default=transparent
+  defaultItalic: boolean; // default=false
+  defaultBold: boolean; // default=false
+  defaultUnderline: boolean; // default=false
+  defaultOverline: boolean; // default=false
+  defaultStrike: boolean; // default=false
+
+  // spacing settings
+  spaceWidthFraction: number; // the fraction of reference char width used to calculate the space width
+  charSpacing: number; // the spacing between each character rendered as a SVG text (default=2)
+  lineHeight: number; // the line height (default=1.5)
+  lineSpacing: number; // the spacing between lines (default=4)
+  marginTop: number; // top margin of the text rendition area (default=20)
+  marginLeft: number; // left margin of the text rendition area (default=20)
+  marginRight: number; // right margin of the text rendition area (default=20)
+  marginBottom: number; // bottom margin of the text rendition area (default=20)
+
+  // viewport settings
+  initialZoom: number; // initial zoom factor (default=1)
+  minZoom: number; // minimum zoom factor (default=0.5)
+  maxZoom: number; // maximum zoom factor (default=3)
+  zoomStep: number; // zoom factor step (default=0.1)
+
+  // behavior settings
+  slideshowInterval: number; // the ms interval between each frame in slideshow mode (default=1000)
+  slideshowLoop: boolean; // true to loop the slideshow (when it ends, it restarts from start)
+  slideshowDelay: number; // the ms interval between each restart of the slideshow (when looping; default=3000)
+  debug?: boolean; // true to add detailed logging (used for diagnostic purposes)
+
+  // custom buttons
+  customButtons?: CustomButtonSettings[];
+
+  // animation
+  animation?: AnimationSettings;
+
+  // hints
+  hints: {
+    designWidth: number;
+    designHeight: number;
+    showHandles: boolean; // true to show the handle element from SVG hint (default=false, can be true for diagnostic purposes)
+  }
+}
+```
+
 TODO
 
 ## Component Interaction
+
+### API
+
+The component API is defined by its input properties (to be bound by consumer code) and output events:
+
+- **input**:
+  - `settings` (of type `GveRenditionSettings`). The [settings](#component-settings) for the component.
+  - `data` (of type `CharChainResult | undefined`): the data representing the result of executing operations in the snapshot model.
+  - `tag: string | undefined` property with the tag of the version to be displayed. When not specified, the component just starts with the first version (the base text, tag `v0`).
+- **output**:
+  - `nodeHover` event fired when user hovers on a specific character node. This will provide the hovered node structure and all the data the handler might find useful to have for handling further interactions (e.g. show more data from metadata of that node), including coordinates, bounding rectangle, etc.
+  - `nodeClick` event fired when user clicks on a specific character node, as above.
 
 ### Visualization
 
