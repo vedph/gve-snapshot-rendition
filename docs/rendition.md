@@ -160,8 +160,9 @@ The hint's `svg` property (`OperationHint.svg`) is a string representing the SVG
 - it may contain a **handle** element (often drawn with opacity=0 so it is not visible, but this is up to the SVG code you get from the hint) with `id`=`handle`. This represents the "handle" for the SVG code, i.e. the point in it which is used as _the reference for positioning it_. If there is no such handle element, then the component just uses the _center of the bounding rectangle_ for the whole SVG (i.e. its root `g` element, which is always present).
 - it may contain a **placeholder** element with id=`placeholder`. This is usually an SVG shape, like a rectangle including a `text` SVG element which represents the text to draw, or directly a `text` element. Whatever the placeholder element is, in the end it either is a `text` element, or it contains a `text` element. This text element has this behavior:
   - its _text value_ is resolved at runtime: in the hint SVG, it is just the _name of the variable_ containing the text. This is equal to the name of a _feature_ which is supposed to be provided by the same operation the hints belongs to. If a feature with this name is not found, the text value will just be the feature name, so that users will be able to understand that there are issues in their data.
-  - as for its _size_, the size is calculated so that its content fits the container element with the `placeholder` ID. For instance, the SVG code of the hint might represent a callout for insertion, where the balloon is a rectangle with id=`placeholder`, and the line ends into the handle point. This way, the text being added will appear inside the balloon.
-    - else, the text value and the settings for drawing it determine the resulting size.
+  - as for its _size_:
+    - when the hint's placeholder element has a `class` attribute equal to `fit`, the text's size is calculated so that its content fits the container element with the `placeholder` ID. For instance, the SVG code of the hint might represent a callout for insertion, where the balloon is a rectangle with id=`placeholder`, and the line ends into the handle point. This way, the text being added will appear inside the balloon. So, here the text must fit into the container.
+    - else, the text value and the settings for drawing it determine the resulting size of `text`. This implies that all the SVG elements containing this `text` element, including the root `g` element, must scale to fit it inside them. So, this is the inverse case with reference to the default one: here the container must fit the text.
 
 >In the documentation, we refer to hints whose SVG include a placeholder element as _placeholder hints_. There can be only either 0 or 1 placeholder hints per operation.
 
@@ -174,9 +175,19 @@ These properties are used to transform the hint _before_ positioning it. These t
 
 ### Hint Positioning Properties
 
-These properties define the position of the hint.
+These properties define the position of the hint. As hint positioning is relative, _defining the position involves first defining the size_ of the hint's bounding rectangle.
 
-- `position`: an enumerated string telling where to place the hint's handle with reference to the bounding rectangle of the affected text. This is defined by the The position has enumerated string values like those of cardinal points of a compass position: `n`, `ne`, `e`, `se`, `s`, `sw`, `w`, `nw`, plus `o` for origin (=the center of the bounding rectangle of the affected text). Each enumerated value refers to an imaginary larger bounding rectangle encompassing the reference bounding rectangle. Imagine to draw a rectangle which includes the reference rectangle. You then ideally place a point on this outer rectangle, like in this ASCII picture:
+The **hint's size** is defined by this logic:
+
+1. the hint SVG `g` element is created;
+2. its transformations, if defined, are applied;
+3. if it's a placeholder hint, the first `text` element descendant of the placeholder element gets its text dynamically calculated (from the specified operation's feature), and the size is adjusted accordingly, as described above about placeholder elements;
+4. the bounding rectangle for the resulting `g` element is calculated;
+5. the hint's handle coordinates are calculated according to its handle element, when present; if not present, the center of the bounding rectangle calculated in the previous step is used instead.
+
+Then, **positioning hints** is driven by these properties:
+
+- `position`: an enumerated string telling where to place the hint's handle with reference to the bounding rectangle of the affected text (the "RBR"). The position has enumerated string values, like those of cardinal points of a compass position: `n`, `ne`, `e`, `se`, `s`, `sw`, `w`, `nw`, plus `o` for origin (=the center of the bounding rectangle of the affected text). Each enumerated value refers to an imaginary larger bounding rectangle encompassing the reference bounding rectangle. Imagine to draw a rectangle which includes the reference rectangle. You then ideally place a point on this outer rectangle, like in this ASCII picture:
 
 ```txt
 
@@ -233,7 +244,7 @@ The reference bounding rectangle ("RBR" for short) is defined as _the rectangle 
 The **rules for drawing** a hint's SVG are designed so that users who create hints can easily predict their outcome and animation:
 
 1. the **hint size** is equal to that of its reference bounding rectangle, for hints which do not include a placeholder element. Once calculated in this way, the size can then be changed via its `scale` property, when this is set to something different from 1. This corresponds to what we defined as "select" in the description of trace features for each operation type.
-2. the **hint position** is relative to its reference bounding rectangle, as specified in its metadata (see below). As for the visuals representing by the SVG code in the hint, its reference point for positioning relative to its reference bounding rectangle is given by its "handle" (see below about the `svg` property of a hint object).
+2. the **hint position** is relative to its reference bounding rectangle, as specified in its metadata. As for the visuals representing by the SVG code in the hint, its reference point for positioning relative to its reference bounding rectangle is given by its "handle" (see below about the `svg` property of a hint object).
 
 ### Designing Hints
 
