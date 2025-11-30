@@ -28,19 +28,33 @@ The base text is rendered in a rather predictable and simple way:
   1. the default settings of the component, set when the component is initialized.
   2. the settings overridden by consumer code via data binding. So, the component uses all its default settings, unless overridden by the consumer code via binding.
   3. the settings overridden by data via [init-features](#init-features), i.e. those features which are added by an initial annotate operation.
-- the text is drawn by rendering **one character after the other**, along the same baseline, until a LF character is found. Each character corresponds to a text node in the operation's output, and is thus a single `text` SVG element.
-- when a LF character is found, a new line starts below the previous one, left-aligned with it. The baseline of specific lines can anyway be offset by init features.
+- the text is drawn by rendering **one character after the other**, along the same baseline, using the animation designed for each character as specified in the component's settings, until a LF character is found. Each character corresponds to a text node in the operation's output, and is thus a single `text` SVG element.
+- each `text` SVG elements gets these computed attributes:
+  - `id`=`n_` + the character node ID (which is a unique integer), e.g. `n_1` for the character node with ID=1.
+  - `class`: the following space-delimited classes:
+    - `node`, meaning this `text` element represents a character node (other `text` elements might be added from hints).
+    - `v0`, meaning that this `text` element was added with the base text, rather than later by another operation.
+- when a LF character is found, a new line starts below the previous one, left-aligned with it. The baseline of specific lines can anyway be offset by [text rendition features](#text-rendition-features).
 
-Text **never wraps**, whatever the container size. Anyway, the container supports zooming and panning for the whole text rendition area.
+Note that text **never wraps**, whatever the container size. Anyway, the container supports zooming and panning for the whole text rendition area.
 
 ## Additional Text
 
-In addition, new text often comes from insert or replace operations. This text has the same model of the base text: each segment of text added is a sequence of character nodes, each with its unique ID and its set of features. Anyway, differently from the base text, their style, size and position are completely defined by its [text rendition features](#text-rendition-features).
+In addition, new text often comes from insert or replace operations. This text has the same model of the base text: each segment of text added is a sequence of character nodes, each with its unique ID and its set of features. Anyway, differently from the base text, their style, size and position are completely defined by specific rendition logic combined with its [text rendition features](#text-rendition-features).
 
 Thus, the display procedure for text is:
 
 1. first draw all the base text.
 2. then, whenever an operation adding some text (i.e. insert or replace operations) must be rendered, draw its nodes on top of the existing text area surface. Text accumulates, like when you write on a material sheet of paper; once you have written the base text, you write other text wherever you find some room for it: maybe above the line, or below it, or next to it at its left or right, or at a corner with some callout pointing to the intended location, etc. In the end, the text drawn will be a faithful representation of what is seen on that sheet. Note that this also implies that deleted text does not disappear. It just stays there, maybe decorated by some hints like a strikethrough. Once the text is displayed, it stays there forever, even if the whole text might accommodate to fit newly added text, e.g. by making more room between two lines when a new text must be displayed above one of them and below the another one.
+
+Like for base text, each SVG `text` element representing one character of the additional text gets these computed attributes:
+
+- `id`=`n_` + the character node ID (which is a unique integer), e.g. `n_1` for the character node with ID=1.
+- `class`: the following space-delimited classes:
+  - `node`, meaning this `text` element represents a character node (other `text` elements might be added from hints).
+  - `vN`, where `N`=number of the version output by the operation which added the `text` element. For instance, if the operation being processed tags its output version as `v3`, then the `text` elements for all the characters added by this operation will get a `v3` class.
+
+>So in the end the `vN` class attribute in any SVG `text` element specifies which operation first introduced it in the text surface area (the version output number is univocally linked to a specific operation). It is `v0` for the base text, and any positive number for text elements added by operations. This is also used to identify all the portions of text introduced by a specific version.
 
 ## Text Rendition Features
 
@@ -48,7 +62,7 @@ Text rendition features are used to override the default rendering settings for 
 
 All rendering features have their name starting with `r_`. These are the only features taken into account by the renderer component for rendition purposes. Their list follows.
 
->Some of these features are meaningful only when used as init-features, i.e. in the very first operation (an annotation operation). In this case they are marked by ⭐ in the list which follows. If found later in an operation, such features will be simply ignored.
+>Note: some of these features are meaningful only when used as init-features, i.e. in the very first operation (an annotation operation). In this case they are marked by ⭐ in the list which follows. If found later in an operation, such features will be simply ignored.
 
 - `r_line-offsets` ⭐: the line offsets for rendering the base text. Base text is rendered in a regular, predictable way, just like text is usually rendered in frame: one character after another on the same baseline, until a newline character is found. When this happens, a new line starts below the previous one, left-aligned with it. This is the default layout which assigns the position to each baseline, according to general settings defined in the component's settings (default font size, default spacing between lines, etc.). This default position can be changed by the value of this feature, whose format repeats the pattern `N:y=...,x=...` (where we can specify only `x`, only `y`, or both, in any order; values represent `px` units). In this pattern:
   - `N`=line number. This is the ordinal number of the base text line: 1=first, 2=second, etc. In multiline base text, the character LF is used to represent the end of each line. So, we can change the offset of each line in the text.
@@ -67,7 +81,6 @@ All rendering features have their name starting with `r_`. These are the only fe
 - `r_overline`: the overline value (as for underline).
 - `r_strike`: the strikethrough value (as for underline).
 - `r_rotate`: the rotation amount to be applied to each single character.
-- `r_canvas_rotate` ⭐: the rotation to be applied to the whole text rendition surface. This is used when the whole text is rotated with reference to its sheet.
 - `r_hints`: this feature is used to link the operation to any number of hints. The value is a space-delimited list of hint IDs, in the order they should be rendered for that operation.
 - `r_border`: the border to draw around the text. This is essentially a shortcut to draw one or more edges as an imaginary rectangle wrapping the text. In reality, the component just draws lines along the edges of this imaginary rectangle, one line per edge (top, left, right, bottom), as requested. Its value pattern is `EDGES THICKNESS PADDING TYPE COLOR`, where:
   - `EDGES` is any combination of characters `tlbr` where `t`=top, `l`=left, `b`=bottom, `r`=right.
@@ -93,16 +106,47 @@ In other terms, this is a way of changing the corresponding settings of the rend
 
 ## Hints
 
-Each hint is an SVG fragment representing something to be rendered on the component text surface and corresponding to a specific operation. This rendering always happens before adding the text possibly introduced by that operation, when there is any.
+Each hint represents the visual counterpart of an operation; it "hints" at it by means of its visuals, whence its name.
+
+As for its implementation, the hint essentially is an SVG fragment representing something to be rendered on the component text surface and corresponding to a specific operation. This rendering always happens before adding the text possibly introduced by that operation, when there is any.
 
 As for hints **definition**:
 
 - hints are **defined** in a dictionary in the component's settings. The dictionary has a string key equal to the hint's ID, and a string value equal to its SVG code.
-- hints are **linked** to operations via a special `r_hints` [text rendition feature](#text-rendition-features), which contains the IDs of all the hints to use for that operation.
+- hints are **linked** to operations via a special `r_hints` [text rendition feature](#text-rendition-features), which contains the IDs of all the hints to use for that operation. For instance, `r_hints` = `alpha beta` means that we want to apply 2 hints with ID `alpha` and `beta`, in this order.
 
-### SVG Content
+This is the hint's model:
 
-The SVG content of a hint has these characteristics:
+```ts
+/**
+ * Hint position relative to the reference bounding rectangle.
+ */
+export type HintPosition =
+  | "n"
+  | "ne"
+  | "e"
+  | "se"
+  | "s"
+  | "sw"
+  | "w"
+  | "nw"
+  | "o";
+
+export interface OperationHint {
+  svg: string;
+  position: HintPosition;
+  offsetX: number | string; // absolute (10) or proportional ("0.5th" = half text height, "0.5tw" = half text width)
+  offsetY: number | string; // absolute (10) or proportional ("0.5th" = half text height, "0.5tw" = half text width)
+  scaleX: number; // horizontal scale: 1 = match bounds width, 1.1 = 110% of bounds width
+  scaleY: number; // vertical scale: 1 = match bounds height, 1.1 = 110% of bounds height
+  rotation: number;
+  animation?: string; // JS code for animating the hint's entrance via GSAP
+}
+```
+
+### Hint SVG Content
+
+The SVG content of a hint (`OperationHint.svg`) has these characteristics:
 
 - by convention, its **root element** is always a `g` element. This allows to manipulate the whole hint as a single entity (e.g. for transforming or animating it). So, there is no `svg` root; this is just a code fragment. When inserting it in the page, the component wraps the root `g` into a newly created `svg` element. When adding the hint, the component also adds a **unique identifier** to it, by setting the root `g` element's `id` attribute to a value like `hint-X` where `X` is built of:
   - the _operation's ID_. Each hint is linked to the operation which is going to generate the next step.
@@ -116,7 +160,7 @@ The SVG content of a hint has these characteristics:
 
 >In the documentation, we refer to hints whose SVG include a placeholder element as _placeholder hints_. There can be only either 0 or 1 placeholder hints per operation.
 
-### SVG Rendition
+### Hint SVG Rendition
 
 The SVG content of each hint is positioned and sized according to the **reference bounding rectangle**.
 
@@ -147,19 +191,41 @@ The **hint's model** has the following properties:
    sw        s         se
 ```
 
-- `offsetX`: number with X offset. This offsets the calculated start position of the hint (as per its `position` property) by an X amount. Default=0.
-- `offsetY`: number with Y offset. This offsets the calculated start position of the hint (as per its `position` property) by an Y amount. Default=0.
+- `offsetX`: the X offset. This offsets the calculated start position of the hint (as per its `position` property) by an X amount. Default=0. Offsets use either a simple number, e.g. `10`, or a suffixed number, using these suffixes for metrics derived from the reference text bounds:
+  - `th` = reference text bounds height.
+  - `tw` = reference text bounds width.
+This way we can offset proportionally to the reference text. So, `10`=offset by 10, but `0.5th` = offset by half of the reference text height.
+- `offsetY`: the Y offset, like `offsetX`. This offsets the calculated start position of the hint (as per its `position` property) by an Y amount. Default=0.
 - `scale`: the scale for drawing the hint. The initial size of the hint is equal to the size of its reference bounding rectangle, but the `scale` property can scale it up or down. The default is 1=no scaling, else it will be 1.1=110%, 0.9=90%, etc. Scaling is made with reference to the origin of the reference bounding rectangle.
 - `rotation`: the rotation for drawing the hint, done with reference to the origin of the reference bounding rectangle. Default=0 (no rotation).
 - `animation`: GSAP code for animating the hint's SVG so that it gets an "enter" animation. The GSAP animation targets the hint's element which is passed to the function wrapping its code (with name `hintEl`), together with other arguments referred to the metrics of the RBR. This is required to let GSAP find the animation target element (=the root `g` element in the hint's SVG), because the custom web component uses Shadow DOM and thus GSAP would not be able to use `getElementById`.
 
-#### Designing Hints
+### Designing Hints
 
 Hints can be freely replaced by others designed by users. The whole component is designed to allow for maximum flexibility and customization, and hints play a special role here because they can be customized not only for each operation type, but also for each single operation (based on its ID).
 
-To this end, the hints logic is designed to be very predictable and do most of the math. Users should just be able to design their hints and animations, and copy-paste their code into settings.
+To this end, the hints logic is designed to be very predictable and do most of the math. Users should just be able to design their hints and animations, and copy-paste their code into settings. The logic by which hints are drawn is designed to be as simple as possible so that users can predict the outcome when designing their custom hints.
 
-Ideally, users would just use any JS playground, like CodePen, to design and test each hint, and then use them when ready. Or inversely, copy hints from other users code into a playground, modify it, and paste them back.
+The main points for drawing, sizing and animating hints are:
+
+- as for sizing, the initial size of the hint `g` root element is fit to the size of its reference bounding rectangle. So, the user should be able to say that given the reference text that he sees, if using the default `scale`=`1` this means that the calculated size will be exactly that of the reference text bounds. The `g` root element will thus have the same width and height of the reference text rectangle. If instead the user sets `scale`=`1.1`, this is 110% of the bounds. Anyway, for more flexibility, we can make scaling more flexible replacing `scale` with `scaleX`=scale X only and `scaleY`=scale Y so we can transform with a non-uniform scale.
+- scaling should not affect the handle, which means that, we need first to scale, and then to position according to the handle. Each relative position like nw, n, ne, etc. must be honored with reference to the handle. So if we have a rectangle in the hint, and its handle is the mid vertical point of its right edge, we assume that this rectangle will appear right before its text, on its left, vertically centered with reference to it; even if we want it scaled to be a bit larger than that text, e.g. both `scaleX` and `scaleY` = `1.1`.
+- then, after scaling and positioning, the user might want to slightly modify the position using the offset, or rotate the result. It would be like nudging a rectangle after having drawn it where it belonged.
+
+So, the drawing process for hint's SVG should be:
+
+1. compute the size of the hint with reference to the text bounds, according to `scaleX` and `scaleY`.
+2. reposition the resulting drawing (the `g` root element of it) according to its handle, whatever its computed size. If there is no element with ID=handle, just use the center of the root `g` element as the handle.
+3. adjust the positioned hint `g` root element by `offsetX`, `offsetY`, and `rotate`.
+
+This would fit a scenario like this:
+
+1. the user draws a rectangle to represent the selection of a text to move.
+2. scale is set to `1.1`, because he wants to enclose the text in it, so this makes it 110% of the enclosed size. Position is `o` so that scaling will not pan it and we will have a rectangle fully including another rectangle sharing the same center.
+
+Here, the user expects to see a rectangle slightly bigger than the one of the reference text, fully enclosing it. This is clear from the parameters and from the drawing process depicted above.
+
+To make designing hints easier, users can leverage any JS **playground**, like CodePen, to design and test each hint, and then use them when ready. Or inversely, copy hints from other users code into a playground, modify it, and paste them back.
 
 For instance, in CodePen one might have these predefined resources to setup a hints editing environment:
 
