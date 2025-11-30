@@ -10,7 +10,33 @@ The component is completely based on **SVG** on a **text drawing surface**, whic
 
 ## Component UI
 
-TODO
+The component UI contains these areas:
+
+- the toolbar area. This contains navigation and other commands. Its buttons and other controls should reflow (you can use CSS flex and flex-wrap) when there is not enough horizontal space.
+- the text rendering area. This is the main area, which takes most of the available space.
+- the versions list area. This lists the versions generated for the snapshot text and can be collapsed.
+- the details area. This contains details about the current selection, and can be collapsed.
+- the version text area. This contains the plain text for the currently selected version, and can be collapsed.
+
+These areas are part of a responsive CSS grid layout, which adapts to the available size. In it, each region covers an area. In a normal layout, grid areas are placed in this way:
+
+- row 1: toolbar at top, full width.
+- row 2:
+  - versions list at left, like a sidebar (collapsible).
+  - text rendering at right, taking all the remaining space.
+- row 3:
+  - version text at left (collapsible).
+  - details area at right (collapsible).
+
+When areas are collapsed or expanded, the others adjust accordingly.
+
+When the available width is too small, the areas are repositioned so that each occupies a full row, as follows:
+
+- row 1: toolbar.
+- row 2: text rendering.
+- row 3: versions list.
+- row 4: version text.
+- row 5: details.
 
 ## Rendered Entities
 
