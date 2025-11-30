@@ -376,15 +376,17 @@ export interface GveRenditionSettings {
   customButtons?: CustomButtonSettings[];
   disabledButtonIds?: string[]; // array of custom button IDs which should be disabled
 
-  // animation
+  // animation TODO
   animation?: AnimationSettings;
 
   // hints
-  hints: {
-    designWidth: number;
-    designHeight: number;
-    showHandles: boolean; // true to show the handle element from SVG hint (default=false, can be true for diagnostic purposes)
-  }
+  hintDesignWidth: number;
+  hintDesignHeight: number;
+  showHintHandles: boolean; // true to show the handle element from SVG hint (default=false, can be true for diagnostic purposes)
+
+  // hilites
+  hilitePadding: number; // padding to increase hilite size (default=0)
+  hiliteFadeTime: number; // the number of ms for the fade in/out animation of hilites (default=1000)
 }
 ```
 
@@ -392,11 +394,13 @@ export interface GveRenditionSettings {
 
 ### Component UI
 
+As a general rule, wherever possible provide support for consistent theming the web component by using standard _CSS variables_ (all prefixed with `--gve-`) instead of literal values.
+
 The component UI contains these areas:
 
-- the **toolbar** area. This contains navigation and other commands. Its buttons and other controls should reflow (you can use CSS flex and flex-wrap) when there is not enough horizontal space.
+- the **toolbar** area. This contains navigation and other commands.
 - the **text rendition** area. This is the main area, which takes most of the available space.
-- the **versions** list area. This lists the versions generated for the snapshot text and can be collapsed.
+- the **versions list** area. This lists the versions generated for the snapshot text and can be collapsed.
 - the **details** area. This contains details about the current selection, and can be collapsed.
 - the **version text** area. This contains the plain text for the currently selected version, and can be collapsed.
 
@@ -420,9 +424,9 @@ When the available width is too small, the areas are repositioned so that each o
 - row 4: version text.
 - row 5: details.
 
-#### Component UI: Toolbar
+#### Component UI: Toolbar Area
 
-The toolbar contains these buttons and labels:
+The toolbar area contains a toolbar with these buttons and labels:
 
 - the current step tag (e.g. `v0`) and position (e.g. `1/N`). If the step is a _staged version_ (=the text has a `version` feature), also display the `version`'s value and emphasize this with a different background or similar accent hints.
 - navigation buttons (disabled when not applicable):
@@ -437,15 +441,15 @@ The toolbar contains these buttons and labels:
   - zoom in.
   - zoom out.
   - center and fit.
-  - download the currently displayed text as an SVG image.
+  - download the current rendition (the root `svg` element of the text rendition area) as an SVG image.
 - custom buttons:
   - an optional set of custom buttons whose icons, labels, tooltips and callback actions can be defined in `settings`.
 
-Note: wherever possible, provide support for consistent theming the web component by using standard _CSS variables_ (all prefixed with `--gve-`) instead of literal values.
+>Buttons and other controls in the toolbar should reflow (you can use CSS flex and flex-wrap) when there is not enough horizontal space.
 
-### Component UI: Text Surface Area
+### Component UI: Text Rendition Area
 
-The text surface area is a drawing surface based on SVG. It has a root `svg` element and its content is totally defined by data and programmatic actions on it.
+The text rendition area is a drawing surface based on SVG. It has a root `svg` element and its content is totally defined by data and programmatic actions on it.
 
 At any time, users can freely zoom and pan the whole text rendition area with these actions:
 
@@ -455,9 +459,45 @@ At any time, users can freely zoom and pan the whole text rendition area with th
 
 This implies that all the rendering operations involving computations about SVG size and position must be properly adjusted for the current zoom and pan.
 
-### Component UI: Versions List
+### Component UI: Versions List Area
 
-The versions list is a collapsible area which contains the list of all the versions in the snapshot, in their order of generation (as defined by the component's `data`).
+This area can be collapsed.
+
+The versions list is a collapsible area which contains the list of all the versions in the snapshot, in their order of generation (as defined by the component's `data`). The list contains 1 item per version, with its tag and (when specified) staged version tag (from the `version` feature). For instance, it might look like (assuming that `v2` corresponds to staged version `alpha` and `v4` to staged version `beta`):
+
+1. `v0`
+2. `v1`
+3. `v2`: `alpha`
+4. `v3`
+5. `v4`: `beta`
+
+Each item is **colored** according to an automatically generated colors palette, which must be created once whenever the component data changes. This palette must be created as follows:
+
+- colors must be pastel, light colors which do not stand out nor risk to interfere with other colored SVG elements. Yet, they must be clearly visible.
+- colors must be picked with an algorithm which maximizes their visual differencies, so that it's not possible to confuse them. Think about what we do when generating a palette for drawing a chart, where each series gets a pastel color which must be clearly distinguished from all the others.
+- linking color with version tag must be idempotent: given a version number (`v0`, `v1`, etc.), the same color should be generated for it.
+
+This allows reusing the palette generator for other purposes connected to colorizing version tags. Consider that at most a snapshot will include some tens of versions, so we are not going to have hundreds of different colors.
+
+#### Text Hilites
+
+A single item at a time in this list can be selected by clicking on it. When selected, the component should add hilites to all the text elements included in that version. These elements are determined as follows:
+
+- the element must be an SVG `text` element with `class` including `node`.
+- the element `id` attribute numeric value must be included in the list of node IDs present in the selected version. Snapshot result in component data provide the list of nodes in each version, with their IDs. For instance, if a version `v4` includes nodes with IDs 1,3,10, then we will match all SVG `text` elements in the rendition text area having `id`=`n_1` or `n_3` or `n_10`.
+
+To make them visible without hiding their content, hilites are rendered as colored **SVG rectangles** at the very back (lowest z-level) of any other elements in the text rendition area. Their characteristcs are:
+
+- the hilite rectangle **fill color** is the same color computed for that version, as specified above.
+- the hilite rectangle **size** is equal to the bounding box of the SVG `text` element corresponding to each hilited node.
+- the `hilitePadding` setting in component's settings increases the hilite rectangle **size** by its amount (expressed in `px`). This makes it a little bigger, which can be useful when content might hide the background hilite rectangle. In this case, recalculate the hilite rectangle position so that it is both vertically and horizontally centered with reference to the bounding box of the SVG `text` element corresponding to each hilited node.
+- the hilite rectangle **position** is equal to that of the bounding box of the SVG `text` element corresponding to each hilited node, adjusted when `hilitePadding` is used.
+
+Hilites rectangles are generated all at once, and they should **fade** in with an animation, all at the same time; and fade out when removed, in the same way. The duration of this animation is given by setting `hiliteFadeTime`. As always with animations, we use GSAP.
+
+A **clear selection** button is used to deselect a selected tag and remove hilites. Hilites are removed automatically whenever you move to another version (first they will fade out, then we will proceed with move -- so we must check whether hilites are present before moving).
+
+#### Component UI: Version Text Area
 
 ### Navigation
 
