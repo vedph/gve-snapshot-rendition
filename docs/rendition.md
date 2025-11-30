@@ -319,11 +319,28 @@ The general drawing logic for the entities rendered by this component is outline
 1. **default**: the default behavior is to just draw the element as its position and size dictates, initially hidden (opacity=0) if it has an animation, which immediately after reveals it, with no preliminary adjustments.
 2. **solid**: the "solid" behavior adds a preliminary adjustment before following the default one, to make room for the element to be rendered. When this element is "solid" (i.e. when it's a hint and has `solid`=`true`, or when it's an added `text` element, which is always solid), we must ensure there is enough room for it to be rendered without overlapping any surrounding elements. This means shifting the surrounding elements on overlap; and in turn, this implies moving all the elements in the rendered text so that we approximately preserve the previous layout. The process of making room for the new element while preserving the general layout is here named **spreading**.
 
-The spreading logic is as follows:
+The **spreading logic** is as follows; here "E" means the bounding rectangle of the element to be drawn, E.L its top-left corner X, E.R its top-right corner X, E.T its top-left corner Y, and E.B its bottom-left corner Y:
 
--
+- if E does not overlap with any other element's bounding rectangle, no spreading is required. ⚠️ Note: as calculating the bounding rectangles for all the elements in the text rendition area would be costly, it is suggested to store them in an internal private map in the renderer component; whenever a new element is added, the map is updated with its bounding rectangle. Elements once added are never removed, so this cache is effective.
+- else, spreading is computed for the X and Y axes separately, before applying it:
+  - on the X (=horizontal) axis:
+    - let `rShift` = the maximum extent of horizontal overlap between E and any other element to its right.
+    - let `lShift` = the maximum extent of horizontal overlap between E and any other element to its left.
+    - all the elements whose L is < E.L and whose R is < E.R must be shifted leftwards by `xShift`.
+    - all the elements whose L is > E.L and whose R is > E.R must be shifted rightwards by `xShift`.
+  - on the Y (=vertical) axis, we proceed in the same way, using T and B (top and bottom) for up and down shift rather than L and R for left and right shift.
 
-So, the rendition logic is:
+The logic can be visually illustrated as follows (for the horizontal axis, and the same applies for the vertical one, by just changing horizontal with vertical; see the image below, where each rectangle is labelled with a Latin or Greek letter):
+
+![spreading](img/spreading.png)
+
+- consider E, the bounding rectangle of the element to be drawn;
+- draw an infinite vertical line overlapping with its left edge (let's call it "left ruler"), and another one overlapping with its right edge (let's call it "right ruler"); these are the big vertical lines labelled "L" and "R" in the image.
+- all the elements, whatever their vertical position, which are either to the left of the left ruler, or are cut by it (which happens to the b-element in the image), must be shifted leftwards by the max amount of left-overlap (which is the maximum value from the modulus of the difference of the R X-coordinates of E with any of the overlapping elements; in the image, this is the portion of the b-rectangle filled with horizontal dashes).
+- all the elements, whatever their vertical position, which are either to the right of the right ruler, or are cut by it, must be shifted rightwards by the max amount of right-overlap (which is the maximum value from the modulus of the difference of the L X-coordinates of E with any of the overlapping elements; in the image, this is the portion of the γ-rectangle filled with horizontal dashes).
+- the elements which are fully inside the two rulers (like the e-rectangle in the image) remain untouched where they are.
+
+So, the **rendition logic** is:
 
 1. base text is drawn by adding 1 `text` SVG element per character, possibly animating each character with the "enter" animation defined in settings when there is one (in general, "enter" animation means that the element starts hidden, i.e. with opacity 0, and then opacity gets animated in various ways).
 2. whenever moving to another version (whose output tag points to its operation):
@@ -334,6 +351,7 @@ So, the rendition logic is:
    3. if the operation has added text (remember that each newly added node has an `opid` feature with the ID of the operation which added it, and a trace feature `$seg-out`):
       1. apply _spreading_ to SVG elements (added text always behaves as a "solid" element).
       2. draw the text, character by character with the setting's animation for each character, exactly like for the base text.
+   4. finally, if any of the SVG elements has fallen off the visible area of the text rendition, which may well happen for spreading, calculate a new pan and zoom to fit all the elements, and then use an animation to transition between the current pan and zoom to the newly computed one. Using a transition here is essential to avoid an abrupt change in size and position; we need to interpolate towards them, so that we preserve the smooth transformation represented by the new version and all its animations.
 
 ## Component Design
 
@@ -543,7 +561,7 @@ Hilites rectangles are generated all at once, and they should **fade** in with a
 
 A **clear selection** button is used to deselect a selected tag and remove hilites. Hilites are removed automatically whenever you move to another version (first they will fade out, then we will proceed with move -- so we must check whether hilites are present before moving).
 
-#### Component UI: Version Text Area
+### Component UI: Version Text Area
 
 This area can be collapsed.
 
@@ -556,7 +574,7 @@ A small **toolbar** here contains buttons for the following actions:
 - **increase font size**.
 - **decrease font size**.
 
-#### Component UI: Details Area
+### Component UI: Details Area
 
 This area can be collapsed.
 
@@ -575,3 +593,5 @@ This includes (all features are in alphabetical order of their name):
 - the list of global features for the current version, i.e. those features linked to the text as a whole.
 - the list of node-dependent features for the element(s) being hovered, grouped by element, when hovering any SVG `text` element with class containing `node` (i.e. a `text` element corresponding to a text node in data).
 - this list has at its side the enlarged rendition for the hovered element (a copy of its `text` element).
+
+Note that unless the `debug` setting is true, all the rendition features (=all the features whose name starts with `r_`) are not listed here, as they are just rendition instructions which are rendered visually.
