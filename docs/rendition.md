@@ -296,3 +296,31 @@ For instance, in CodePen one might have these predefined resources to setup a hi
 As a reference, see the documentation about the [GSAP Easing Visualizer](https://greensock.com/ease-visualizer/).
 
 Users would just open a new CodePen, copy-paste the template code for HTML, CSS, JS, paste their hints in the map, and edit them at will. When complete, the map would be copied back into the code using the component.
+
+## Component Settings
+
+TODO
+
+## Component Interaction
+
+### Visualization
+
+At any time, users can freely zoom and pan the whole text surface area with these actions:
+
+- zoom in/out;
+- pan in any direction;
+- size the whole text surface area to fit.
+
+This implies that all the rendering operations involving computations about SVG size and position must be properly adjusted for the current zoom and pan.
+
+### Navigation
+
+TODO
+
+### Metadata
+
+TODO
+
+### Hiliting
+
+TODO
