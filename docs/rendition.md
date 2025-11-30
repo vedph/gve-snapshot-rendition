@@ -168,7 +168,12 @@ The hint's `svg` property (`OperationHint.svg`) is a string representing the SVG
 
 ### Hint Transformation Properties
 
-These properties are used to transform the hint _before_ positioning it. These transformation affect the hint's size, so it is essential that they are applied before calculating its position.
+These properties are used to transform the hint _before_ filling placeholder elements, and before positioning the hint. These transformation affect the hint's size, so it is essential that they are applied before calculating its position. For placeholder elements, further size adjustments can be made according to the rendering mode chosen for that placeholder (`fit` or not); so, these will happen after these transformations, but before positioning the hint. This way:
+
+- in `fit` mode, the transformations described by these properties will affect dynamically rendered text, as text fits into its placeholder container.
+- in the default (non-`fit`) mode, the transformations described by these properties will not affect dynamically rendered text, which has its own preset size depending on its text rendition settings.
+
+The hint transformation properties are:
 
 - `scale`: the scale for drawing the hint. The initial size of the hint is equal to the size of its reference bounding rectangle, but the `scale` property can scale it up or down. The default is 1=no scaling, else it will be 1.1=110%, 0.9=90%, etc. Scaling is made with reference to the origin of the reference bounding rectangle.
 - `rotation`: the rotation for drawing the hint, done with reference to the origin of the reference bounding rectangle. Default=0 (no rotation).
@@ -210,7 +215,10 @@ This way we can offset proportionally to the reference text. So, `10`=offset by 
 
 ### Hint Animation Property
 
-The hint's `animation` property contains the JS code using the GSAP library for animating the hint's SVG, so that it gets an "enter" animation.
+The hint's `animation` property contains:
+
+- the JS code using the GSAP library for animating the hint's SVG, so that it gets an "enter" animation.
+- the identifier of a preset animation JS code using the GSAP library for animating the hint's SVG, prefixed by `#`. So, if the string starts with `#`, it is assumed that it just contains the ID of a preset animation which must be retrieved to get the corresponding JS code. Such preset animations can be defined in the component's settings. Of course, whatever the way used to get it, in the end what we have is JS animation code.
 
 >We use GSAP for animations because it's robust and powerful, and has many powerful plugins available. Note that while plugins first were limited to paid subscriptions, they are now _freely available_ for everyone. All what is required to use a plugin is registering it once in code, e.g.:
 
@@ -239,9 +247,15 @@ The SVG content of each hint is positioned and sized according to the **referenc
 
 The reference bounding rectangle ("RBR" for short) is defined as _the rectangle including all the bounding rectangles of all the subsequent nodes displayed for the text "selected" by an operation_. These nodes are the input nodes defined by trace features as explained above. So if a segment to be deleted is "def", its bounding rectangle is the rectangle including all the rectangles for "d", "e", "f".
 
-⚠️ Note that if the segment happens to be _split_ between lines, because it includes a LF, then there will be _multiple reference bounding rectangles_, one for each portion of the segment text. In this case, the general logic for drawing hints is the same, but the component will _repeat_ the same hint, except the hint having a placeholder element, for each portion. The logic of this repetition is that in most cases hints represent decorations on top of their reference text, e.g. a strikethrough on top of the text being deleted; so, if this text happens to be split between two lines, we still need to apply strikethrough to all the reference text, and not only to a portion of it. The exception for the placeholder element is due to the fact that the placeholder element is an element including dynamically defined text (e.g. the text being added by a replace/insert operation), and this text should not be repeated.
+⚠️ Note that if the segment happens to be _split_ between lines, because it includes a LF, then there will be _multiple reference bounding rectangles_, one for each portion of the segment text. In this case, the general logic for drawing hints is the same, but the component will _repeat_ the same hint, except the hint having a placeholder element, for each portion. So, more formally:
 
-The **rules for drawing** a hint's SVG are designed so that users who create hints can easily predict their outcome and animation:
+- for each reference bounding rectangle:
+  - for each hint:
+    - unless the hint is a placeholder hint and has already been drawn once, draw it and animate it.
+
+The logic of this repetition is that in most cases hints represent decorations on top of their reference text, e.g. a strikethrough on top of the text being deleted; so, if this text happens to be split between two lines, we still need to apply strikethrough to all the reference text, and not only to a portion of it. The exception for the placeholder element is due to the fact that the placeholder element is an element including dynamically defined text (e.g. the text being added by a replace/insert operation), and this text should not be repeated.
+
+The rules for sizing and positioning a hint's SVG are designed so that users who create hints can easily predict their outcome and animation:
 
 1. the **hint size** is equal to that of its reference bounding rectangle, for hints which do not include a placeholder element. Once calculated in this way, the size can then be changed via its `scale` property, when this is set to something different from 1. This corresponds to what we defined as "select" in the description of trace features for each operation type.
 2. the **hint position** is relative to its reference bounding rectangle, as specified in its metadata. As for the visuals representing by the SVG code in the hint, its reference point for positioning relative to its reference bounding rectangle is given by its "handle" (see below about the `svg` property of a hint object).
