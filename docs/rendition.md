@@ -318,11 +318,21 @@ The component API is defined by its input properties (to be bound by consumer co
   - `versionTagChanging`: event fired when the version tag is about to change, before starting its change.
   - `versionTagChange`: event fired when the version tag has changed, after all the animations related to it have completed.
 
+**Navigation** across text versions is managed via the [toolbar](#component-ui-toolbar-area) (or the corresponding shortcut keys). The main functions are:
+
+- move to previous/next version.
+- move to previous/next staged version, through all the versions which are included between the current one and the next staged version (if any).
+- move to first/last version.
+- slideshow, which automatically moves from first to last version, and possibly loops endlessly when the last version has been reached.
+
+When navigating:
+
+- before starting the navigation, fire `versionTagChanging` with the current version tag and the next one. If there are any [hilites](#text-hilites), remove them (fading them out).
+- once navigation has completed with all its animations, fire `versionTagChange` with the current version tag and the previous one.
+
 ### Component Settings
 
 Component settings are modeled in a `GveRenditionSettings` class; a `DEFAULT_SETTINGS` constant then provides defaults for the component. Settings are passed via binding to the web component's `settings` property.
-
-TODO
 
 ```ts
 /**
@@ -428,30 +438,31 @@ When the available width is too small, the areas are repositioned so that each o
 
 The toolbar area contains a toolbar with these buttons and labels:
 
-- the current step tag (e.g. `v0`) and position (e.g. `1/N`). If the step is a _staged version_ (=the text has a `version` feature), also display the `version`'s value and emphasize this with a different background or similar accent hints.
+- the **current step** tag (e.g. `v0`) and position (e.g. `1/N`). If the step is a _staged version_ (=the text has a `version` feature), also display the `version`'s value and emphasize this with a different background or similar accent hints.
 - navigation buttons (disabled when not applicable):
-  - move to next version.
-  - move to previous version.
-  - move to next staged version. This goes through all the versions up to the next staged version (if there is any after the current version; else it's disabled). It is equivalent to a slideshow from the current version to the next staged version.
-  - move to previous staged version. As above.
-  - move to first version.
-  - move to last version.
-  - start/stop slideshow: when slideshow is on, the component moves forward automatically one version after another after a specified time interval. When done, you either stop or cycle according to the settings. Intervals, cycle and other relevant parameters must be read from component `settings`.
+  - **move to next version**.
+  - **move to previous version**.
+  - **move to next staged version**. This goes through all the versions up to the next staged version (if there is any after the current version; else it's disabled). It is equivalent to a slideshow from the current version to the next staged version.
+  - **move to previous staged version**. As above.
+  - **move back to first version**.
+  - **move forward to last version**.
+  - **start/stop slideshow**: when slideshow is on, the component moves forward automatically one version after another after a specified time interval. When done, you either stop or cycle according to the settings. Intervals, cycle and other relevant parameters must be read from component `settings`.
+  - **toggle slideshow reverse**: when on, the slideshow runs reversed, from last to first version. Disabled when slideshow is running.
 - display buttons:
-  - zoom in.
-  - zoom out.
-  - center and fit.
-  - download the current rendition (the root `svg` element of the text rendition area) as an SVG image.
+  - **zoom in**.
+  - **zoom out**.
+  - **center and fit**.
+  - **download** the current rendition (the root `svg` element of the text rendition area) as an SVG image.
 - custom buttons:
-  - an optional set of custom buttons whose icons, labels, tooltips and callback actions can be defined in `settings`.
+  - an optional set of **custom buttons** whose icons, labels, tooltips and callback actions can be defined in `settings`.
 
 >Buttons and other controls in the toolbar should reflow (you can use CSS flex and flex-wrap) when there is not enough horizontal space.
 
 ### Component UI: Text Rendition Area
 
-The text rendition area is a drawing surface based on SVG. It has a root `svg` element and its content is totally defined by data and programmatic actions on it.
+The text rendition area is a drawing surface based on SVG. It has a root `svg` element and its content is totally defined by data and programmatic actions on it, as described in the first part of this document.
 
-At any time, users can freely zoom and pan the whole text rendition area with these actions:
+At any time, users can freely **zoom** and **pan** the whole text rendition area with these actions:
 
 - zoom in/out;
 - pan in any direction;
@@ -499,17 +510,33 @@ A **clear selection** button is used to deselect a selected tag and remove hilit
 
 #### Component UI: Version Text Area
 
+This area can be collapsed.
+
 The version text area contains the multiline **plain text** corresponding to the currently displayed text version. Lines are ended by LF characters. The generated text of each version is got from the `result` property in result data.
 
 A small **toolbar** here contains buttons for the following actions:
 
-- copy all text.
-- toggle word-wrap.
+- **copy all text**.
+- **toggle word-wrap**.
+- **increase font size**.
+- **decrease font size**.
 
 #### Component UI: Details Area
 
-TODO
+This area can be collapsed.
 
-### Navigation
+The area contains metadata interactively displayed when navigating across versions, and when hovering elements in the rendered text area.
 
-TODO
+This includes (all features are in alphabetical order of their name):
+
+- the details about the operation which generated that version:
+  - `inputTag` and `outputTag`;
+  - `id`;
+  - `type`;
+  - `rank`
+  - `groupId`
+  - `sources`: list of sources, each with its `id`, `type`, `rank`, `note`.
+  - `dsl`.
+- the list of global features for the current version, i.e. those features linked to the text as a whole.
+- the list of node-dependent features for the element(s) being hovered, grouped by element, when hovering any SVG `text` element with class containing `node` (i.e. a `text` element corresponding to a text node in data).
+- this list has at its side the enlarged rendition for the hovered element (a copy of its `text` element).
