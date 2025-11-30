@@ -53,6 +53,16 @@ So far for text. Additionally, we might also want to represent the **visual** co
 1. **graphical**: the most faithful and detailed one is a fully diplomatic representation, literally drawn on the text surface via SVG. Each operation carries some metadata about its visual part, which among other contain an SVG code fragment, always rooted at a `g` element, representing the visual hints for that operation, like the cross in the deletion example. A custom web component displays these hints on top of the photographic image of the manuscript, animating them step after step.
 2. **symbolic**: a more economic and symbolic representation is rather focused on the text, and just aims to give the general sense of the transformation with the aid of visuals and animations, like the previous one. Anyway, it is just an approximation of the graphical appearance found in the real manuscript. The degree of this approximation is up to the user. This type of visualization is what is covered by the _GVE snapshot rendition_ web component.
 
+The idea for this web component is to represent the changes to the text in a symbolic, yet fully diplomatic way. So we do not want to just output the text generated each time we execute an operation; we want to represent how it appears on the original sheet. Everything gets accumulated on the same display surface, operation after operation; just like everything accumulates on the same sheet, editing after editing.
+
+The display starts with the base text. Now, say a delete operation removes a word. Say this is represented in the original sheet by a line drawn on top of that word. This line hints at the deletion operation. So, while the delete operation effectively generates a text which no longer contains that word, graphically we still have that word, with a line on it.
+
+Thus, the component will display right this: a line on top of the word. The generated text is displayed in the text version area, but in the main text rendition area, we just have that: a line.
+
+Now, say the next operation replaces a word X with another one Y: in the sheet, this happens to be graphically represented by word Y written in smaller characters right above word X. Again, the operation generates a new text with the replaced word, but the main text rendition area just shows word Y above word X. And so forth. These "hints" about operations get accumulated, thus reproducing the original sheet and its signs; while the new text appears in another area of the same component.
+
+This peculiar visualization is just one of the virtually unlimited possible renditions. Yet, all are based on the same snapshot model, focused on operations.
+
 #### Operation Model
 
 Visual data are not the only metadata attached to operations. The metadata we have illustrated until now represent the visual hints which in the manuscript mean each editing operation; these are the **diplomatic** portion of metadata. But an operation also carries some specific metadata. The full data model of an operation is defined by `CharChainOperation` in [models.ts](../src/models.ts). Here is a short summary:
