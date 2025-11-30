@@ -1,5 +1,30 @@
 # GVE Snapshot Rendition Component
 
+- [GVE Snapshot Rendition Component](#gve-snapshot-rendition-component)
+  - [Rendered Entities](#rendered-entities)
+  - [Base Text](#base-text)
+  - [Additional Text](#additional-text)
+  - [Text Rendition Features](#text-rendition-features)
+  - [Init Features](#init-features)
+  - [Hints](#hints)
+    - [Hint SVG Content Property](#hint-svg-content-property)
+    - [Hint Transformation Properties](#hint-transformation-properties)
+    - [Hint Positioning Properties](#hint-positioning-properties)
+    - [Hint Animation Property](#hint-animation-property)
+    - [Hint SVG Rendition](#hint-svg-rendition)
+    - [Designing Hints](#designing-hints)
+  - [Drawing Logic](#drawing-logic)
+  - [Component Design](#component-design)
+    - [API](#api)
+    - [Component Settings](#component-settings)
+    - [Component UI](#component-ui)
+      - [Component UI: Toolbar Area](#component-ui-toolbar-area)
+    - [Component UI: Text Rendition Area](#component-ui-text-rendition-area)
+    - [Component UI: Versions List Area](#component-ui-versions-list-area)
+      - [Text Hilites](#text-hilites)
+    - [Component UI: Version Text Area](#component-ui-version-text-area)
+    - [Component UI: Details Area](#component-ui-details-area)
+
 The purpose of this component is to render an interactive representation of the multiple versions of a text as defined by editing operations and their features.
 
 As explained, text variants are built by accumulating the changes made to it by each editing operation from an ordered set of them. Except for the first operation, which works on the base text, each operation gets as input the output of a previous operation, and outputs a new version of the text, progressively numbered (`v1`, `v2`... etc.).
