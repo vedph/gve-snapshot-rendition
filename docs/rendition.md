@@ -703,7 +703,7 @@ Consider a sheet to be represented by the snapshot model like the one in this im
 
 ![sample text](./img/sample.png)
 
-The **base text** (version `v0`) here is:
+👉 The **base text** (version `v0`) here is (line ends are represented by LF characters):
 
 ```txt
 In this test I show all operation
@@ -714,10 +714,10 @@ This too, is another line
 
 The image is black and white, but for the sake of the example, assume that:
 
-- base text is written with black ink by hand A (hands are encoded in the operation's source property).
+- the base text was written with black ink by hand A (hands are encoded in the operation's source property).
 - a first series of changes were written by another hand B with red ink.
 - a second series of changes were written by another hand C with green ink.
-- the number at the top-left corner has been written by another hand D with blue ink.
+- the number at the top-left corner was written by another hand D with blue ink.
 
 The character nodes are shown in this image with their numeric IDs (blue) and indexes (gray):
 
@@ -725,64 +725,65 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
 
 > To make them more visible, in this diagnostic view spaces are represented by an underscore, and LF by an arrow.
 
-The **operations** are (each is preceded by the tag of the version it generates, and has a list of features to inject in affected nodes):
+👉 The **operations** are (each is preceded by the tag of the version it generates, and has a list of features to inject in affected nodes; for brevity we omit hands, which would fit in operation's source metadata):
 
 - `v1`: **annotate** to add features (these are thus [init-features](#init-features)):
   - `r_char-offsets`=`35:x=100 70:x=100` to define indents for lines 2 (starting with character ID 35) and 4 (starting with character ID 70).
 
 - `v2`: **delete** `In` and its space. Features:
-  - `r_hints`=`diagonal-stroke`.
+  - `r_hints`=`diagonal-stroke`. The ID of a hint representing a diagonal stroke (essentially it will be a diagonal line).
   - `r_fore-color`=`red` (hand A writes with red ink; the hint is assumed to have a placeholder for the color, drawing its value from this property; this way we can reuse the same hint SVG code with a different color).
-- `v3`: **replace** `t` with `T` (whose ID will be equal to 95, the next available ID in the snapshot) in `this` to make it uppercase, as this has become the first word of the sentence. Features:
-  - `r_text_position`: `n` (north = top of `t`).
+- `v3`: **replace** `t` with `T` (whose ID will be equal to 95, the next available ID in the snapshot) in `this`, to make it uppercase, as this has become the first word of the sentence. Features:
+  - `r_text_position`=`n` (north = top of `t`).
   - `r_fore-color`=`red`.
-  - `r_font-size`=`14` (default being `16`, this is smaller).
-- `v4`: **delete** `I` and its space. Features:
+  - `r_font-size`=`14` (the default being `16`, this is smaller).
+- `v4`: **delete** `I` and its following space. Features:
+  - `r_fore-color`=`red`.
   - `r_hints`=`diagonal-stroke`.
-  - `r_fore-color`=`red`.
 - `v5`: **add** `s` (ID=96) after `show` (whence `shows`). Features:
   - `r_fore-color`=`red`.
   - `r_font-size`=`14`.
-- `v6`: **annotate** to add features (this operation belongs to group `swap-complex-long`):
+- `v6`: **annotate** to add features (this operation belongs to group `swap-complex-long` -- belonging to a group has no practical effect, but it is a metadatum which logically groups operations together):
   - `note`=`1` (the `1` above `long` indicating a change in word order).
+  - `r_fore-color`=`red`.
   - `r_hints`=`note` (a hint assumed to display text whose content is defined by a placeholder named `note`).
 - `v7`: **annotate** to add features (this operation belongs to group `swap-complex-long`):
   - `note`=`2` (the `2` above `nor`).
+  - `r_fore-color`=`red`.
   - `r_hints`=`note`.
 - `v8`: **annotate** to add features (this operation belongs to group `swap-complex-long`):
   - `note`=`3` (the `3` above `complex`).
+  - `r_fore-color`=`red`.
   - `r_hints`=`note`.
 - `v9`: **swap** `complex` with `long` (this is represented by the small numbers "3 2 1" above these words and the word between them, which have been added as annotation hints before). Features:
   - `r_fore-color`=`red`.
-- `v10`: **add** space + `TOO.` after `line`. Features:
-  - `r_fore-color`=`red`.
-  - `version`=`alpha` marks `v10` as staged version `alpha`.
+  - `version`=`alpha` marks this version (`v9`) as staged version `alpha`.
 
-- `v11`: **delete** `.` after `types`. Features:
+- `v10`: **delete** `.` after `types` (this operation belongs to group `add-stuff`). Features:
   - `r_hints`=`diagonal-stroke`.
   - `r_fore-color`=`green`.
-- `v12`: **add** space + `AND SOME STUFF.` (IDs=97-113) after `types`. Note that we could just have inserted this text before the dot after `types` if our purpose was only to get the corresponding output text; but our purpose here is to represent the sheet in its nearly-diplomatic form. In the sheet we have a deletion on this dot, and then a new text with its own dot is added. Here we do the same, with a deletion first, and then an addition. Features:
+- `v11`: **add** space + `AND SOME STUFF.` (IDs=97-113) after `types` (this operation belongs to group `add-stuff`). Note that we could just have inserted this text before the dot after `types` if our purpose was only to get the corresponding output text; but our purpose here is to represent the sheet in its nearly-diplomatic form. In the sheet we have a deletion on this dot, and then a new text with its own dot is added. Here we do the same, with a deletion first, and then an addition. Features:
   - `r_fore-color`=`green`.
-- `v13`: **replace** `STUFF.` with `HINTS.` (IDs=114-119). Features:
+- `v12`: **replace** `STUFF.` with `HINTS.` (IDs=114-119). Features:
   - `r_fore-color`=`green`.
   - `r_position`=`n`.
   - `r_text-displaced-span`=`21x7`. This is a displacement for the text being added by this replace operation (`HINTS`): instead of positioning the text with reference to its reference text (`STUFF`), we position it above an area approximately corresponding to `all ope` of `all operations` in the first line.
   - `r_text-offset-y`=`20`: this shifts the `HINTS` boxed text upper.
   - `r_hints`=`box` (border around `STUFF`).
   - `r_border`=`tlbr 1 solid green` (1-pixel border around `HINTS`).
-- `v14`: **delete** `too,` + space (this operation belongs to group `mov-too`, because on a more abstract --non-diplomatic-- ground this would be considered a movement). Note that there is no hint for this operation; it is implicit in the next addition.
-- `v15`: **add** `TOO.` (IDs=120-123) after `line` (this operation belongs to group `mov-too`) . Features:
+- `v13`: **delete** `too,` + space (this operation belongs to group `mov-too`, because on a more abstract --non-diplomatic-- ground this would be considered a movement). Note that there is no hint for this operation; it is implicit in the next addition.
+- `v14`: **add** `TOO.` (IDs=120-123) after `line` (this operation belongs to group `mov-too`) . Features:
   - `version`=`beta` marks `v14` as staged version `beta`.
 
-- `v16`: **annotate** the initial `I` with features (we target the initial `I` as it's the nearest character):
+- `v15`: **annotate** the initial `I` with features (we target the initial `I` as it's the nearest character):
   - `note`=`12`.
   - `r_color`=`blue`.
   - `r_hint-vars`=`rotation=-45`. This passes a variable `rotation`=`-45` to the hint so that it can resolve placeholders with this name. This allows applying a rotation to this hint programmatically.
   - `r_hints`=`note-underline`. This is assumed to have a `note` placeholder to be filled with the text (here "12"), and a `r_color` placeholder for its color.
 
-The resulting texts for staged versions are:
+👉 The **resulting texts** for staged versions are:
 
-- alpha:
+- `alpha`:
 
 ```txt
 This test shows all operation
@@ -791,7 +792,7 @@ It is not long nor complex.
 This is another line TOO.
 ```
 
-- beta:
+- `beta`:
 
 ```txt
 This test shows all operation
@@ -799,6 +800,17 @@ types AND HINTS.TUFF.
 It is not long nor complex.
 This is another line TOO.
 ```
+
+👉 The **hints** assumed by these operations are summarized here, each with its placeholder variables:
+
+- `box`: a box drawn around some content. This hint uses `scaleX` and `scaleY` to make this box bigger than the RBR it should enclose.
+  - `r_fore-color`: the box outline color.
+- `diagonal-stroke`: a diagonal stroke.
+  - `r_fore-color`: the line color.
+- `note`: a text note. This is a hint, not text which is part of the version (this is only base text or additional text).
+  - `note`: the note's text.
+  - `r_fore-color`: the text color.
+- `note-underline`: equal to `note`, but with added underline text decoration to the note's text.
 
 The same operations in their parsable format are listed here:
 
@@ -809,15 +821,15 @@ The same operations in their parsable format are listed here:
 4=T [r_text_position^=n r_fore-color^=red r_font-size^=14]
 14x2- [r_hints^=diagonal-stroke r_fore-color^=red]
 19+]s [r_fore-color^=red r_font-size^=14]
-64x4: @swap-complex-long [note^=1 r_hints^=note]
-60x3: @swap-complex-long [note^=2 r_hints^=note]
-52x7: @swap-complex-long [note^=3 r_hints^=note]
+64x4: @swap-complex-long [note^=1 r_hints^=note r_fore-color^=red]
+60x3: @swap-complex-long [note^=2 r_hints^=note r_fore-color^=red]
+52x7: @swap-complex-long [note^=3 r_hints^=note r_fore-color^=red]
 52x7<>64x4 [r_fore-color^=red]
 75x5- @mov-too
 94+]" TOO."@mov-too [r_fore-color^=red *version^=alpha]
 
-40- [r_hints^=diagonal-stroke r_fore-color^=green]
-39+]" AND SOME STUFF." [r_fore-color^=green]
+40- @add-stuff [r_hints^=diagonal-stroke r_fore-color^=green]
+39+]" AND SOME STUFF." @add-stuff [r_fore-color^=green]
 107x6=HINTS. [r_fore-color^=green r_position^=n r_text-displaced-span^=21x7 r_text-offset-y=20 r_hints=box r_border^="tlbr 1 solid green" *version^=beta]
 
 1: [note=12 r_color^=blue r_hint-vars^="rotation=-45" r_hints="note-underline"]
