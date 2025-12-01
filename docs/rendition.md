@@ -688,7 +688,7 @@ Consider a sheet to be represented by the snapshot model like the one in this im
 
 ![sample text](./img/sample.png)
 
-The base text (version `v0`) here is:
+The **base text** (version `v0`) here is:
 
 ```txt
 In this test I show all operation
@@ -710,9 +710,10 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
 
 >To make them more visible, in this diagnostic view spaces are represented by an underscore, and LF by an arrow.
 
-The operations are (each is preceded by the tag of the version it generates, and has a list of features to inject in affected nodes):
+The **operations** are (each is preceded by the tag of the version it generates, and has a list of features to inject in affected nodes):
 
-1. `v1`: annotate to add feature `r_char-offsets`=`35:x=100 70:x=100` to define indents for lines 2 (starting with character ID 35) and 4 (starting with character ID 70).
+1. `v1`: annotate to add features:
+   - `r_char-offsets`=`35:x=100 70:x=100` to define indents for lines 2 (starting with character ID 35) and 4 (starting with character ID 70).
 2. `v2`: delete `In` and its space. Features:
    - `r_hints`=`diagonal-stroke`.
    - `r_fore-color`=`red` (hand A writes with red ink; the hint is assumed to have a placeholder for the color, drawing its value from this property; this way we can reuse the same hint SVG code with a different color).
@@ -726,25 +727,45 @@ The operations are (each is preceded by the tag of the version it generates, and
 5. `v5`: add `s` after `show` (whence `shows`). Features:
    - `r_fore-color`=`red`.
    - `r_font-size`=`14`.
-6. `v6`: swap `complex` with `long` (this is represented by the small numbers "3 2 1" above these words and the word between them). Features:
+6. `v6`: annotate to add features (this operation belongs to group `swap-complex-long`):
+   - `note`=`1` (the `1` above `long` indicating a change in word order).
+   - `r_hints`=`note` (a hint assumed to display text whose content is defined by a placeholder named `note`).
+7. `v7`: annotate to add features (this operation belongs to group `swap-complex-long`):
+   - `note`=`2` (the `2` above `nor`).
+   - `r_hints`=`note`.
+8. `v8`: annotate to add features (this operation belongs to group `swap-complex-long`):
+   - `note`=`3` (the `3` above `complex`).
+   - `r_hints`=`note`.
+9. `v9`: swap `complex` with `long` (this is represented by the small numbers "3 2 1" above these words and the word between them, which have been added as annotation hints before). Features:
    - `r_fore-color`=`red`.
    - `version`=`alpha` marks `v6` as staged version `alpha`.
 
-7. `v7`: delete `.` after `types`. Features:
+8. `v7`: delete `.` after `types`. Features:
    - `r_hints`=`diagonal-stroke`.
    - `r_fore-color`=`green`.
-8. `v8`: add space + `AND SOME STUFF.` after `types`. Features:
-   - `r_fore-color`: `green`.
-9. `v9`: replace `STUFF.` with `HINTS.` Features:
+9.  `v8`: add space + `AND SOME STUFF.` after `types`. Features:
+   - `r_fore-color`=`green`.
+10. `v9`: replace `STUFF.` with `HINTS.` Features:
    - `r_fore-color`=`green`.
    - `r_hints`=`box` (border around `STUFF`).
    - `r_border`=`tlbr 1 solid green` (1-pixel border around "HINTS").
-10. `v10`: add `TOO.` after `line`. Features:
-    - `r_fore-color`: `green`.
+11. `v10`: add `TOO.` after `line`. Features:
+    - `r_fore-color`=`green`.
     - `version`=`beta` marks `v10` as staged version `beta`.
 
-11. `v11`: annotate the whole text with features:
+12. `v11`: annotate the whole text with features:
     - `note`=`12`.
     - `r_color`=`blue`.
     - `r_hint-vars`=`rotation=-45`. This passes a variable `rotation`=`-45` to the hint so that it can resolve placeholders with this name. This allows applying a rotation to this hint programmatically.
-    - `r_hints`=`text-underline`. This is assumed to have a `note` placeholder to be filled with the text (here "12"), and a `r_color` placeholder for its color.
+    - `r_hints`=`note-underline`. This is assumed to have a `note` placeholder to be filled with the text (here "12"), and a `r_color` placeholder for its color.
+
+The same operations in their parsable format are listed here:
+
+```txt
+35: [r_char-offsets^="35:x=100 70:x=100"]
+1x3- [r_hints^=diagonal-stroke r_fore-color^=red]
+4=T [r_text_position^=n r_fore-color^=red r_font-size^=14]
+14x2- [r_hints^=diagonal-stroke r_fore-color^=red]
+19+]s [r_fore-color^=red r_font-size^=14]
+52x7<>64x4 [r_fore-color]
+```
