@@ -7,6 +7,13 @@ settings:
 importers:
 
   .:
+    dependencies:
+      tslib:
+        specifier: ^2.8.1
+        version: 2.8.1
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^29.0.0
@@ -19,13 +26,16 @@ importers:
         version: 0.4.4(rollup@4.53.3)
       '@rollup/plugin-typescript':
         specifier: ^12.3.0
-        version: 12.3.0(rollup@4.53.3)(typescript@5.9.3)
+        version: 12.3.0(rollup@4.53.3)(tslib@2.8.1)(typescript@5.9.3)
       '@vitest/ui':
         specifier: ^4.0.14
         version: 4.0.14(vitest@4.0.14)
       concurrency:
         specifier: ^0.1.4
         version: 0.1.4
+      concurrently:
+        specifier: ^9.2.1
+        version: 9.2.1
       lite-server:
         specifier: ^2.6.1
         version: 2.6.1
@@ -41,9 +51,6 @@ importers:
       ts-loader:
         specifier: ^9.5.4
         version: 9.5.4(typescript@5.9.3)(webpack@5.103.0)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
       vitest:
         specifier: ^4.0.14
         version: 4.0.14(@types/node@24.10.1)(@vitest/ui@4.0.14)(terser@5.44.1)
@@ -664,6 +671,11 @@ packages:
   concurrency@0.1.4:
     resolution: {integrity: sha512-uwS/Z8zsvOUnIfTiMM5kV5N5JnsrR1fpt5thlg723jELkoORXmFs+BJHOaCn9OTGpCVkfG3vqiLGBPHiBXxKaA==}
 
+  concurrently@9.2.1:
+    resolution: {integrity: sha512-fsfrO0MxV64Znoy8/l1vVIjjHa29SZyyqPgQBwhiDcaW8wJc2W3XWVOGx4M3oJBnv/zdUZIIp1gDeS98GzP8Ng==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   connect-history-api-fallback@1.6.0:
     resolution: {integrity: sha512-e54B99q/OUoH64zYYRf3HBP5z24G38h5D3qXu23JGRoigpX5Ss4r9ZnDk3g0Z8uQC2x2lPaJ+UlWBc1ZWBWdLg==}
     engines: {node: '>=0.8'}
@@ -1163,6 +1175,9 @@ packages:
   rx@4.1.0:
     resolution: {integrity: sha512-CiaiuN6gapkdl+cZUr67W6I8jquN4lkak3vtIsIWCl4XIPP8ffsoyN6/+PuGXnQy8Cu8W2y9Xxh31Rq4M6wUug==}
 
+  rxjs@7.8.2:
+    resolution: {integrity: sha512-dhKf903U/PQZY6boNNtAGdWbG85WAbjT/1xYoZIC7FAY0yWapOBQVsVrDl58W86//e1VpMNBtRV4MaXfdMySFA==}
+
   safe-buffer@5.2.1:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
 
@@ -1204,6 +1219,10 @@ packages:
 
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
+
+  shell-quote@1.8.3:
+    resolution: {integrity: sha512-ObmnIF4hXNg1BqhnHmgbDETF8dLPCggZWBjkQfhZpbszZnYur5DUljTcCHii5LC3J5E0yeO/1LIMyH+UvHQgyw==}
+    engines: {node: '>= 0.4'}
 
   siginfo@2.0.0:
     resolution: {integrity: sha512-ybx0WO1/8bSBLEWXZvEd7gMW3Sn3JFlW3TvX1nREbDLRNQNaeNN8WK0meBwPdAaOI7TtRRRJn/Es1zhrrCHu7g==}
@@ -1345,12 +1364,19 @@ packages:
     resolution: {integrity: sha512-sf4i37nQ2LBx4m3wB74y+ubopq6W/dIzXg0FDGjsYnZHVa1Da8FH853wlL2gtUhg+xJXjfk3kUZS3BRoQeoQBQ==}
     engines: {node: '>=6'}
 
+  tree-kill@1.2.2:
+    resolution: {integrity: sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==}
+    hasBin: true
+
   ts-loader@9.5.4:
     resolution: {integrity: sha512-nCz0rEwunlTZiy6rXFByQU1kVVpCIgUpc/psFiKVrUwrizdnIbRFu8w7bxhUF0X613DYwT4XzrZHpVyMe758hQ==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
       typescript: '*'
       webpack: ^5.0.0
+
+  tslib@2.8.1:
+    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
@@ -1662,13 +1688,14 @@ snapshots:
     optionalDependencies:
       rollup: 4.53.3
 
-  '@rollup/plugin-typescript@12.3.0(rollup@4.53.3)(typescript@5.9.3)':
+  '@rollup/plugin-typescript@12.3.0(rollup@4.53.3)(tslib@2.8.1)(typescript@5.9.3)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.53.3)
       resolve: 1.22.11
       typescript: 5.9.3
     optionalDependencies:
       rollup: 4.53.3
+      tslib: 2.8.1
 
   '@rollup/pluginutils@5.3.0(rollup@4.53.3)':
     dependencies:
@@ -2099,6 +2126,15 @@ snapshots:
   concat-map@0.0.1: {}
 
   concurrency@0.1.4: {}
+
+  concurrently@9.2.1:
+    dependencies:
+      chalk: 4.1.2
+      rxjs: 7.8.2
+      shell-quote: 1.8.3
+      supports-color: 8.1.1
+      tree-kill: 1.2.2
+      yargs: 17.7.2
 
   connect-history-api-fallback@1.6.0: {}
 
@@ -2595,6 +2631,10 @@ snapshots:
 
   rx@4.1.0: {}
 
+  rxjs@7.8.2:
+    dependencies:
+      tslib: 2.8.1
+
   safe-buffer@5.2.1: {}
 
   safer-buffer@2.1.2: {}
@@ -2660,6 +2700,8 @@ snapshots:
   setprototypeof@1.1.0: {}
 
   setprototypeof@1.2.0: {}
+
+  shell-quote@1.8.3: {}
 
   siginfo@2.0.0: {}
 
@@ -2801,6 +2843,8 @@ snapshots:
 
   totalist@3.0.1: {}
 
+  tree-kill@1.2.2: {}
+
   ts-loader@9.5.4(typescript@5.9.3)(webpack@5.103.0):
     dependencies:
       chalk: 4.1.2
@@ -2810,6 +2854,8 @@ snapshots:
       source-map: 0.7.6
       typescript: 5.9.3
       webpack: 5.103.0
+
+  tslib@2.8.1: {}
 
   typescript@5.9.3: {}
 
