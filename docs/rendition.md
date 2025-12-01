@@ -796,7 +796,7 @@ This is another line TOO.
 
 ```txt
 This test shows all operation
-types AND HINTS.TUFF.
+types AND SOME HINTS.
 It is not long nor complex.
 This is another line TOO.
 ```
@@ -830,7 +830,7 @@ The same operations in their parsable format are listed here:
 
 40- @add-stuff [r_hints^=diagonal-stroke r_fore-color^=green]
 39+]" AND SOME STUFF." @add-stuff [r_fore-color^=green]
-107x6=HINTS. [r_fore-color^=green r_position^=n r_text-displaced-span^=21x7 r_text-offset-y=20 r_hints=box r_border^="tlbr 1 solid green" *version^=beta]
+112x6=HINTS. [r_fore-color^=green r_position^=n r_text-displaced-span^=21x7 r_text-offset-y=20 r_hints=box r_border^="tlbr 1 solid green" *version^=beta]
 
 1: [note=12 r_color^=blue r_hint-vars^="rotation=-45" r_hints="note-underline"]
 ```
