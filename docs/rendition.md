@@ -690,6 +690,15 @@ This includes (all features are in alphabetical order of their name):
 
 ## Example
 
+The request and response to and from backend for this example are available at these links:
+
+- [request](sample/request.json)
+- [response](sample/response.json): this is especially useful to have a look at the real output. This corresponds to the `CharChainResult` model:
+  - `steps` contains all the transformation steps, each corresponding to a version (except for `v0`). Each step has some metadata of the operation which generated it, input and output version tags, plain text result, set of features (global and per-node), operation's reference node IDs.
+  - `chainDump` is just a dump of all the plain text versions of the text.
+  - `chainTags` is the list of all the version tags (including `v0`).
+  - `taggedNodes` is the list of the nodes present in each version, keyed by version tag. Only nodes present in each version are listed. So, deleted nodes are no longer present in versions after their deletion. Features are listed under `featureSet`: `features` for global features, and `nodeFeatures` for node-specific features, each keyed by version tag + `_` + node ID.
+
 Consider a sheet to be represented by the snapshot model like the one in this image:
 
 ![sample text](./img/sample.png)

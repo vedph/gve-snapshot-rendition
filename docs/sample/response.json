@@ -18171,15 +18171,8 @@
     ],
     "chainDump": ": \r\nv0: In this test I show all operation\ntypes.\nIt is not complex nor long.\nThis too, is another line\r\nv1: In this test I show all operation\ntypes.\nIt is not complex nor long.\nThis too, is another line\r\nv10: This test shows all operation\ntypes.\nIt is not long nor complex.\nThis is another line\r\nv11: This test shows all operation\ntypes.\nIt is not long nor complex.\nThis is another line TOO.\r\nv12: This test shows all operation\ntypes\nIt is not long nor complex.\nThis is another line TOO.\r\nv13: This test shows all operation\ntypes AND SOME STUFF.\nIt is not long nor complex.\nThis is another line TOO.\r\nv14: This test shows all operation\ntypes AND HINTS.TUFF.\nIt is not long nor complex.\nThis is another line TOO.\r\nv15: This test shows all operation\ntypes AND HINTS.TUFF.\nIt is not long nor complex.\nThis is another line TOO.\r\nv2: this test I show all operation\ntypes.\nIt is not complex nor long.\nThis too, is another line\r\nv3: This test I show all operation\ntypes.\nIt is not complex nor long.\nThis too, is another line\r\nv4: This test show all operation\ntypes.\nIt is not complex nor long.\nThis too, is another line\r\nv5: This test shows all operation\ntypes.\nIt is not complex nor long.\nThis too, is another line\r\nv6: This test shows all operation\ntypes.\nIt is not complex nor long.\nThis too, is another line\r\nv7: This test shows all operation\ntypes.\nIt is not complex nor long.\nThis too, is another line\r\nv8: This test shows all operation\ntypes.\nIt is not complex nor long.\nThis too, is another line\r\nv9: This test shows all operation\ntypes.\nIt is not long nor complex.\nThis too, is another line\r\n",
     "chainTags": [
-      "",
       "v0",
       "v1",
-      "v10",
-      "v11",
-      "v12",
-      "v13",
-      "v14",
-      "v15",
       "v2",
       "v3",
       "v4",
@@ -18187,7 +18180,13 @@
       "v6",
       "v7",
       "v8",
-      "v9"
+      "v9",
+      "v10",
+      "v11",
+      "v12",
+      "v13",
+      "v14",
+      "v15"
     ],
     "taggedNodes": {
       "v1": [
