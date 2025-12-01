@@ -26,6 +26,7 @@
         - [Text Hilites](#text-hilites)
       - [Component UI: Version Text Area](#component-ui-version-text-area)
       - [Component UI: Details Area](#component-ui-details-area)
+  - [Example](#example)
 
 The purpose of this component is to render an interactive representation of the multiple versions of a text as defined by editing operations and their features.
 
@@ -143,7 +144,6 @@ All rendering features have their name starting with `r_`. These are the only fe
 
 > Note: some of these features are meaningful only when used as init-features, i.e. in the very first operation (an annotation operation). In this case they are marked by ⭐ in the list which follows. If found later in an operation, such features will be simply ignored.
 
-- `r_line-offsets` ⭐: the line offsets for rendering the base text.
 - `r_char-offsets` ⭐: the character offsets for rendering some specific text nodes (and thus indirectly also all the character nodes following it, up to line end). In most cases, this is used to change line layout by adding indent, or increasing or decreasing space between lines. Usually, text is rendered in a regular, predictable way, just like text is normally rendered in frame: one character after another on the same baseline, until a newline character is found. When this happens, a new line starts below the previous one, left-aligned with it. This is the default layout which assigns the position to each baseline, according to general settings defined in the component's settings (default font size, default spacing between lines, etc.). This default position can be changed for specific characters by the value of this feature, whose format repeats the pattern `ID:y=...,x=...` (where we can specify only `x`, only `y`, or both, in any order; values represent `px` units). In this pattern:
   - `ID`=character ID. Each character has its unique numeric ID directly got from snapshot data. So here we target the character to be offset. As per the general text layout rules, once we offset this target characters, all the other characters will follow on the same baseline, unless any of them has another offset.
   - `y`=Y offset to add to the computed character baseline, thus shifting its default position down (when the offset is positive) or up (when the offset is negative).
@@ -155,12 +155,15 @@ All rendering features have their name starting with `r_`. These are the only fe
 - `r_back-color`: the background color.
 - `r_italic`: the italic value (boolean).
 - `r_bold`: the bold value (boolean).
-- `r_text-line-style`: the style of overline, underline, or strkethrough: `solid`, `dotted`, `dashed`, `wavy` (as in SVG and CSS; corresponds to SVG `text-decoration-line`).
+- `r_text-line-style`: the style of overline, underline, or strikethrough: `solid`, `dotted`, `dashed`, `wavy` (as in SVG and CSS; corresponds to SVG `text-decoration-line`).
 - `r_text-line-color`: the default color of the overline, underline or strikethrough.
 - `r_underline`: the underline value (0-N being the thickness in `px`).
 - `r_overline`: the overline value (as for underline).
 - `r_strike`: the strikethrough value (as for underline).
 - `r_rotate`: the rotation amount to be applied to each single character.
+- `r_text-position`: the position of added text relative to the RBR. This works exactly like hint's `position` property: see [hint positioning properties](#hint-positioning-properties).
+- `r_text-offset-x`: the X offset for the added text, relative to the computed `r_text-position`. This works exactly like hint's `offsetX` property: see [hint positioning properties](#hint-positioning-properties).
+- `r_text-offset-y`: the Y offset for the added text, relative to the computed `r_text-position`. This works exactly like hint's `offsetY` property: see [hint positioning properties](#hint-positioning-properties).
 - `r_hints`: this feature is used to link the operation to any number of hints. The value is a space-delimited list of hint IDs, in the order they should be rendered for that operation.
 - `r_border`: the border to draw around the text. This is different from other rendition features which directly map to SVG text decorations. This is rather a a shortcut to draw one or more edges as an imaginary rectangle wrapping the text. In reality, the component just draws lines along the edges of this imaginary rectangle, one line per edge (top, left, right, bottom), as requested. Its value pattern is `EDGES THICKNESS PADDING TYPE COLOR`, where:
   - `EDGES` is any combination of characters `tlbr` where `t`=top, `l`=left, `b`=bottom, `r`=right.
@@ -170,7 +173,7 @@ All rendering features have their name starting with `r_`. These are the only fe
     So for `r_border`, for instance `tl 1 4 solid silver` means that the text will have two edges, one at top and one at left, each with 1px thickness and silver color, both offset by 4px (padding) from the bounding rectangle of the text.
 Note that `r_border` SVG line elements are just drawn after the text has been drawn character by character (with their animations when set), with no animation. They just appear at once and variously "box" the text drawn.
 
-> All these features can be combined, so characters are displayed only after evaluating all of them, and their size and text layout changes accordingly to fit all the characters with their size, which may depend on one or more of these features.
+> All these features can be combined, so characters are displayed only after evaluating all of them, and their size and text layout changes accordingly to fit all the characters with their size, which may depend on one or more of these features. Also, in backend all rendition features have their lifespan limited to the version generated by their operation. This avoids accumulating them in the output context, ensuring that they are valid only for the immediate output of the operation containing them.
 
 ### Init Features
 
@@ -669,4 +672,49 @@ This includes (all features are in alphabetical order of their name):
 - the list of node-dependent features for the element(s) being hovered, grouped by element, when hovering any SVG `text` element with class containing `node` (i.e. a `text` element corresponding to a text node in data).
 - this list has at its side the enlarged rendition for the hovered element (a copy of its `text` element).
 
-Note that unless the `debug` setting is true, all the rendition features (=all the features whose name starts with `r_`) are not listed here, as they are just rendition instructions which are rendered visually.
+>⚠️ Note that unless the `debug` setting is true, all the rendition features (=all the features whose name starts with `r_`) are not listed here, as they are just rendition instructions which are rendered visually.
+
+## Example
+
+Consider a sheet to be represented by the snapshot model like the one in this image:
+
+![sample text](./img/sample.png)
+
+The base text (version `v0`) here is:
+
+```txt
+In this test I show all operation
+types.
+It is not complex nor long.
+This too, is another line
+```
+
+The image is black and white, but for the sake of the example, assume that:
+
+- base text is written with black ink by hand A.
+- all the words written in uppercase have been written by another hand B with red ink.
+- the number at the top-left corner has been written by another hand C with green ink.
+
+The character nodes are shown in this image with their numeric IDs (blue) and indexes (gray):
+
+![sample text characters](./img/sample-chars.png)
+
+>To make them more visible, in this diagnostic view spaces are represented by an underscore, and LF by an arrow.
+
+The operations are (each is preceded by the tag of the version it generates, and has a list of features to inject in affected nodes):
+
+1. `v1`: annotate to add feature `r_char-offsets`=`35:x=100 70:x=100` to define indents for lines 2 (starting with character ID 35) and 4 (starting with character ID 70).
+2. `v2`: delete `In` and its space. Features:
+   - `r_hints`: `diagonal-stroke`.
+3. `v3`: replace `t` with `T` in `this` to make it uppercase, as this has become the first word of the sentence. Features:
+   - `r_text_position`: `n` (north = top of `t`).
+   - `r_font-size`: `14` (default being `16`, this is smaller).
+4. `v4`: delete `I` and its space. Features:
+   - `r_hints`: `diagonal-stroke`.
+5. `v5`: add `s` after `show` (whence `shows`).
+6. `v6`: swap `complex` with `long` (this is represented by the small numbers 3, 2, 1 above these words and the word between them). This is staged version `alpha` (feature `version`=`alpha`).
+7. `v7`: delete `.` after `types`.
+8. `v8`: add space + `AND SOME STUFF.` after `types` having features ``.
+9.  `v9`: replace `STUFF.` with `HINTS.` having features `r_` `r_border`=`tlbr 1 solid red`. This is an example of displaced hint.
+10. `v10`: add `TOO.` after `line`. This is staged version `beta` (feature `version`=`beta`).
+11. `v13`: annotate the whole text with features `note`=`12`, `r_underline`, representing the number assigned to this text in a series found in the same notebook of this sheet.
