@@ -2,10 +2,12 @@
 
 - [GVE Snapshot Rendition Component](#gve-snapshot-rendition-component)
   - [Rendered Entities](#rendered-entities)
-  - [Base Text](#base-text)
-  - [Additional Text](#additional-text)
-  - [Text Rendition Features](#text-rendition-features)
-  - [Init Features](#init-features)
+  - [Animations](#animations)
+  - [Text](#text)
+    - [Base Text](#base-text)
+    - [Additional Text](#additional-text)
+    - [Text Rendition Features](#text-rendition-features)
+    - [Init Features](#init-features)
   - [Hints](#hints)
     - [Hint SVG Content Property](#hint-svg-content-property)
     - [Hint Transformation Properties](#hint-transformation-properties)
@@ -19,11 +21,11 @@
     - [Component Settings](#component-settings)
     - [Component UI](#component-ui)
       - [Component UI: Toolbar Area](#component-ui-toolbar-area)
-    - [Component UI: Text Rendition Area](#component-ui-text-rendition-area)
-    - [Component UI: Versions List Area](#component-ui-versions-list-area)
-      - [Text Hilites](#text-hilites)
-    - [Component UI: Version Text Area](#component-ui-version-text-area)
-    - [Component UI: Details Area](#component-ui-details-area)
+      - [Component UI: Text Rendition Area](#component-ui-text-rendition-area)
+      - [Component UI: Versions List Area](#component-ui-versions-list-area)
+        - [Text Hilites](#text-hilites)
+      - [Component UI: Version Text Area](#component-ui-version-text-area)
+      - [Component UI: Details Area](#component-ui-details-area)
 
 The purpose of this component is to render an interactive representation of the multiple versions of a text as defined by editing operations and their features.
 
@@ -37,48 +39,85 @@ The idea for this web component is to represent the changes to the text in a sym
 
 The display starts with the base text. Now, say a delete operation removes a word. Say this is represented in the original sheet by a line drawn on top of that word. This line hints at the deletion operation. So, while the delete operation effectively generates a text which no longer contains that word, graphically we still have that word, with a line on it.
 
-Thus, the component will display right this: a line on top of the word. The generated text is displayed in the text version area, but in the main text rendition area, we just have that: a line.
+Thus, the component will display right this: a line on top of the word. The generated text is displayed in the text version area, but in the main text rendition area, we just add that: a line.
 
-Now, say the next operation replaces a word X with another one Y: in the sheet, this happens to be graphically represented by word Y written in smaller characters right above word X. Again, the operation generates a new text with the replaced word, but the main text rendition area just shows word Y above word X. And so forth. These "hints" about operations get accumulated, thus reproducing the original sheet and its signs; while the new text appears in another area of the same component.
+Now, say the next operation replaces a word X with another one Y, and that in the sheet, this happens to be graphically represented by word Y written in smaller size, right above word X. Again, the operation generates a new text with the replaced word, but the main text rendition area just shows word Y above word X. And so forth. These "hints" about operations get accumulated, thus reproducing the original sheet and its signs; while the new text appears in another area of the same component.
 
 ## Rendered Entities
 
 The component renders these entities:
 
-- **base text**: the `v0` text, the input text to start with to transform it via editing operations. In most cases, it is visually identified by the text written on regular rows, with the same ink, by the same hand.
-- **additional text**: the text successively added by insert/replace operations. This is drawn character by character, just like the base text, but its size, position, and rendering features are calculated according to the operation's features and the default rendering settings.
+- **text**:
+  - **base text**: the `v0` text, the input text to start with to transform it via editing operations. In most cases, it is visually identified by the text written on regular rows, with the same ink, by the same hand.
+  - **additional text**: the text successively added by insert/replace operations. This is drawn character by character, just like the base text, but its size, position, and rendering features are calculated according to the operation's features and the default rendering settings.
 - **hints** which represent the visual counterparts of each editing operation. Each operation has 0-N hints, defined in the order they are meant to be displayed. Each hint can be any shape, e.g. a stroke on a word corresponding to a delete operation for that word, or also some static text like an annotation. Hints too are defined via SVG.
 
-## Base Text
+## Animations
 
-The base text is rendered in a rather predictable and simple way:
+A crucial feature of the component is that it must show text changes dynamically, in action, smoothly transforming each version into the next one. This requires a systematic usage of animations to show the continuity of the text making process from stage to stage.
 
-- the **rendition settings** (font family, size, color, etc.) used are those defined by the component settings, which are set in this order of increasing specificity:
-  1. the default settings of the component, set when the component is initialized.
-  2. the settings overridden by consumer code via data binding. So, the component uses all its default settings, unless overridden by the consumer code via binding.
-  3. the settings overridden by data via [init-features](#init-features), i.e. those features which are added by an initial annotate operation.
-- the text is drawn by rendering **one character after the other**, along the same baseline, using the animation designed for each character as specified in the component's settings, until a LF character is found. Each character corresponds to a text node in the operation's output, and is thus a single `text` SVG element.
-- each `text` SVG elements gets these computed attributes:
+All animations are based on the **GSAP library**. We use GSAP for animations because it's robust and powerful, and has many powerful plugins available. Note that while plugins first were limited to paid subscriptions, they are now _freely available_ for everyone. All what is required to use a plugin is registering it once in code, e.g.:
+
+```ts
+// register a plugin for use
+gsap.registerPlugin(DrawSVGPlugin);
+console.log("DrawSVG plugin registered:", gsap.plugins.drawSVG !== undefined);
+```
+
+💡 For GSAP you can see:
+
+- [GSAP Documentation](https://greensock.com/docs/)
+- [DrawSVG Plugin](https://greensock.com/docs/v3/Plugins/DrawSVGPlugin): plugin for animating SVG.
+
+As all the elements which enter the text rendition never leave it, all settings-based animations represent _entrance_ animations, and they are provided via JS code fragments in **settings**.
+
+>Besides settings-based animations, other animations exist, managed by code only, like transitions in [spreading](#drawing-logic) or [text hilites](#text-hilites), which are rectangle SVG elements temporarily displayed behind text elements to "hilite" them.
+
+There are 2 places for animation code fragments in settings:
+
+- `animations`: the main "catalog" of animations is a dictionary where key=animation ID (an arbitrary string) and value=JS code fragment representing the animation.
+- `hints`: each hint can have its own animation JS code fragment in its `animation` property. When this property value starts with `#`, it does not directly contain the code fragment, but it is rather a reference to an animation expected to be present in `animations`. So, for instance `#wipe-right` is the reference to an animation expected to be found in `animations` under key `wipe-right`.
+
+All animations **target** a single designated element; for text characters, this is an SVG `text` element; for hints, this is a root `g` element in the hint SVG code fragment. As this is a custom web component, it uses Shadow DOM, which makes such code fragments for animation unable to use `getElementById` to get a reference to the target element. We thus need to _explicitly provide a reference to this element_ to the GSAP code. So, the rendering component:
+
+1. creates the _target element_, with its computed size and position and (when it is going to animate its entrance) sets its initial opacity to 0.
+2. creates a _JS function_ wrapping the JS animation code fragment got from settings; the function receives these parameters:
+   1. `gsap`: the global instance of the GSAP library, defined once outside this JS code;
+   2. `targetEl`: the created target SVG element;
+   3. `rootEl`: the root `svg` element of the whole text rendition area, should it ever be required by the GSAP animation code.
+
+## Text
+
+### Base Text
+
+The base text is rendered in a rather predictable and simple way, according to the component's **rendition settings** (font family, size, color, etc.), which are set in this order of increasing specificity:
+
+1. the _default settings_ of the component, set when the component is initialized.
+2. the settings overridden by consumer code via _data binding_. So, the component uses all its default settings, unless overridden by the consumer code via binding.
+3. the settings overridden by data via [init-features](#init-features), i.e. those features which are added by an initial annotate operation.
+
+>The source for the base text is in `CharChainResult`.`text` as either an array of `CharNode`'s, or a string. When it is a string, the array of nodes is automatically generated by just creating one node per character, in their order, and assigning to each node a progressive ordinal number as its ID. So the first character of a text will get ID=1, the second ID=2, and so forth.
+
+Base text **drawing logic**:
+
+- the text is drawn by rendering **one character after another**, along the same baseline, until a LF character is found. Each character corresponds to a text node in the operation's output, and is thus a single `text` SVG element.
+- each `text` SVG elements gets these computed **attributes**:
   - `id`=`n_` + the character node ID (which is a unique integer), e.g. `n_1` for the character node with ID=1.
   - `class`: the following space-delimited classes:
     - `node`, meaning this `text` element represents a character node (other `text` elements might be added from hints).
     - `v0`, meaning that this `text` element was added with the base text, rather than later by another operation.
-- when a LF character is found, a new line starts below the previous one, left-aligned with it. The baseline of specific lines can anyway be offset by [text rendition features](#text-rendition-features).
-
-The **animation** used is run for each character drawn, one character (=`text` element) after another, using a default GSAP-based animation. The JS code for this animation is specified by the component's setting `charAnimation`; if not specified, no animation is applied and the text appears at once. The default animation is a simple, quick "wipe right" animation using GSAP. Note that as for hint animations, the JS code in this setting must be wrapped into a programmatically created function and receive various parameters, first of all the `text` element to animate, as GSAP like any other JS code in setting cannot access the SVG element of the web component, which uses Shadow DOM. See below about [hint animation property](#hint-animation-property) for the details.
-
-The only **non-printable characters** used in text of any sort (both base text and additional text) are:
-
-- **LF** (U+000A): this is used to signal the end of a line, and is already taken into account by text rendition. Whenever this is found, we move to the next line and align new text to the start of the previous line.
-- **space** (U+0020): as SVG has no intrinsic rendition for a `text` element including only one space, this must be rendered by just offsetting the position of the next character by a specific amount. The amount must be calculated according to the width of a reference character, as rendered with the current text settings (font family, size, style, etc.). So, to this end, the component must:
+- when a **LF character** is found (U+000A), a new line starts below the previous one, left-aligned with it. The baseline of specific lines can anyway be offset by [text rendition features](#text-rendition-features). The only other non-printable character used in text of any sort (both base text and additional text) is **space** (U+0020): as SVG has no intrinsic rendition for a `text` element including only one space, this must be rendered by offsetting the position of the next character by a specific amount. The amount must be calculated according to the width of a _reference character_, as rendered with the current text settings (font family, size, style, etc.). So, to this end, the component must:
   - use `m` as the reference character. Make this a constant, so I can change the reference character.
   - make the space width a fraction of the computed width of the reference character, once all the current text rendition settings have been applied to it. This is defined by component setting `spaceWidthFraction` which defaults to 0.33 as usually the space is 1/3 of the `m` width.
+- text **never wraps**, whatever the container size. Anyway, the container supports zooming and panning for the whole text rendition area.
 
-Note that text **never wraps**, whatever the container size. Anyway, the container supports zooming and panning for the whole text rendition area.
+🎥 The base text **animation** is enabled when setting `charAnimationId` (whose value references an entry expected to be found in the `animations` catalog of animation code fragments in settings); otherwise, no animation is applied and the text appears at once. For each character rendered as an SVG `text` element:
 
->The source for the base text is in `CharChainResult`.`text` as either an array of `CharNode`'s, or a string. When it is a string, the array of nodes is automatically generated by just creating one node per character, in their order, and assigning to each node a progressive ordinal number as its ID. So the first character of a text will get ID=1, the second ID=2, and so forth.
+1. the text element is created and added to the text rendition area with initial opacity=0.
+2. the GSAP animation is wrapped in a function, which is invoked to run the animation.
+3. after the animation completes, we continue with the next character.
 
-## Additional Text
+### Additional Text
 
 In addition, new text often comes from insert or replace operations. This text has the same model of the base text: each segment of text added is a sequence of character nodes, each with its unique ID and its set of features. Anyway, differently from the base text, their style, size and position are completely defined by specific rendition logic combined with its [text rendition features](#text-rendition-features).
 
@@ -96,7 +135,7 @@ Like for base text, each SVG `text` element representing one character of the ad
 
 > So in the end the `vN` class attribute in any SVG `text` element specifies which operation first introduced it in the text rendition area (the version output number is univocally linked to a specific operation). It is `v0` for the base text, and any positive number for text elements added by operations. This is also used to identify all the portions of text introduced by a specific version.
 
-## Text Rendition Features
+### Text Rendition Features
 
 Text rendition features are used to override the default rendering settings for text, whether it is the base text (when used as [init-features](#init-features)), or the text progressively added by an insert/replace operation.
 
@@ -131,7 +170,7 @@ All rendering features have their name starting with `r_`. These are the only fe
 
 > All these features can be combined, so characters are displayed only after evaluating all of them, and their size and text layout changes accordingly to fit all the characters with their size, which may depend on one or more of these features.
 
-## Init Features
+### Init Features
 
 Init-features, when set, are provided by an **initial annotation operation**. Annotation operations are those operations which just modify the set of features, in most cases by adding new ones, without changing the text. So, the purpose of an initial annotation operation is to provide a sort of initial rendering setup.
 
@@ -463,10 +502,12 @@ export interface GveRenditionSettings {
   disabledButtonIds?: string[]; // array of custom button IDs which should be disabled
 
   // animation
-  charAnimation?: string; // the JS code for animating each single character from base/additional text
+  animations: Record<string, string>; // catalog of animation JS code fragments, keyed under their ID
+  charAnimationId?: string; // the ID of the JS code for animating each single character from base/additional text
+  spreadTime: number; // the number of ms for the spreading animation (default=1000)
 
   // hints
-  hints?: Record<string, OperationHint>; // dictionary of hints, key=hint ID and value=hint
+  hints: Record<string, OperationHint>; // dictionary of hints, key=hint ID and value=hint
   hintMargin: number; // the margin around each rendered hint (px, default=0)
   hintDesignWidth: number; // the design-time width of hints
   hintDesignHeight: number; // the design-time height of hints
@@ -536,7 +577,7 @@ The toolbar area contains a toolbar with these buttons and labels:
 
 >Buttons and other controls in the toolbar should reflow (you can use CSS flex and flex-wrap) when there is not enough horizontal space.
 
-### Component UI: Text Rendition Area
+#### Component UI: Text Rendition Area
 
 The text rendition area is a drawing surface based on SVG. It has a root `svg` element and its content is totally defined by data and programmatic actions on it, as described in the first part of this document.
 
@@ -548,7 +589,7 @@ At any time, users can freely **zoom** and **pan** the whole text rendition area
 
 This implies that all the rendering operations involving computations about SVG size and position must be properly adjusted for the current zoom and pan.
 
-### Component UI: Versions List Area
+#### Component UI: Versions List Area
 
 This area can be collapsed.
 
@@ -568,7 +609,7 @@ Each item is **colored** according to an automatically generated colors palette,
 
 This allows reusing the palette generator for other purposes connected to colorizing version tags. Consider that at most a snapshot will include some tens of versions, so we are not going to have hundreds of different colors.
 
-#### Text Hilites
+##### Text Hilites
 
 A single item at a time in this list can be selected by clicking on it. When selected, the component should add hilites to all the text elements included in that version. These elements are determined as follows:
 
@@ -586,7 +627,7 @@ Hilites rectangles are generated all at once, and they should **fade** in with a
 
 A **clear selection** button is used to deselect a selected tag and remove hilites. Hilites are removed automatically whenever you move to another version (first they will fade out, then we will proceed with move -- so we must check whether hilites are present before moving).
 
-### Component UI: Version Text Area
+#### Component UI: Version Text Area
 
 This area can be collapsed.
 
@@ -599,7 +640,7 @@ A small **toolbar** here contains buttons for the following actions:
 - **increase font size**.
 - **decrease font size**.
 
-### Component UI: Details Area
+#### Component UI: Details Area
 
 This area can be collapsed.
 
