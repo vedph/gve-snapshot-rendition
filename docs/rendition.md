@@ -745,24 +745,27 @@ The **operations** are (each is preceded by the tag of the version it generates,
   - `r_hints`=`note`.
 - `v9`: **swap** `complex` with `long` (this is represented by the small numbers "3 2 1" above these words and the word between them, which have been added as annotation hints before). Features:
   - `r_fore-color`=`red`.
-  - `version`=`alpha` marks `v6` as staged version `alpha`.
+- `v10`: **add** space + `TOO.` after `line`. Features:
+  - `r_fore-color`=`red`.
+  - `version`=`alpha` marks `v10` as staged version `alpha`.
 
-- `v10`: **delete** `.` after `types`. Features:
+- `v11`: **delete** `.` after `types`. Features:
   - `r_hints`=`diagonal-stroke`.
   - `r_fore-color`=`green`.
-- `v11`: **add** space + `AND SOME STUFF.` (IDs=97-113) after `types`. Note that we could just have inserted this text before the dot after `types` if our purpose was only to get the corresponding output text; but our purpose here is to represent the sheet in its nearly-diplomatic form. In the sheet we have a deletion on this dot, and then a new text with its own dot is added. Here we do the same, with a deletion first, and then an addition. Features:
+- `v12`: **add** space + `AND SOME STUFF.` (IDs=97-113) after `types`. Note that we could just have inserted this text before the dot after `types` if our purpose was only to get the corresponding output text; but our purpose here is to represent the sheet in its nearly-diplomatic form. In the sheet we have a deletion on this dot, and then a new text with its own dot is added. Here we do the same, with a deletion first, and then an addition. Features:
   - `r_fore-color`=`green`.
-- `v12`: **replace** `STUFF.` with `HINTS.` (IDs=114-119). Features:
+- `v13`: **replace** `STUFF.` with `HINTS.` (IDs=114-119). Features:
   - `r_fore-color`=`green`.
   - `r_position`=`n`.
   - `r_text-displaced-span`=`21x7`. This is a displacement for the text being added by this replace operation (`HINTS`): instead of positioning the text with reference to its reference text (`STUFF`), we position it above an area approximately corresponding to `all ope` of `all operations` in the first line.
   - `r_text-offset-y`=`20`: this shifts the `HINTS` boxed text upper.
   - `r_hints`=`box` (border around `STUFF`).
   - `r_border`=`tlbr 1 solid green` (1-pixel border around `HINTS`).
-- `v13`: **add** `TOO.` (IDs=120-123) after `line`. Features:
-  - `version`=`beta` marks `v10` as staged version `beta`.
+- `v14`: **delete** `too,` + space (this operation belongs to group `mov-too`, because on a more abstract --non-diplomatic-- ground this would be considered a movement). Note that there is no hint for this operation; it is implicit in the next addition.
+- `v15`: **add** `TOO.` (IDs=120-123) after `line` (this operation belongs to group `mov-too`) . Features:
+  - `version`=`beta` marks `v14` as staged version `beta`.
 
-- `v14`: **annotate** the initial `I` with features (we target the initial `I` as it's the nearest character):
+- `v16`: **annotate** the initial `I` with features (we target the initial `I` as it's the nearest character):
   - `note`=`12`.
   - `r_color`=`blue`.
   - `r_hint-vars`=`rotation=-45`. This passes a variable `rotation`=`-45` to the hint so that it can resolve placeholders with this name. This allows applying a rotation to this hint programmatically.
@@ -794,7 +797,9 @@ The same operations in their parsable format are listed here:
 64x4: [note^=1 r_hints^=note]@swap-complex-long
 60x3: [note^=2 r_hints^=note]@swap-complex-long
 52x7: [note^=3 r_hints^=note]@swap-complex-long
-52x7<>64x4 [r_fore-color^=red *version^=alpha]
+52x7<>64x4 [r_fore-color^=red]
+75x5- @mov-too
+94+]" TOO." [r_fore-color^=red *version^=alpha]@mov-too
 
 40- [r_hints^=diagonal-stroke r_fore-color^=green]
 39+]" AND SOME STUFF." [r_fore-color^=green]
