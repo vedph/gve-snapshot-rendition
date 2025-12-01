@@ -239,7 +239,7 @@ The hint's `svg` property (`OperationHint.svg`) is a string representing the SVG
   - the _operation's ID_. Each hint is linked to the operation which is going to generate the next step.
   - an _ordinal number_ suffix preceded by `-`: 1=first hint for that operation, 2=second hint for that operation, etc. This ensures that every hint `g` element placed in the component step being drawn is unique within that scope, because each operation has a unique GUID, and each operation's hint has its ordinal suffix.
 - inside this root `g` element we can have **any SVG code** with groups, shapes, lines, text, etc. Apart from sizing and positioning it, and possibly overriding some of its properties dynamically (e.g. color, text decorations, etc.), the component will just render it as it is.
-- it may contain a **handle** element (often drawn with opacity=0 so it is not visible, but this is up to the SVG code you get from the hint) with `id`=`handle`. This represents the "handle" for the SVG code, i.e. the point in it which is used as _the reference for positioning it_. If there is no such handle element, then the component just uses the _center of the bounding rectangle_ for the whole SVG (i.e. its root `g` element, which is always present).
+- it may contain a **handle** element with `id`=`handle`. This represents the "handle" for the SVG code, i.e. the point in it which is used as _the reference for positioning it_. If there is no such handle element, then the component just uses the _center of the bounding rectangle_ for the whole SVG (i.e. its root `g` element, which is always present). Often, in the hint SVG code the handle element has opacity=0 so it is not visible; but this is up to the SVG code you get from the hint. Anyway, the setting `showHintHandles` can force such hidden handles to be displayed setting their opacity to 1 for diagnostic purposes.
 - it may contain a **placeholder** element with id=`placeholder`. This is usually an SVG shape, like a rectangle including a `text` SVG element which represents the text to draw, or directly a `text` element. Whatever the placeholder element is, in the end it either is a `text` element, or it contains a `text` element. This text element has this behavior:
   - its _text value_ is resolved at runtime: in the hint SVG, it is just the _name of the variable_ containing the text. This is equal to the name of a _feature_ which is supposed to be provided by the same operation the hints belongs to. If a feature with this name is not found, the text value will just be the feature name, so that users will be able to understand that there are issues in their data.
   - as for its _size_:
@@ -411,16 +411,18 @@ The logic can be visually illustrated as follows (for the horizontal axis, and t
 - all the elements, whatever their vertical position, which are either to the right of the right ruler, or are cut by it, must be shifted rightwards by the max amount of right-overlap (which is the maximum value from the modulus of the difference of the L X-coordinates of E with any of the overlapping elements; in the image, this is the portion of the γ-rectangle filled with horizontal dashes).
 - the elements which are fully inside the two rulers (like the e-rectangle in the image) remain untouched where they are.
 
+🎥 The spreading dramatically changes the whole text layout, so the component here must shift all the affected elements using a transition effect **animation**, where elements smoothly move to their new position, both on the X and Y axis, rather than "jumping" abruptly to it. The timing for this transition, which like all animations should be based on GSAP, is defined by setting `spreadTime`.
+
 So, the **rendition logic** is:
 
 1. base text is drawn by adding 1 `text` SVG element per character, possibly animating each character with the "enter" animation defined in settings when there is one (in general, "enter" animation means that the element starts hidden, i.e. with opacity 0, and then opacity gets animated in various ways).
 2. whenever moving to another version (whose output tag points to its operation):
-   1. the RBR's (1 or 2, when reference text is split) are computed.
+   1. the RBR's (1 or more, when reference text is split into 2 or more lines) are computed.
    2. if there is a `r_hints` feature, for each RBR, each hint is fetched from settings (`hints` map, keyed by hint ID) and if found:
-      1. apply _spreading_ to SVG elements when it has a `solid` feature.
+      1. apply _spreading_ to SVG elements when it has a `solid` feature with its animation and wait for it to complete.
       2. draw the hint, with its "enter" animation when this is specified in its `animation` property.
    3. if the operation has added text (remember that each newly added node has an `opid` feature with the ID of the operation which added it, and a trace feature `$seg-out`):
-      1. apply _spreading_ to SVG elements (added text always behaves as a "solid" element).
+      1. apply _spreading_ to SVG elements (added text always behaves as a "solid" element) with its animation and wait for it to complete.
       2. draw the text, character by character with the setting's animation for each character, exactly like for the base text.
    4. finally, if any of the SVG elements has fallen off the visible area of the text rendition, which may well happen for spreading, calculate a new pan and zoom to fit all the elements, and then use an animation to transition between the current pan and zoom to the newly computed one. Using a transition here is essential to avoid an abrupt change in size and position; we need to interpolate towards them, so that we preserve the smooth transformation represented by the new version and all its animations.
 
@@ -511,7 +513,7 @@ export interface GveRenditionSettings {
   // animation
   animations: Record<string, string>; // catalog of animation JS code fragments, keyed under their ID
   charAnimationId?: string; // the ID of the JS code for animating each single character from base/additional text
-  spreadTime: number; // the number of ms for the spreading animation (default=1000)
+  spreadTime: number; // the number of ms for the spreading animation (default=1500)
 
   // hints
   hints: Record<string, OperationHint>; // dictionary of hints, key=hint ID and value=hint
