@@ -771,18 +771,24 @@ The **operations** are (each is preceded by the tag of the version it generates,
   - `r_hint-vars`=`rotation=-45`. This passes a variable `rotation`=`-45` to the hint so that it can resolve placeholders with this name. This allows applying a rotation to this hint programmatically.
   - `r_hints`=`note-underline`. This is assumed to have a `note` placeholder to be filled with the text (here "12"), and a `r_color` placeholder for its color.
 
-The resulting text for staged versions are:
+The resulting texts for staged versions are:
 
 - alpha:
 
 ```txt
-TODO
+This test shows all operation
+types.
+It is not long nor complex.
+This is another line TOO.
 ```
 
 - beta:
 
 ```txt
-TODO
+This test shows all operation
+types AND HINTS.TUFF.
+It is not long nor complex.
+This is another line TOO.
 ```
 
 The same operations in their parsable format are listed here:
