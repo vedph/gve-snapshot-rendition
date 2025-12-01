@@ -794,12 +794,12 @@ The same operations in their parsable format are listed here:
 4=T [r_text_position^=n r_fore-color^=red r_font-size^=14]
 14x2- [r_hints^=diagonal-stroke r_fore-color^=red]
 19+]s [r_fore-color^=red r_font-size^=14]
-64x4: [note^=1 r_hints^=note]@swap-complex-long
-60x3: [note^=2 r_hints^=note]@swap-complex-long
-52x7: [note^=3 r_hints^=note]@swap-complex-long
+64x4: @swap-complex-long [note^=1 r_hints^=note]
+60x3: @swap-complex-long [note^=2 r_hints^=note]
+52x7: @swap-complex-long [note^=3 r_hints^=note]
 52x7<>64x4 [r_fore-color^=red]
 75x5- @mov-too
-94+]" TOO." [r_fore-color^=red *version^=alpha]@mov-too
+94+]" TOO."@mov-too [r_fore-color^=red *version^=alpha]
 
 40- [r_hints^=diagonal-stroke r_fore-color^=green]
 39+]" AND SOME STUFF." [r_fore-color^=green]
