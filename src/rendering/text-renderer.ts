@@ -1,12 +1,12 @@
-import { CharNode } from '../models';
-import { GveRenditionSettings } from '../settings/settings';
-import { Logger } from '../core/logger';
-import { AnimationEngine } from '../animation/animation-engine';
-import { BoundsCache } from './bounds-cache';
-import { TextLayout, CharPosition } from './text-layout';
-import { FeatureResolver, RenditionConfig } from './feature-resolver';
-import { isLineBreak, isSpace } from '../utils/node-utils';
-import { createTextElement, applyTextStyle, getSafeBBox } from './svg-utils';
+import { CharNode } from "../models";
+import { GveRenditionSettings } from "../settings/settings";
+import { Logger } from "../core/logger";
+import { AnimationEngine } from "../animation/animation-engine";
+import { BoundsCache } from "./bounds-cache";
+import { TextLayout, CharPosition } from "./text-layout";
+import { FeatureResolver, RenditionConfig } from "./feature-resolver";
+import { isLineBreak, isSpace } from "../utils/node-utils";
+import { createTextElement, applyTextStyle, getSafeBBox } from "./svg-utils";
 
 /**
  * Text renderer handles rendering of base text and additional text.
@@ -46,16 +46,23 @@ export class TextRenderer {
     rootSvg: SVGElement,
     charOffsets?: Map<number, { x?: number; y?: number }>
   ): Promise<void> {
-    this.logger.time('renderBaseText');
+    this.logger.time("renderBaseText");
     this.logger.info(`Rendering ${nodes.length} base text characters`);
 
-    const positions = this.textLayout.calculateBaseTextPositions(nodes, charOffsets);
+    const positions = this.textLayout.calculateBaseTextPositions(
+      nodes,
+      charOffsets
+    );
 
     // Get animation function if specified
     const animationFn = this.settings.charAnimationId
       ? this.animationEngine
           .getFactory()
-          .resolveAnimation(`#${this.settings.charAnimationId}`, this.settings.animations, 'char')
+          .resolveAnimation(
+            `#${this.settings.charAnimationId}`,
+            this.settings.animations,
+            "char"
+          )
       : undefined;
 
     for (let i = 0; i < nodes.length; i++) {
@@ -67,10 +74,10 @@ export class TextRenderer {
         continue;
       }
 
-      await this.renderCharacter(node, pos, rootSvg, 'v0', animationFn);
+      await this.renderCharacter(node, pos, rootSvg, "v0", animationFn);
     }
 
-    this.logger.timeEnd('renderBaseText');
+    this.logger.timeEnd("renderBaseText");
   }
 
   /**
@@ -81,7 +88,11 @@ export class TextRenderer {
     position: CharPosition,
     rootSvg: SVGElement,
     versionTag: string,
-    animationFn?: (gsap: any, targetEl: SVGElement, rootEl: SVGElement) => Promise<void>
+    animationFn?: (
+      gsap: any,
+      targetEl: SVGElement,
+      rootEl: SVGElement
+    ) => Promise<void>
   ): Promise<void> {
     const textEl = createTextElement(node.label, {
       id: `n_${node.id}`,
@@ -102,7 +113,7 @@ export class TextRenderer {
 
     // Set initial opacity if animation is present
     if (animationFn) {
-      textEl.setAttribute('opacity', '0');
+      textEl.setAttribute("opacity", "0");
     }
 
     rootSvg.appendChild(textEl);
@@ -132,13 +143,16 @@ export class TextRenderer {
     config: RenditionConfig,
     versionTag: string
   ): Promise<void> {
-    this.logger.debug('TextRenderer', `Rendering ${nodes.length} additional text characters`);
+    this.logger.debug(
+      "TextRenderer",
+      `Rendering ${nodes.length} additional text characters`
+    );
 
     // TODO: Implement additional text rendering with proper positioning
     // This requires RBR calculation and feature-based positioning
     // For now, this is a placeholder
 
-    this.logger.warn('renderAdditionalText not yet fully implemented');
+    this.logger.warn("renderAdditionalText not yet fully implemented");
   }
 
   /**

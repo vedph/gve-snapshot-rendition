@@ -1,9 +1,8 @@
-import { CharNode } from '../models';
-import { GveRenditionSettings } from '../settings/settings';
-import { Logger } from '../core/logger';
-import { isLineBreak, isSpace } from '../utils/node-utils';
-import { getFeatureValue } from '../utils/feature-utils';
-import { getTextWidth } from './svg-utils';
+import { CharNode } from "../models";
+import { GveRenditionSettings } from "../settings/settings";
+import { Logger } from "../core/logger";
+import { isLineBreak, isSpace } from "../utils/node-utils";
+import { getTextWidth } from "./svg-utils";
 
 /**
  * Position information for a character node.
@@ -19,7 +18,7 @@ export interface CharPosition {
  * Reference character for calculating space width.
  * This can be changed if needed.
  */
-const REFERENCE_CHAR = 'm';
+const REFERENCE_CHAR = "m";
 
 /**
  * Text layout calculator.
@@ -65,7 +64,7 @@ export class TextLayout {
     nodes: CharNode[],
     charOffsets?: Map<number, { x?: number; y?: number }>
   ): CharPosition[] {
-    this.logger.time('calculateBaseTextPositions');
+    this.logger.time("calculateBaseTextPositions");
 
     const positions: CharPosition[] = [];
     let currentX = this.settings.marginLeft;
@@ -80,18 +79,26 @@ export class TextLayout {
       if (offset) {
         if (offset.x !== undefined) {
           currentX += offset.x;
-          this.logger.debug('TextLayout', `Applied X offset ${offset.x} to node ${node.id}`);
+          this.logger.debug(
+            "TextLayout",
+            `Applied X offset ${offset.x} to node ${node.id}`
+          );
         }
         if (offset.y !== undefined) {
           currentY += offset.y;
-          this.logger.debug('TextLayout', `Applied Y offset ${offset.y} to node ${node.id}`);
+          this.logger.debug(
+            "TextLayout",
+            `Applied Y offset ${offset.y} to node ${node.id}`
+          );
         }
       }
 
       if (isLineBreak(node)) {
         // Line break: move to next line
         currentX = this.settings.marginLeft;
-        currentY += this.settings.fontSize * this.settings.lineHeight + this.settings.lineSpacing;
+        currentY +=
+          this.settings.fontSize * this.settings.lineHeight +
+          this.settings.lineSpacing;
         lineNumber++;
 
         // Store position even for line breaks (though they won't be rendered)
@@ -133,8 +140,11 @@ export class TextLayout {
       }
     }
 
-    this.logger.debug('TextLayout', `Calculated ${positions.length} positions across ${lineNumber + 1} lines`);
-    this.logger.timeEnd('calculateBaseTextPositions');
+    this.logger.debug(
+      "TextLayout",
+      `Calculated ${positions.length} positions across ${lineNumber + 1} lines`
+    );
+    this.logger.timeEnd("calculateBaseTextPositions");
 
     return positions;
   }
@@ -162,35 +172,35 @@ export class TextLayout {
 
     // Apply position relative to reference bounds
     switch (position) {
-      case 'n': // North (top center)
+      case "n": // North (top center)
         x += refBounds.width / 2;
         y -= refBounds.height / 2;
         break;
-      case 'ne': // Northeast (top right)
+      case "ne": // Northeast (top right)
         x += refBounds.width;
         y -= refBounds.height / 2;
         break;
-      case 'e': // East (middle right)
+      case "e": // East (middle right)
         x += refBounds.width;
         break;
-      case 'se': // Southeast (bottom right)
+      case "se": // Southeast (bottom right)
         x += refBounds.width;
         y += refBounds.height / 2;
         break;
-      case 's': // South (bottom center)
+      case "s": // South (bottom center)
         x += refBounds.width / 2;
         y += refBounds.height / 2;
         break;
-      case 'sw': // Southwest (bottom left)
+      case "sw": // Southwest (bottom left)
         y += refBounds.height / 2;
         break;
-      case 'w': // West (middle left)
+      case "w": // West (middle left)
         // x and y stay at reference position (left middle)
         break;
-      case 'nw': // Northwest (top left)
+      case "nw": // Northwest (top left)
         y -= refBounds.height / 2;
         break;
-      case 'o': // Origin (center)
+      case "o": // Origin (center)
         x += refBounds.width / 2;
         break;
     }
@@ -206,15 +216,18 @@ export class TextLayout {
    * Get the line number for a given node ID from positions.
    */
   getLineNumber(positions: CharPosition[], nodeId: number): number {
-    const pos = positions.find(p => p.nodeId === nodeId);
+    const pos = positions.find((p) => p.nodeId === nodeId);
     return pos?.lineNumber ?? 0;
   }
 
   /**
    * Get all positions for a specific line.
    */
-  getLinePositions(positions: CharPosition[], lineNumber: number): CharPosition[] {
-    return positions.filter(p => p.lineNumber === lineNumber);
+  getLinePositions(
+    positions: CharPosition[],
+    lineNumber: number
+  ): CharPosition[] {
+    return positions.filter((p) => p.lineNumber === lineNumber);
   }
 
   /**

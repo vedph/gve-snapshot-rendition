@@ -6,17 +6,17 @@
  */
 
 // Export main component
-export { GveSnapshotRendition } from './core/gve-snapshot-rendition';
+export { GveSnapshotRendition } from "./core/gve-snapshot-rendition";
 
 // Export types
 export type {
   GveRenditionSettings,
   CustomButtonSettings,
-} from './settings/settings';
+} from "./settings/settings";
 
-export type { OperationHint, HintPosition } from './settings/hint-models';
+export type { OperationHint, HintPosition } from "./settings/hint-models";
 
-export { DEFAULT_SETTINGS } from './settings/settings';
+export { DEFAULT_SETTINGS } from "./settings/settings";
 
 // Export models (re-export from models.ts)
 export type {
@@ -33,6 +33,6 @@ export type {
   CharChainNode,
   CharChainLink,
   CharChain,
-} from './models';
+} from "./models";
 
-export { FeatureSetPolicy, OperationType } from './models';
+export { FeatureSetPolicy, OperationType } from "./models";

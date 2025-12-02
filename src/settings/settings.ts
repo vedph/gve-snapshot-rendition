@@ -1,4 +1,4 @@
-import { OperationHint } from './hint-models';
+import { OperationHint } from "./hint-models";
 
 /**
  * Settings for a custom button added to the toolbar.
@@ -158,9 +158,9 @@ export interface GveRenditionSettings {
 export const DEFAULT_SETTINGS: GveRenditionSettings = {
   // Display settings
   fontSize: 16,
-  fontFamily: 'monospace',
-  foreColor: '#000000',
-  backColor: 'transparent',
+  fontFamily: "monospace",
+  foreColor: "#000000",
+  backColor: "transparent",
   italic: false,
   bold: false,
   underline: undefined,
@@ -196,21 +196,21 @@ export const DEFAULT_SETTINGS: GveRenditionSettings = {
   // Animation
   animations: {
     // Fade in animation
-    'fade-in': `
+    "fade-in": `
       gsap.fromTo(targetEl,
         { opacity: 0 },
         { opacity: 1, duration: 0.3 }
       );
     `,
     // Wipe right animation
-    'wipe-right': `
+    "wipe-right": `
       gsap.fromTo(targetEl,
         { opacity: 0, x: -10 },
         { opacity: 1, x: 0, duration: 0.4, ease: 'power2.out' }
       );
     `,
     // Scale in animation
-    'scale-in': `
+    "scale-in": `
       gsap.fromTo(targetEl,
         { opacity: 0, scale: 0.5 },
         { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.7)' }

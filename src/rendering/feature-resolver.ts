@@ -1,14 +1,14 @@
-import { Feature, OperationFeature, CharNode } from '../models';
-import { GveRenditionSettings } from '../settings/settings';
-import { Logger } from '../core/logger';
+import { Feature, OperationFeature, CharNode } from "../models";
+import { GveRenditionSettings } from "../settings/settings";
+import { Logger } from "../core/logger";
 import {
   getFeatureValue,
   parseCharOffsets,
   parseBorder,
   parseDisplacedSpan,
   parseHintVars,
-} from '../utils/feature-utils';
-import { parseOffset } from '../utils/text-utils';
+} from "../utils/feature-utils";
+import { parseOffset } from "../utils/text-utils";
 
 /**
  * Resolved rendition configuration for text rendering.
@@ -87,98 +87,108 @@ export class FeatureResolver {
 
     // Process each rendition feature
     for (const feature of features) {
-      if (!feature.name.startsWith('r_')) continue;
+      if (!feature.name.startsWith("r_")) continue;
 
       const value = feature.value;
 
       switch (feature.name) {
-        case 'r_font-size':
+        case "r_font-size":
           config.fontSize = parseFloat(value);
           break;
 
-        case 'r_font-family':
+        case "r_font-family":
           config.fontFamily = value;
           break;
 
-        case 'r_fore-color':
+        case "r_fore-color":
           config.foreColor = value;
           break;
 
-        case 'r_back-color':
+        case "r_back-color":
           config.backColor = value;
           break;
 
-        case 'r_italic':
-          config.italic = value === 'true' || value === '1';
+        case "r_italic":
+          config.italic = value === "true" || value === "1";
           break;
 
-        case 'r_bold':
-          config.bold = value === 'true' || value === '1';
+        case "r_bold":
+          config.bold = value === "true" || value === "1";
           break;
 
-        case 'r_underline':
+        case "r_underline":
           config.underline = parseFloat(value);
           break;
 
-        case 'r_overline':
+        case "r_overline":
           config.overline = parseFloat(value);
           break;
 
-        case 'r_strike':
+        case "r_strike":
           config.strike = parseFloat(value);
           break;
 
-        case 'r_text-line-style':
+        case "r_text-line-style":
           config.textLineStyle = value;
           break;
 
-        case 'r_text-line-color':
+        case "r_text-line-color":
           config.textLineColor = value;
           break;
 
-        case 'r_rotate':
+        case "r_rotate":
           config.rotate = parseFloat(value);
           break;
 
-        case 'r_text-position':
+        case "r_text-position":
           config.textPosition = value;
           break;
 
-        case 'r_text-offset-x':
+        case "r_text-offset-x":
           if (textBounds) {
-            config.textOffsetX = parseOffset(value, textBounds.height, textBounds.width);
+            config.textOffsetX = parseOffset(
+              value,
+              textBounds.height,
+              textBounds.width
+            );
           } else {
-            config.textOffsetX = typeof value === 'number' ? value : parseFloat(value);
+            config.textOffsetX =
+              typeof value === "number" ? value : parseFloat(value);
           }
           break;
 
-        case 'r_text-offset-y':
+        case "r_text-offset-y":
           if (textBounds) {
-            config.textOffsetY = parseOffset(value, textBounds.height, textBounds.width);
+            config.textOffsetY = parseOffset(
+              value,
+              textBounds.height,
+              textBounds.width
+            );
           } else {
-            config.textOffsetY = typeof value === 'number' ? value : parseFloat(value);
+            config.textOffsetY =
+              typeof value === "number" ? value : parseFloat(value);
           }
           break;
 
-        case 'r_hints':
+        case "r_hints":
           config.hints = value.trim().split(/\s+/);
           break;
 
-        case 'r_border':
+        case "r_border":
           config.border = parseBorder(value);
           if (!config.border) {
             this.logger.warn(`Invalid r_border value: ${value}`);
           }
           break;
 
-        case 'r_text-displaced-span':
+        case "r_text-displaced-span":
           config.textDisplacedSpan = parseDisplacedSpan(value);
           if (!config.textDisplacedSpan) {
             this.logger.warn(`Invalid r_text-displaced-span value: ${value}`);
           }
           break;
 
-        case 'r_hint-vars':
+        case "r_hint-vars":
           config.hintVars = parseHintVars(value);
           break;
       }
@@ -194,10 +204,12 @@ export class FeatureResolver {
    * @param features - Features from the first annotate operation (init features)
    * @returns Map of node IDs to their offsets
    */
-  extractCharOffsets(features: Feature[] | undefined): Map<number, { x?: number; y?: number }> {
+  extractCharOffsets(
+    features: Feature[] | undefined
+  ): Map<number, { x?: number; y?: number }> {
     if (!features) return new Map();
 
-    const charOffsetsValue = getFeatureValue(features, 'r_char-offsets');
+    const charOffsetsValue = getFeatureValue(features, "r_char-offsets");
     if (!charOffsetsValue) return new Map();
 
     return parseCharOffsets(charOffsetsValue);
@@ -206,15 +218,21 @@ export class FeatureResolver {
   /**
    * Check if features contain a specific rendition feature.
    */
-  hasRenditionFeature(features: Feature[] | undefined, featureName: string): boolean {
+  hasRenditionFeature(
+    features: Feature[] | undefined,
+    featureName: string
+  ): boolean {
     if (!features) return false;
-    return features.some(f => f.name === featureName);
+    return features.some((f) => f.name === featureName);
   }
 
   /**
    * Get the value of a rendition feature.
    */
-  getRenditionFeatureValue(features: Feature[] | undefined, featureName: string): string | undefined {
+  getRenditionFeatureValue(
+    features: Feature[] | undefined,
+    featureName: string
+  ): string | undefined {
     return getFeatureValue(features, featureName);
   }
 }

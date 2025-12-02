@@ -1,13 +1,13 @@
-import { CharChainResult, CharNode } from '../models';
-import { GveRenditionSettings, DEFAULT_SETTINGS } from '../settings/settings';
-import { Logger } from './logger';
-import { AnimationEngine } from '../animation/animation-engine';
-import { BoundsCache } from '../rendering/bounds-cache';
-import { SpreadingEngine } from '../rendering/spreading-engine';
-import { TextRenderer } from '../rendering/text-renderer';
-import { FeatureResolver } from '../rendering/feature-resolver';
-import { stringToNodes } from '../utils/node-utils';
-import { generateVersionPalette } from '../utils/color-palette';
+import { CharChainResult, CharNode } from "../models";
+import { GveRenditionSettings, DEFAULT_SETTINGS } from "../settings/settings";
+import { Logger } from "./logger";
+import { AnimationEngine } from "../animation/animation-engine";
+import { BoundsCache } from "../rendering/bounds-cache";
+import { SpreadingEngine } from "../rendering/spreading-engine";
+import { TextRenderer } from "../rendering/text-renderer";
+import { FeatureResolver } from "../rendering/feature-resolver";
+import { stringToNodes } from "../utils/node-utils";
+import { generateVersionPalette } from "../utils/color-palette";
 
 /**
  * GVE Snapshot Rendition Web Component.
@@ -43,7 +43,7 @@ export class GveSnapshotRendition extends HTMLElement {
     this._settings = { ...DEFAULT_SETTINGS };
 
     // Create logger
-    this.logger = new Logger('GVE-Rendition', this._settings.debug);
+    this.logger = new Logger("GVE-Rendition", this._settings.debug);
 
     // Create bounds cache and spreading engine
     this.boundsCache = new BoundsCache(this.logger);
@@ -53,23 +53,23 @@ export class GveSnapshotRendition extends HTMLElement {
     this.featureResolver = new FeatureResolver(this.logger);
 
     // Create shadow DOM
-    this.shadow = this.attachShadow({ mode: 'open' });
+    this.shadow = this.attachShadow({ mode: "open" });
 
-    this.logger.info('GveSnapshotRendition component created');
+    this.logger.info("GveSnapshotRendition component created");
   }
 
   /**
    * Observed attributes for the web component.
    */
   static get observedAttributes(): string[] {
-    return ['version-tag'];
+    return ["version-tag"];
   }
 
   /**
    * Called when component is added to the DOM.
    */
   connectedCallback(): void {
-    this.logger.info('Component connected to DOM');
+    this.logger.info("Component connected to DOM");
     this.render();
     this.initializeGsap();
   }
@@ -78,7 +78,7 @@ export class GveSnapshotRendition extends HTMLElement {
    * Called when component is removed from the DOM.
    */
   disconnectedCallback(): void {
-    this.logger.info('Component disconnected from DOM');
+    this.logger.info("Component disconnected from DOM");
     if (this.animationEngine) {
       this.animationEngine.killAll();
     }
@@ -87,8 +87,12 @@ export class GveSnapshotRendition extends HTMLElement {
   /**
    * Called when observed attributes change.
    */
-  attributeChangedCallback(name: string, oldValue: string, newValue: string): void {
-    if (name === 'version-tag' && oldValue !== newValue) {
+  attributeChangedCallback(
+    name: string,
+    oldValue: string,
+    newValue: string
+  ): void {
+    if (name === "version-tag" && oldValue !== newValue) {
       this._versionTag = newValue || undefined;
       this.navigateToVersion(newValue);
     }
@@ -104,7 +108,7 @@ export class GveSnapshotRendition extends HTMLElement {
   set settings(value: GveRenditionSettings) {
     this._settings = { ...DEFAULT_SETTINGS, ...value };
     this.logger.setEnabled(this._settings.debug || false);
-    this.logger.info('Settings updated');
+    this.logger.info("Settings updated");
     this.render();
   }
 
@@ -117,7 +121,7 @@ export class GveSnapshotRendition extends HTMLElement {
 
   set data(value: CharChainResult | undefined) {
     this._data = value;
-    this.logger.info('Data updated', value);
+    this.logger.info("Data updated", value);
     this.processData();
     this.render();
   }
@@ -148,10 +152,10 @@ export class GveSnapshotRendition extends HTMLElement {
         this.animationEngine,
         this.boundsCache
       );
-      this.logger.info('GSAP initialized');
+      this.logger.info("GSAP initialized");
       this.renderContent();
     } else {
-      this.logger.warn('GSAP not available. Please include GSAP library.');
+      this.logger.warn("GSAP not available. Please include GSAP library.");
     }
   }
 
@@ -162,7 +166,7 @@ export class GveSnapshotRendition extends HTMLElement {
     if (!this._data) return;
 
     // Convert text to nodes if it's a string
-    if (typeof this._data.text === 'string') {
+    if (typeof this._data.text === "string") {
       this.baseNodes = stringToNodes(this._data.text);
     } else if (Array.isArray(this._data.text)) {
       this.baseNodes = this._data.text;
@@ -171,34 +175,39 @@ export class GveSnapshotRendition extends HTMLElement {
     // Generate version color palette
     this.versionPalette = generateVersionPalette(this._data.chainTags);
 
-    this.logger.info(`Processed data: ${this.baseNodes.length} base nodes, ${this._data.steps.length} steps`);
+    this.logger.info(
+      `Processed data: ${this.baseNodes.length} base nodes, ${this._data.steps.length} steps`
+    );
   }
 
   /**
    * Render the component UI.
    */
   private render(): void {
-    this.shadow.innerHTML = '';
+    this.shadow.innerHTML = "";
 
     // Add styles
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = this.getStyles();
     this.shadow.appendChild(style);
 
     // Create container
-    this.container = document.createElement('div');
-    this.container.className = 'gve-container';
+    this.container = document.createElement("div");
+    this.container.className = "gve-container";
 
     // Create SVG root
-    this.rootSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    this.rootSvg.setAttribute('class', 'gve-text-rendition');
-    this.rootSvg.setAttribute('width', '100%');
-    this.rootSvg.setAttribute('height', '600px');
+    this.rootSvg = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "svg"
+    );
+    this.rootSvg.setAttribute("class", "gve-text-rendition");
+    this.rootSvg.setAttribute("width", "100%");
+    this.rootSvg.setAttribute("height", "600px");
 
     this.container.appendChild(this.rootSvg);
     this.shadow.appendChild(this.container);
 
-    this.logger.debug('Component', 'UI structure rendered');
+    this.logger.debug("Component", "UI structure rendered");
   }
 
   /**
@@ -209,7 +218,7 @@ export class GveSnapshotRendition extends HTMLElement {
       return;
     }
 
-    this.logger.info('Rendering content');
+    this.logger.info("Rendering content");
 
     // Extract init features (from first operation if it's an annotate)
     let charOffsets: Map<number, { x?: number; y?: number }> | undefined;
@@ -222,15 +231,21 @@ export class GveSnapshotRendition extends HTMLElement {
     }
 
     // Render base text
-    await this.textRenderer.renderBaseText(this.baseNodes, this.rootSvg, charOffsets);
+    await this.textRenderer.renderBaseText(
+      this.baseNodes,
+      this.rootSvg,
+      charOffsets
+    );
 
-    this.logger.info('Content rendering complete');
+    this.logger.info("Content rendering complete");
   }
 
   /**
    * Navigate to a specific version.
    */
-  private async navigateToVersion(versionTag: string | undefined): Promise<void> {
+  private async navigateToVersion(
+    versionTag: string | undefined
+  ): Promise<void> {
     if (!versionTag) return;
     this.logger.info(`Navigating to version: ${versionTag}`);
     // TODO: Implement version navigation
@@ -270,4 +285,4 @@ export class GveSnapshotRendition extends HTMLElement {
 }
 
 // Register the custom element
-customElements.define('gve-snapshot-rendition', GveSnapshotRendition);
+customElements.define("gve-snapshot-rendition", GveSnapshotRendition);

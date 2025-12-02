@@ -1,4 +1,4 @@
-import { Feature, OperationFeature, CharNode } from '../models';
+import { Feature, OperationFeature, CharNode } from "../models";
 
 /**
  * Utility functions for working with features.
@@ -8,71 +8,87 @@ import { Feature, OperationFeature, CharNode } from '../models';
  * Get the value of a feature by name from a feature array.
  * Returns undefined if not found.
  */
-export function getFeatureValue(features: Feature[] | undefined, name: string): string | undefined {
+export function getFeatureValue(
+  features: Feature[] | undefined,
+  name: string
+): string | undefined {
   if (!features) return undefined;
-  const feature = features.find(f => f.name === name);
+  const feature = features.find((f) => f.name === name);
   return feature?.value;
 }
 
 /**
  * Check if a feature exists in a feature array.
  */
-export function hasFeature(features: Feature[] | undefined, name: string): boolean {
+export function hasFeature(
+  features: Feature[] | undefined,
+  name: string
+): boolean {
   if (!features) return false;
-  return features.some(f => f.name === name);
+  return features.some((f) => f.name === name);
 }
 
 /**
  * Get all features with names starting with a specific prefix.
  */
-export function getFeaturesByPrefix(features: Feature[] | undefined, prefix: string): Feature[] {
+export function getFeaturesByPrefix(
+  features: Feature[] | undefined,
+  prefix: string
+): Feature[] {
   if (!features) return [];
-  return features.filter(f => f.name.startsWith(prefix));
+  return features.filter((f) => f.name.startsWith(prefix));
 }
 
 /**
  * Get all rendition features (those starting with "r_").
  */
-export function getRenditionFeatures(features: Feature[] | undefined): Feature[] {
-  return getFeaturesByPrefix(features, 'r_');
+export function getRenditionFeatures(
+  features: Feature[] | undefined
+): Feature[] {
+  return getFeaturesByPrefix(features, "r_");
 }
 
 /**
  * Get all trace features (those starting with "$").
  */
 export function getTraceFeatures(features: Feature[] | undefined): Feature[] {
-  return getFeaturesByPrefix(features, '$');
+  return getFeaturesByPrefix(features, "$");
 }
 
 /**
  * Check if a feature is a trace feature.
  */
 export function isTraceFeature(feature: Feature): boolean {
-  return feature.name.startsWith('$');
+  return feature.name.startsWith("$");
 }
 
 /**
  * Check if a feature is a rendition feature.
  */
 export function isRenditionFeature(feature: Feature): boolean {
-  return feature.name.startsWith('r_');
+  return feature.name.startsWith("r_");
 }
 
 /**
  * Filter out trace features from a feature array.
  */
-export function filterTraceFeatures(features: Feature[] | undefined): Feature[] {
+export function filterTraceFeatures(
+  features: Feature[] | undefined
+): Feature[] {
   if (!features) return [];
-  return features.filter(f => !isTraceFeature(f));
+  return features.filter((f) => !isTraceFeature(f));
 }
 
 /**
  * Filter out rendition features from a feature array (unless debug mode is on).
  */
-export function filterRenditionFeatures(features: Feature[] | undefined, debug: boolean): Feature[] {
+export function filterRenditionFeatures(
+  features: Feature[] | undefined,
+  debug: boolean
+): Feature[] {
   if (!features) return [];
   if (debug) return features; // Show all in debug mode
-  return features.filter(f => !isRenditionFeature(f));
+  return features.filter((f) => !isRenditionFeature(f));
 }
 
 /**
@@ -82,7 +98,9 @@ export function filterRenditionFeatures(features: Feature[] | undefined, debug: 
  *
  * @returns Map of node ID to {x?: number, y?: number}
  */
-export function parseCharOffsets(value: string): Map<number, { x?: number; y?: number }> {
+export function parseCharOffsets(
+  value: string
+): Map<number, { x?: number; y?: number }> {
   const result = new Map<number, { x?: number; y?: number }>();
 
   // Split by space to get individual patterns
@@ -99,14 +117,14 @@ export function parseCharOffsets(value: string): Map<number, { x?: number; y?: n
     const offsets: { x?: number; y?: number } = {};
 
     // Parse comma-separated x and y values
-    const parts = offsetsStr.split(',');
+    const parts = offsetsStr.split(",");
     for (const part of parts) {
-      const kv = part.trim().split('=');
+      const kv = part.trim().split("=");
       if (kv.length === 2) {
         const key = kv[0].trim();
         const val = parseFloat(kv[1].trim());
-        if (key === 'x') offsets.x = val;
-        else if (key === 'y') offsets.y = val;
+        if (key === "x") offsets.x = val;
+        else if (key === "y") offsets.y = val;
       }
     }
 
@@ -125,23 +143,25 @@ export function parseCharOffsets(value: string): Map<number, { x?: number; y?: n
  *
  * @returns Parsed border configuration or undefined if invalid
  */
-export function parseBorder(value: string): {
-  edges: { top: boolean; left: boolean; bottom: boolean; right: boolean };
-  thickness: number;
-  padding: number;
-  type: string;
-  color: string;
-} | undefined {
+export function parseBorder(value: string):
+  | {
+      edges: { top: boolean; left: boolean; bottom: boolean; right: boolean };
+      thickness: number;
+      padding: number;
+      type: string;
+      color: string;
+    }
+  | undefined {
   const parts = value.trim().split(/\s+/);
   if (parts.length !== 5) return undefined;
 
   const [edgesStr, thicknessStr, paddingStr, type, color] = parts;
 
   const edges = {
-    top: edgesStr.includes('t'),
-    left: edgesStr.includes('l'),
-    bottom: edgesStr.includes('b'),
-    right: edgesStr.includes('r'),
+    top: edgesStr.includes("t"),
+    left: edgesStr.includes("l"),
+    bottom: edgesStr.includes("b"),
+    right: edgesStr.includes("r"),
   };
 
   const thickness = parseFloat(thicknessStr);
@@ -159,7 +179,9 @@ export function parseBorder(value: string): {
  *
  * @returns {nodeId, count} or undefined if invalid
  */
-export function parseDisplacedSpan(value: string): { nodeId: number; count: number } | undefined {
+export function parseDisplacedSpan(
+  value: string
+): { nodeId: number; count: number } | undefined {
   const match = value.match(/^(\d+)x(\d+)$/);
   if (!match) return undefined;
 
@@ -182,7 +204,7 @@ export function parseHintVars(value: string): Map<string, string> {
   // Match pattern name=value
   const pairs = value.trim().split(/\s+/);
   for (const pair of pairs) {
-    const [name, val] = pair.split('=');
+    const [name, val] = pair.split("=");
     if (name && val) {
       result.set(name.trim(), val.trim());
     }

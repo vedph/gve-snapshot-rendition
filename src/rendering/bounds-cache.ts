@@ -1,14 +1,14 @@
-import { Logger } from '../core/logger';
+import { Logger } from "../core/logger";
 
 /**
  * Bounding rectangle with position and dimensions.
  */
 export interface BoundingRect {
-  x: number;      // Left edge
-  y: number;      // Top edge
+  x: number; // Left edge
+  y: number; // Top edge
   width: number;
   height: number;
-  right: number;  // Right edge (x + width)
+  right: number; // Right edge (x + width)
   bottom: number; // Bottom edge (y + height)
 }
 
@@ -39,7 +39,7 @@ export class BoundsCache {
     };
 
     this.cache.set(elementId, rect);
-    this.logger.debug('BoundsCache', `Cached bounds for ${elementId}`, rect);
+    this.logger.debug("BoundsCache", `Cached bounds for ${elementId}`, rect);
   }
 
   /**
@@ -68,7 +68,7 @@ export class BoundsCache {
    */
   clear(): void {
     this.cache.clear();
-    this.logger.debug('BoundsCache', 'Cache cleared');
+    this.logger.debug("BoundsCache", "Cache cleared");
   }
 
   /**
@@ -90,9 +90,9 @@ export class BoundsCache {
    * Returns true if successful, false if element not found.
    */
   updateFromElement(element: SVGElement): boolean {
-    const id = element.getAttribute('id');
+    const id = element.getAttribute("id");
     if (!id) {
-      this.logger.warn('Attempted to cache bounds for element without id');
+      this.logger.warn("Attempted to cache bounds for element without id");
       return false;
     }
 
@@ -113,15 +113,15 @@ export class BoundsCache {
     if (elementIds.length === 0) return undefined;
 
     const bounds = elementIds
-      .map(id => this.get(id))
-      .filter(b => b !== undefined) as BoundingRect[];
+      .map((id) => this.get(id))
+      .filter((b) => b !== undefined) as BoundingRect[];
 
     if (bounds.length === 0) return undefined;
 
-    const minX = Math.min(...bounds.map(b => b.x));
-    const minY = Math.min(...bounds.map(b => b.y));
-    const maxRight = Math.max(...bounds.map(b => b.right));
-    const maxBottom = Math.max(...bounds.map(b => b.bottom));
+    const minX = Math.min(...bounds.map((b) => b.x));
+    const minY = Math.min(...bounds.map((b) => b.y));
+    const maxRight = Math.max(...bounds.map((b) => b.right));
+    const maxBottom = Math.max(...bounds.map((b) => b.bottom));
 
     return {
       x: minX,

@@ -36,7 +36,7 @@ export function getColorByIndex(index: number): string {
   // Use consistent saturation and lightness for pastel effect
   // Lower saturation and higher lightness create soft, distinguishable colors
   const saturation = 45; // 45% for subtle, non-aggressive colors
-  const lightness = 85;  // 85% for light, pastel appearance
+  const lightness = 85; // 85% for light, pastel appearance
 
   return `hsl(${Math.round(hue)}, ${saturation}%, ${lightness}%)`;
 }
@@ -47,7 +47,9 @@ export function getColorByIndex(index: number): string {
  * @param versionTags - Array of version tags
  * @returns Map of version tag to color string
  */
-export function generateVersionPalette(versionTags: string[]): Map<string, string> {
+export function generateVersionPalette(
+  versionTags: string[]
+): Map<string, string> {
   const palette = new Map<string, string>();
 
   for (const tag of versionTags) {
@@ -64,7 +66,10 @@ export function generateVersionPalette(versionTags: string[]): Map<string, strin
  * @param lightnessReduction - How much to reduce lightness (default: 10%)
  * @returns Darker HSL color string
  */
-export function getDarkerVariant(hslColor: string, lightnessReduction: number = 10): string {
+export function getDarkerVariant(
+  hslColor: string,
+  lightnessReduction: number = 10
+): string {
   const match = hslColor.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
   if (!match) return hslColor;
 

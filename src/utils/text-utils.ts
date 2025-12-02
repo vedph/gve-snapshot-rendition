@@ -6,7 +6,7 @@
  * Escape HTML special characters to prevent injection.
  */
 export function escapeHtml(text: string): string {
-  const div = document.createElement('div');
+  const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
 }
@@ -26,7 +26,7 @@ export function parseOffset(
   textHeight: number,
   textWidth: number
 ): number {
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return value;
   }
 
@@ -41,9 +41,9 @@ export function parseOffset(
   const multiplier = parseFloat(match[1]);
   const suffix = match[2];
 
-  if (suffix === 'th') {
+  if (suffix === "th") {
     return multiplier * textHeight;
-  } else if (suffix === 'tw') {
+  } else if (suffix === "tw") {
     return multiplier * textWidth;
   }
 
@@ -58,7 +58,10 @@ export function parseOffset(
  * @param variables - Map of variable names to values
  * @returns SVG content with placeholders replaced
  */
-export function resolvePlaceholders(svgContent: string, variables: Map<string, string>): string {
+export function resolvePlaceholders(
+  svgContent: string,
+  variables: Map<string, string>
+): string {
   return svgContent.replace(/\{\{(\w+)\}\}/g, (match, name) => {
     return variables.get(name) || match; // Keep placeholder if not found
   });
@@ -76,5 +79,5 @@ export function generateId(prefix: string, suffix: string | number): string {
  */
 export function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
-  return text.substring(0, maxLength - 3) + '...';
+  return text.substring(0, maxLength - 3) + "...";
 }

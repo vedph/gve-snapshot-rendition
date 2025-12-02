@@ -6,15 +6,15 @@
  * Hint position relative to the reference bounding rectangle.
  */
 export type HintPosition =
-  | 'n'  // North (top center)
-  | 'ne' // Northeast (top right)
-  | 'e'  // East (middle right)
-  | 'se' // Southeast (bottom right)
-  | 's'  // South (bottom center)
-  | 'sw' // Southwest (bottom left)
-  | 'w'  // West (middle left)
-  | 'nw' // Northwest (top left)
-  | 'o'; // Origin (center)
+  | "n" // North (top center)
+  | "ne" // Northeast (top right)
+  | "e" // East (middle right)
+  | "se" // Southeast (bottom right)
+  | "s" // South (bottom center)
+  | "sw" // Southwest (bottom left)
+  | "w" // West (middle left)
+  | "nw" // Northwest (top left)
+  | "o"; // Origin (center)
 
 /**
  * An editing operation's hint.

@@ -2,7 +2,7 @@
  * SVG utility functions for creating and manipulating SVG elements.
  */
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
+const SVG_NS = "http://www.w3.org/2000/svg";
 
 /**
  * Create an SVG element with the given tag name.
@@ -32,7 +32,7 @@ export function createTextElement(
   content: string,
   attributes: Record<string, string | number> = {}
 ): SVGTextElement {
-  const text = createSVGElement('text');
+  const text = createSVGElement("text");
   text.textContent = content;
   setAttributes(text, attributes);
   return text;
@@ -41,14 +41,11 @@ export function createTextElement(
 /**
  * Create an SVG group element.
  */
-export function createGroup(
-  id?: string,
-  classes?: string[]
-): SVGGElement {
-  const g = createSVGElement('g');
-  if (id) g.setAttribute('id', id);
+export function createGroup(id?: string, classes?: string[]): SVGGElement {
+  const g = createSVGElement("g");
+  if (id) g.setAttribute("id", id);
   if (classes && classes.length > 0) {
-    g.setAttribute('class', classes.join(' '));
+    g.setAttribute("class", classes.join(" "));
   }
   return g;
 }
@@ -63,7 +60,7 @@ export function createRect(
   height: number,
   attributes: Record<string, string | number> = {}
 ): SVGRectElement {
-  const rect = createSVGElement('rect');
+  const rect = createSVGElement("rect");
   setAttributes(rect, {
     x,
     y,
@@ -84,7 +81,7 @@ export function createLine(
   y2: number,
   attributes: Record<string, string | number> = {}
 ): SVGLineElement {
-  const line = createSVGElement('line');
+  const line = createSVGElement("line");
   setAttributes(line, {
     x1,
     y1,
@@ -115,26 +112,26 @@ export function applyTextStyle(
 ): void {
   const attrs: Record<string, string | number> = {};
 
-  if (style.fontFamily) attrs['font-family'] = style.fontFamily;
-  if (style.fontSize) attrs['font-size'] = `${style.fontSize}px`;
-  if (style.foreColor) attrs['fill'] = style.foreColor;
-  if (style.backColor && style.backColor !== 'transparent') {
-    attrs['paint-order'] = 'stroke fill';
-    attrs['stroke'] = style.backColor;
-    attrs['stroke-width'] = '3';
+  if (style.fontFamily) attrs["font-family"] = style.fontFamily;
+  if (style.fontSize) attrs["font-size"] = `${style.fontSize}px`;
+  if (style.foreColor) attrs["fill"] = style.foreColor;
+  if (style.backColor && style.backColor !== "transparent") {
+    attrs["paint-order"] = "stroke fill";
+    attrs["stroke"] = style.backColor;
+    attrs["stroke-width"] = "3";
   }
-  if (style.italic) attrs['font-style'] = 'italic';
-  if (style.bold) attrs['font-weight'] = 'bold';
-  if (style.rotate) attrs['transform'] = `rotate(${style.rotate})`;
+  if (style.italic) attrs["font-style"] = "italic";
+  if (style.bold) attrs["font-weight"] = "bold";
+  if (style.rotate) attrs["transform"] = `rotate(${style.rotate})`;
 
   // Text decorations
   const decorations: string[] = [];
-  if (style.underline) decorations.push('underline');
-  if (style.overline) decorations.push('overline');
-  if (style.strike) decorations.push('line-through');
+  if (style.underline) decorations.push("underline");
+  if (style.overline) decorations.push("overline");
+  if (style.strike) decorations.push("line-through");
 
   if (decorations.length > 0) {
-    attrs['text-decoration'] = decorations.join(' ');
+    attrs["text-decoration"] = decorations.join(" ");
   }
 
   setAttributes(element, attrs);
@@ -147,30 +144,31 @@ export function applyTextStyle(
 export function applyLineDecoration(
   parentGroup: SVGGElement,
   textElement: SVGTextElement,
-  type: 'underline' | 'overline' | 'strike',
+  type: "underline" | "overline" | "strike",
   thickness: number,
   color: string,
-  style: string = 'solid'
+  style: string = "solid"
 ): SVGLineElement {
   const bbox = textElement.getBBox();
   let y: number;
 
   switch (type) {
-    case 'underline':
+    case "underline":
       y = bbox.y + bbox.height + 2;
       break;
-    case 'overline':
+    case "overline":
       y = bbox.y - 2;
       break;
-    case 'strike':
+    case "strike":
       y = bbox.y + bbox.height / 2;
       break;
   }
 
   const line = createLine(bbox.x, y, bbox.x + bbox.width, y, {
     stroke: color,
-    'stroke-width': thickness,
-    'stroke-dasharray': style === 'dashed' ? '4,2' : style === 'dotted' ? '1,2' : 'none',
+    "stroke-width": thickness,
+    "stroke-dasharray":
+      style === "dashed" ? "4,2" : style === "dotted" ? "1,2" : "none",
   });
 
   parentGroup.appendChild(line);
@@ -183,18 +181,18 @@ export function applyLineDecoration(
  */
 export function parseSVGContent(svgString: string): SVGGElement | null {
   const parser = new DOMParser();
-  const doc = parser.parseFromString(svgString, 'image/svg+xml');
+  const doc = parser.parseFromString(svgString, "image/svg+xml");
 
-  const parseError = doc.querySelector('parsererror');
+  const parseError = doc.querySelector("parsererror");
   if (parseError) {
-    console.error('SVG parsing error:', parseError.textContent);
+    console.error("SVG parsing error:", parseError.textContent);
     return null;
   }
 
   // Find the root g element
-  const gElement = doc.querySelector('g');
+  const gElement = doc.querySelector("g");
   if (!gElement) {
-    console.error('SVG content must have a root <g> element');
+    console.error("SVG content must have a root <g> element");
     return null;
   }
 
@@ -216,7 +214,7 @@ export function getSafeBBox(element: SVGElement): DOMRect {
   try {
     return (element as any).getBBox();
   } catch (error) {
-    console.warn('getBBox() failed, returning default rect', error);
+    console.warn("getBBox() failed, returning default rect", error);
     return new DOMRect(0, 0, 0, 0);
   }
 }
@@ -238,7 +236,10 @@ export function applyTransform(
 ): void {
   const transforms: string[] = [];
 
-  if (transform.translateX !== undefined || transform.translateY !== undefined) {
+  if (
+    transform.translateX !== undefined ||
+    transform.translateY !== undefined
+  ) {
     const tx = transform.translateX || 0;
     const ty = transform.translateY || 0;
     transforms.push(`translate(${tx}, ${ty})`);
@@ -257,14 +258,16 @@ export function applyTransform(
   }
 
   if (transforms.length > 0) {
-    element.setAttribute('transform', transforms.join(' '));
+    element.setAttribute("transform", transforms.join(" "));
   }
 }
 
 /**
  * Calculate the center point of a bounding rectangle.
  */
-export function getRectCenter(rect: DOMRect | { x: number; y: number; width: number; height: number }): {
+export function getRectCenter(
+  rect: DOMRect | { x: number; y: number; width: number; height: number }
+): {
   x: number;
   y: number;
 } {
@@ -286,9 +289,9 @@ export function getTextWidth(
   italic: boolean = false
 ): number {
   // Create temporary SVG and text element
-  const svg = createSVGElement('svg');
-  svg.style.visibility = 'hidden';
-  svg.style.position = 'absolute';
+  const svg = createSVGElement("svg");
+  svg.style.visibility = "hidden";
+  svg.style.position = "absolute";
   document.body.appendChild(svg);
 
   const textEl = createTextElement(text);

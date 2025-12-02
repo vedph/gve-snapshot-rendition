@@ -1,21 +1,19 @@
-import { CharNode } from '../models';
-import { GveRenditionSettings } from '../settings/settings';
-import { OperationHint, HintPosition } from '../settings/hint-models';
-import { Logger } from '../core/logger';
-import { AnimationEngine } from '../animation/animation-engine';
-import { BoundsCache, BoundingRect } from './bounds-cache';
-import { SpreadingEngine } from './spreading-engine';
+import { CharNode } from "../models";
+import { GveRenditionSettings } from "../settings/settings";
+import { OperationHint, HintPosition } from "../settings/hint-models";
+import { Logger } from "../core/logger";
+import { AnimationEngine } from "../animation/animation-engine";
+import { BoundsCache, BoundingRect } from "./bounds-cache";
+import { SpreadingEngine } from "./spreading-engine";
 import {
   parseSVGContent,
   getSafeBBox,
-  createGroup,
-  setAttributes,
   applyTransform,
   getRectCenter,
-} from './svg-utils';
-import { resolvePlaceholders, parseOffset, generateId } from '../utils/text-utils';
-import { parseDisplacedSpan } from '../utils/feature-utils';
-import { getNodeSpan } from '../utils/node-utils';
+} from "./svg-utils";
+import { resolvePlaceholders, parseOffset } from "../utils/text-utils";
+import { parseDisplacedSpan } from "../utils/feature-utils";
+import { getNodeSpan } from "../utils/node-utils";
 
 /**
  * Hint renderer handles rendering of operation hints.
@@ -71,7 +69,10 @@ export class HintRenderer {
     try {
       // 1. Resolve placeholders in SVG
       const resolvedSvg = resolvePlaceholders(hint.svg, variables);
-      this.logger.debug('HintRenderer', `Placeholders resolved`, { original: hint.svg, resolved: resolvedSvg });
+      this.logger.debug("HintRenderer", `Placeholders resolved`, {
+        original: hint.svg,
+        resolved: resolvedSvg,
+      });
 
       // 2. Parse SVG to get root <g> element
       const hintGroup = parseSVGContent(resolvedSvg);
@@ -82,7 +83,7 @@ export class HintRenderer {
 
       // 3. Set unique ID for the hint
       const uniqueId = `hint-${operationId}-${hintOrdinal}`;
-      hintGroup.setAttribute('id', uniqueId);
+      hintGroup.setAttribute("id", uniqueId);
 
       // 4. Calculate RBR(s) - may be multiple if text split across lines
       let rbrs: BoundingRect[];
@@ -98,10 +99,14 @@ export class HintRenderer {
         return;
       }
 
-      this.logger.debug('HintRenderer', `Calculated ${rbrs.length} RBR(s)`, rbrs);
+      this.logger.debug(
+        "HintRenderer",
+        `Calculated ${rbrs.length} RBR(s)`,
+        rbrs
+      );
 
       // 5. Check if this is a placeholder hint
-      const hasPlaceholder = hintGroup.querySelector('#placeholder') !== null;
+      const hasPlaceholder = hintGroup.querySelector("#placeholder") !== null;
 
       // 6. Render hint for each RBR (unless it's a placeholder hint and already rendered once)
       let placeholderRendered = false;
@@ -111,14 +116,18 @@ export class HintRenderer {
 
         // Skip if placeholder hint already rendered
         if (hasPlaceholder && placeholderRendered) {
-          this.logger.debug('HintRenderer', `Skipping RBR ${i + 1} for placeholder hint (already rendered once)`);
+          this.logger.debug(
+            "HintRenderer",
+            `Skipping RBR ${i + 1} for placeholder hint (already rendered once)`
+          );
           continue;
         }
 
         // Clone the hint group for this RBR (except for first iteration)
-        const currentHintGroup = i === 0 ? hintGroup : (hintGroup.cloneNode(true) as SVGGElement);
+        const currentHintGroup =
+          i === 0 ? hintGroup : (hintGroup.cloneNode(true) as SVGGElement);
         if (i > 0) {
-          currentHintGroup.setAttribute('id', `${uniqueId}-rbr${i + 1}`);
+          currentHintGroup.setAttribute("id", `${uniqueId}-rbr${i + 1}`);
         }
 
         // 7. Apply initial transformations (scale)
@@ -134,21 +143,29 @@ export class HintRenderer {
 
         // 10. Append to SVG (set initial opacity to 0 if animation present)
         if (hint.animation) {
-          currentHintGroup.setAttribute('opacity', '0');
+          currentHintGroup.setAttribute("opacity", "0");
         }
         rootSvg.appendChild(currentHintGroup);
 
         // 11. Cache bounds
         const bbox = getSafeBBox(currentHintGroup);
-        this.boundsCache.set(currentHintGroup.getAttribute('id')!, bbox);
+        this.boundsCache.set(currentHintGroup.getAttribute("id")!, bbox);
 
         // 12. Animate entrance
         if (hint.animation) {
           const animation = this.animationEngine
             .getFactory()
-            .resolveAnimation(hint.animation, this.settings.animations, `hint-${hintId}`);
+            .resolveAnimation(
+              hint.animation,
+              this.settings.animations,
+              `hint-${hintId}`
+            );
           if (animation) {
-            await this.animationEngine.animate(currentHintGroup, animation, rootSvg);
+            await this.animationEngine.animate(
+              currentHintGroup,
+              animation,
+              rootSvg
+            );
           }
         }
 
@@ -172,7 +189,7 @@ export class HintRenderer {
     if (nodes.length === 0) return [];
 
     const rbrs: BoundingRect[] = [];
-    const nodeElementIds = nodes.map(n => `n_${n.id}`);
+    const nodeElementIds = nodes.map((n) => `n_${n.id}`);
 
     // Group nodes by line by checking their Y coordinates
     const lineGroups: string[][] = [];
@@ -217,7 +234,10 @@ export class HintRenderer {
   /**
    * Calculate RBRs from a displaced span reference (IDxN format).
    */
-  private calculateDisplacedRBRs(displacedRefSpan: string, allBaseNodes: CharNode[]): BoundingRect[] {
+  private calculateDisplacedRBRs(
+    displacedRefSpan: string,
+    allBaseNodes: CharNode[]
+  ): BoundingRect[] {
     const parsed = parseDisplacedSpan(displacedRefSpan);
     if (!parsed) {
       this.logger.warn(`Invalid displaced span format: ${displacedRefSpan}`);
@@ -250,7 +270,7 @@ export class HintRenderer {
       width *= hint.scaleX;
       height *= hint.scaleY;
 
-      this.logger.debug('HintRenderer', `Scaling hint`, {
+      this.logger.debug("HintRenderer", `Scaling hint`, {
         scaleX: hint.scaleX,
         scaleY: hint.scaleY,
         originalSize: { width: rbr.width, height: rbr.height },
@@ -263,7 +283,10 @@ export class HintRenderer {
       width += this.settings.hintMargin * 2;
       height += this.settings.hintMargin * 2;
 
-      this.logger.debug('HintRenderer', `Applied hint margin: ${this.settings.hintMargin}px`);
+      this.logger.debug(
+        "HintRenderer",
+        `Applied hint margin: ${this.settings.hintMargin}px`
+      );
     }
 
     // Scale the hint group to match calculated size
@@ -301,7 +324,7 @@ export class HintRenderer {
     const finalX = targetPos.x - handlePos.x + offsetX;
     const finalY = targetPos.y - handlePos.y + offsetY;
 
-    this.logger.debug('HintRenderer', `Positioning hint`, {
+    this.logger.debug("HintRenderer", `Positioning hint`, {
       position: hint.position,
       targetPos,
       handlePos,
@@ -320,9 +343,9 @@ export class HintRenderer {
 
     // Handle hint handle visibility for debugging
     if (this.settings.showHintHandles) {
-      const handleElement = hintGroup.querySelector('#handle');
+      const handleElement = hintGroup.querySelector("#handle");
       if (handleElement) {
-        handleElement.setAttribute('opacity', '1');
+        handleElement.setAttribute("opacity", "1");
       }
     }
   }
@@ -332,7 +355,7 @@ export class HintRenderer {
    * Returns the handle element's position, or the center of the hint if no handle.
    */
   private findHandlePosition(hintGroup: SVGGElement): { x: number; y: number } {
-    const handleElement = hintGroup.querySelector('#handle');
+    const handleElement = hintGroup.querySelector("#handle");
 
     if (handleElement) {
       const bbox = getSafeBBox(handleElement as SVGElement);
@@ -347,28 +370,31 @@ export class HintRenderer {
   /**
    * Calculate target position on the RBR based on hint position type.
    */
-  private calculateTargetPosition(position: HintPosition, rbr: BoundingRect): { x: number; y: number } {
+  private calculateTargetPosition(
+    position: HintPosition,
+    rbr: BoundingRect
+  ): { x: number; y: number } {
     const centerX = rbr.x + rbr.width / 2;
     const centerY = rbr.y + rbr.height / 2;
 
     switch (position) {
-      case 'n': // North (top center)
+      case "n": // North (top center)
         return { x: centerX, y: rbr.y };
-      case 'ne': // Northeast (top right)
+      case "ne": // Northeast (top right)
         return { x: rbr.right, y: rbr.y };
-      case 'e': // East (middle right)
+      case "e": // East (middle right)
         return { x: rbr.right, y: centerY };
-      case 'se': // Southeast (bottom right)
+      case "se": // Southeast (bottom right)
         return { x: rbr.right, y: rbr.bottom };
-      case 's': // South (bottom center)
+      case "s": // South (bottom center)
         return { x: centerX, y: rbr.bottom };
-      case 'sw': // Southwest (bottom left)
+      case "sw": // Southwest (bottom left)
         return { x: rbr.x, y: rbr.bottom };
-      case 'w': // West (middle left)
+      case "w": // West (middle left)
         return { x: rbr.x, y: centerY };
-      case 'nw': // Northwest (top left)
+      case "nw": // Northwest (top left)
         return { x: rbr.x, y: rbr.y };
-      case 'o': // Origin (center)
+      case "o": // Origin (center)
       default:
         return { x: centerX, y: centerY };
     }
@@ -377,17 +403,26 @@ export class HintRenderer {
   /**
    * Handle spreading for solid hints.
    */
-  private async handleSpreading(hintGroup: SVGGElement, rootSvg: SVGElement): Promise<void> {
+  private async handleSpreading(
+    hintGroup: SVGGElement,
+    rootSvg: SVGElement
+  ): Promise<void> {
     const hintBounds = getSafeBBox(hintGroup);
-    const hintId = hintGroup.getAttribute('id')!;
+    const hintId = hintGroup.getAttribute("id")!;
 
-    const spreading = this.spreadingEngine.calculateSpreading(hintBounds, [hintId]);
+    const spreading = this.spreadingEngine.calculateSpreading(hintBounds, [
+      hintId,
+    ]);
 
     if (spreading.hasShifts) {
-      this.logger.debug('HintRenderer', `Spreading required for hint ${hintId}`, {
-        horizontalShifts: spreading.horizontalShifts.size,
-        verticalShifts: spreading.verticalShifts.size,
-      });
+      this.logger.debug(
+        "HintRenderer",
+        `Spreading required for hint ${hintId}`,
+        {
+          horizontalShifts: spreading.horizontalShifts.size,
+          verticalShifts: spreading.verticalShifts.size,
+        }
+      );
 
       // Combine horizontal and vertical shifts
       const combinedShifts = new Map<string, { x: number; y: number }>();
@@ -404,7 +439,11 @@ export class HintRenderer {
       }
 
       // Animate spreading
-      await this.animationEngine.animateSpreading(combinedShifts, this.settings.spreadTime, rootSvg);
+      await this.animationEngine.animateSpreading(
+        combinedShifts,
+        this.settings.spreadTime,
+        rootSvg
+      );
 
       // Update cached bounds for shifted elements
       for (const id of allIds) {

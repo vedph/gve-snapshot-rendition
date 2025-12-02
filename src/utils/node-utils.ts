@@ -1,4 +1,4 @@
-import { CharNode } from '../models';
+import { CharNode } from "../models";
 
 /**
  * Utility functions for working with character nodes.
@@ -20,8 +20,8 @@ export function stringToNodes(text: string): CharNode[] {
       id: i + 1, // IDs start from 1
       index: i,
       data: char,
-      label: char === '\n' ? '↵' : char === ' ' ? '␣' : char, // Use visual labels for non-printable chars
-      sourceTag: 'v0', // Base text always has source tag v0
+      label: char === "\n" ? "↵" : char === " " ? "␣" : char, // Use visual labels for non-printable chars
+      sourceTag: "v0", // Base text always has source tag v0
       features: [],
     });
   }
@@ -41,14 +41,14 @@ export function getNodeLabel(node: CharNode): string {
  * Check if a node represents a line break.
  */
 export function isLineBreak(node: CharNode): boolean {
-  return node.data === '\n';
+  return node.data === "\n";
 }
 
 /**
  * Check if a node represents a space.
  */
 export function isSpace(node: CharNode): boolean {
-  return node.data === ' ';
+  return node.data === " ";
 }
 
 /**
@@ -61,8 +61,11 @@ export function isPrintable(node: CharNode): boolean {
 /**
  * Find a node by ID in an array of nodes.
  */
-export function findNodeById(nodes: CharNode[], id: number): CharNode | undefined {
-  return nodes.find(n => n.id === id);
+export function findNodeById(
+  nodes: CharNode[],
+  id: number
+): CharNode | undefined {
+  return nodes.find((n) => n.id === id);
 }
 
 /**
@@ -74,11 +77,15 @@ export function findNodeById(nodes: CharNode[], id: number): CharNode | undefine
  * @param count - Number of nodes to include
  * @returns Array of nodes in the span, or empty array if not found
  */
-export function getNodeSpan(nodes: CharNode[], startId: number, count: number): CharNode[] {
+export function getNodeSpan(
+  nodes: CharNode[],
+  startId: number,
+  count: number
+): CharNode[] {
   const result: CharNode[] = [];
 
   // Find start node
-  const startIndex = nodes.findIndex(n => n.id === startId);
+  const startIndex = nodes.findIndex((n) => n.id === startId);
   if (startIndex === -1) return result;
 
   // Collect subsequent nodes
@@ -93,5 +100,7 @@ export function getNodeSpan(nodes: CharNode[], startId: number, count: number): 
  * Get nodes by their IDs.
  */
 export function getNodesByIds(nodes: CharNode[], ids: number[]): CharNode[] {
-  return ids.map(id => findNodeById(nodes, id)).filter(n => n !== undefined) as CharNode[];
+  return ids
+    .map((id) => findNodeById(nodes, id))
+    .filter((n) => n !== undefined) as CharNode[];
 }

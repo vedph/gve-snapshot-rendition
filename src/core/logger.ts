@@ -6,7 +6,7 @@ export class Logger {
   private enabled: boolean;
   private prefix: string;
 
-  constructor(prefix: string = 'GVE', enabled: boolean = false) {
+  constructor(prefix: string = "GVE", enabled: boolean = false) {
     this.prefix = prefix;
     this.enabled = enabled;
   }
