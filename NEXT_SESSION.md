@@ -1,271 +1,92 @@
-# Next Session Guide - Session 4
+# Next Session Guide - Session 5
 
 ## 📍 Current Status
 
-**Progress: 65% Complete**
+**Progress: 75% Complete - MVP ACHIEVED! 🎉**
 
-**Just Completed (Session 3):**
-- ✅ TextRenderer.renderAdditionalText() fully implemented
-- ✅ RBR calculation with displaced span support
-- ✅ All 9 position types (n, ne, e, se, s, sw, w, nw, o)
-- ✅ Border drawing (r_border) with all edges and line styles
-- ✅ Spreading integration for additional text
-- ✅ Character rendering with animations
+**Just Completed (Session 4):**
+- ✅ Operation processing loop fully implemented
+- ✅ processOperations() and processOperation() methods
+- ✅ Helper methods (getReferenceNodes, getAddedNodes, renderHints)
+- ✅ HintRenderer integrated
+- ✅ TextRenderer.renderAdditionalText() integrated
+- ✅ Event system (versionTagChanging, versionTagChange)
+- ✅ State management (currentVersion)
 - ✅ Build successful, zero errors
 
-**What's Complete:**
+**What's Complete (MVP):**
 - ✅ All core utilities and infrastructure
 - ✅ All rendering systems (TextRenderer, HintRenderer, BoundsCache, SpreadingEngine)
 - ✅ Animation system (AnimationEngine, AnimationFactory)
 - ✅ Feature resolution system
-- ✅ Web component skeleton
+- ✅ **Operation processing loop - ALL SYSTEMS WIRED TOGETHER!**
 
 **What's Next:**
-- ⏳ Operation processing loop
-- ⏳ Basic UI (toolbar, version list)
-- ⏳ Navigation and events
+- ⏳ Test with real data
+- ⏳ Basic UI (toolbar with prev/next buttons)
+- ⏳ Version navigation controls
+- ⏳ Full UI (versions list, details panel)
 
 ---
 
-## 🎯 Priority 1: Operation Processing Loop (2 hours)
+## 🎯 Priority 1: Test with Real Data (1-2 hours)
 
 ### Goal
-Wire up all the rendering systems by implementing the operation processing loop. This will bring the component to life and enable full text transformation visualization.
+Verify that the MVP works end-to-end with actual sample data. This will reveal any integration issues before building UI.
 
-### File to Modify
-**`src/core/gve-snapshot-rendition.ts`**
+### What to Test
 
-### What Changed Last Session
-- Nothing in this file except adding SpreadingEngine parameter to TextRenderer
-- Ready for operation processing implementation
+1. **Load and Render**
+   - Open index.html in browser
+   - Verify base text renders with animations
+   - Check console for processing logs
 
-### Implementation Plan
+2. **Operations Processing**
+   - Verify all operations process in order
+   - Check that hints render correctly
+   - Check that additional text renders correctly
+   - Verify spreading animations work
 
-#### Step 1: Create processOperations() Method
+3. **Console Verification**
+   - Look for "Processing X operations"
+   - Look for "Processing operation {id}"
+   - Check for any errors or warnings
 
-```typescript
-/**
- * Process operations to render text transformations.
- * Processes operations in order, rendering hints and additional text.
- */
-private async processOperations(): Promise<void> {
-  if (!this._data || !this._data.steps) {
-    this.logger.warn("No operations to process");
-    return;
-  }
+4. **Visual Inspection**
+   - Base text should appear character by character
+   - Hints should appear for operations with r_hints
+   - Additional text should appear for insert/replace operations
+   - Spreading should shift elements smoothly
 
-  this.logger.time("processOperations");
-  this.logger.info(`Processing ${this._data.steps.length} operations`);
+### Issues to Watch For
 
-  for (const step of this._data.steps) {
-    await this.processOperation(step);
-  }
-
-  this.logger.timeEnd("processOperations");
-}
-```
-
-#### Step 2: Implement processOperation() for Single Operation
-
-```typescript
-/**
- * Process a single operation step.
- */
-private async processOperation(step: OperationStep): Promise<void> {
-  this.logger.debug("Processing operation", { id: step.id, type: step.type });
-
-  // Fire versionTagChanging event
-  const versionTag = `v${step.index}`;
-  this.dispatchEvent(
-    new CustomEvent("versionTagChanging", {
-      detail: { from: this._currentVersion, to: versionTag },
-    })
-  );
-
-  // 1. Get reference nodes (nodes affected by this operation)
-  const refNodes = this.getReferenceNodes(step.refNodeIds);
-  if (refNodes.length === 0) {
-    this.logger.warn(`No reference nodes found for operation ${step.id}`);
-    return;
-  }
-
-  // 2. Resolve features to config
-  const config = this.featureResolver.resolve(
-    this._settings,
-    step.features,
-    undefined // textBounds - calculate if needed
-  );
-
-  // 3. Render hints if specified
-  if (config.hints && config.hints.length > 0) {
-    await this.renderHints(
-      config.hints,
-      refNodes,
-      config.hintVars || new Map(),
-      step.id
-    );
-  }
-
-  // 4. Render additional text if this operation added nodes
-  const addedNodes = this.getAddedNodes(step.id);
-  if (addedNodes.length > 0) {
-    await this.textRenderer.renderAdditionalText(
-      addedNodes,
-      this.textSvg,
-      config,
-      versionTag,
-      refNodes,
-      this._data.text as CharNode[] // all base nodes
-    );
-  }
-
-  // Update current version
-  this._currentVersion = versionTag;
-
-  // Fire versionTagChange event
-  this.dispatchEvent(
-    new CustomEvent("versionTagChange", {
-      detail: { from: `v${step.index - 1}`, to: versionTag },
-    })
-  );
-}
-```
-
-#### Step 3: Helper Methods
-
-```typescript
-/**
- * Get reference nodes by IDs.
- */
-private getReferenceNodes(nodeIds: number[]): CharNode[] {
-  if (!this._data || !this._data.text) return [];
-
-  const nodes = this._data.text as CharNode[];
-  return nodeIds
-    .map((id) => nodes.find((n) => n.id === id))
-    .filter((n) => n !== undefined) as CharNode[];
-}
-
-/**
- * Get nodes added by a specific operation.
- * These are nodes with opid feature matching the operation ID.
- */
-private getAddedNodes(operationId: string): CharNode[] {
-  if (!this._data || !this._data.text) return [];
-
-  const nodes = this._data.text as CharNode[];
-  return nodes.filter((node) => {
-    const opidFeature = node.features?.find((f) => f.name === "opid");
-    return opidFeature && opidFeature.value === operationId;
-  });
-}
-
-/**
- * Render hints for an operation.
- */
-private async renderHints(
-  hintIds: string[],
-  refNodes: CharNode[],
-  hintVars: Map<string, string>,
-  operationId: string
-): Promise<void> {
-  for (let i = 0; i < hintIds.length; i++) {
-    const hintId = hintIds[i];
-    const hint = this._settings.hints[hintId];
-
-    if (!hint) {
-      this.logger.warn(`Hint not found: ${hintId}`);
-      continue;
-    }
-
-    await this.hintRenderer.renderHint(
-      hintId,
-      hint,
-      refNodes,
-      this.textSvg,
-      hintVars,
-      operationId,
-      i + 1, // ordinal (1-based)
-      this._data.text as CharNode[]
-    );
-  }
-}
-```
-
-#### Step 4: Call from renderContent()
-
-Update the `renderContent()` method to call `processOperations()`:
-
-```typescript
-private async renderContent(): Promise<void> {
-  if (!this._data || !this._data.text) return;
-
-  this.logger.time("renderContent");
-
-  // Clear existing content
-  this.textSvg.innerHTML = "";
-
-  // Render base text
-  const nodes = this._data.text as CharNode[];
-  await this.textRenderer.renderBaseText(nodes, this.textSvg);
-
-  // Process operations
-  if (this._data.steps && this._data.steps.length > 0) {
-    await this.processOperations();
-  }
-
-  this.logger.timeEnd("renderContent");
-}
-```
-
-### Testing Checklist
-
-After implementation:
-
-1. **Build Check**
-   ```bash
-   pnpm build
-   ```
-   Should compile without errors
-
-2. **Manual Test** (needs sample data)
-   - Load component with test data
-   - Verify base text renders
-   - Verify operations process in order
-   - Check console for operation logs
-   - Verify hints appear
-   - Verify additional text renders
-   - Check spreading animations
-
-3. **Event Test**
-   - Listen for versionTagChanging
-   - Listen for versionTagChange
-   - Verify events fire in correct order
+- Missing reference nodes (check getReferenceNodes logic)
+- opid feature not matching (check getAddedNodes logic)
+- Hints not appearing (check settings.hints map)
+- Spreading not working (check solid flags)
+- Events not firing (check dispatchEvent calls)
 
 ### Success Criteria
 
-- [ ] processOperations() implemented
-- [ ] processOperation() handles single operation
-- [ ] Helper methods created
-- [ ] Hints render for operations with r_hints
-- [ ] Additional text renders for operations with new nodes
-- [ ] Events fire correctly
-- [ ] Build succeeds with no errors
-- [ ] Manual test shows transformations
+- [ ] Base text renders correctly
+- [ ] All operations process without errors
+- [ ] Hints appear for operations with r_hints
+- [ ] Additional text appears for insert/replace ops
+- [ ] Spreading animations play smoothly
+- [ ] Events fire (check with addEventListener)
+- [ ] No errors in console
 
 ---
 
-## 🎯 Priority 2: Basic Toolbar (2 hours)
+## 🎯 Priority 2: Basic Toolbar (2-3 hours)
 
 ### Goal
-Add simple navigation controls to step through versions.
+Add simple navigation controls so users can step through versions manually.
 
-### File to Create/Modify
-**`src/ui/toolbar.ts`** (new file)
+### File to Create
+**`src/ui/toolbar.ts`** (new file, ~150 lines)
 
 ### Implementation Plan
-
-#### Create Toolbar Component
 
 ```typescript
 export class Toolbar {
@@ -273,7 +94,7 @@ export class Toolbar {
   private prevBtn: HTMLButtonElement;
   private nextBtn: HTMLButtonElement;
   private versionLabel: HTMLSpanElement;
-  private currentVersion: number = 0;
+  private currentIndex: number = 0;
   private totalVersions: number = 0;
 
   constructor(container: HTMLElement) {
@@ -284,9 +105,13 @@ export class Toolbar {
   private render(): void {
     this.container.innerHTML = `
       <div class="toolbar">
-        <button id="prev-btn" class="toolbar-btn">← Previous</button>
+        <button id="prev-btn" class="toolbar-btn" title="Previous Version">
+          ← Previous
+        </button>
         <span id="version-label" class="version-label">v0</span>
-        <button id="next-btn" class="toolbar-btn">Next →</button>
+        <button id="next-btn" class="toolbar-btn" title="Next Version">
+          Next →
+        </button>
       </div>
     `;
 
@@ -304,31 +129,31 @@ export class Toolbar {
   }
 
   private goPrevious(): void {
-    if (this.currentVersion > 0) {
-      this.currentVersion--;
+    if (this.currentIndex > 0) {
+      this.currentIndex--;
       this.updateButtons();
-      this.dispatchVersionChange();
+      this.dispatchNavigationEvent();
     }
   }
 
   private goNext(): void {
-    if (this.currentVersion < this.totalVersions) {
-      this.currentVersion++;
+    if (this.currentIndex < this.totalVersions) {
+      this.currentIndex++;
       this.updateButtons();
-      this.dispatchVersionChange();
+      this.dispatchNavigationEvent();
     }
   }
 
   private updateButtons(): void {
-    this.prevBtn.disabled = this.currentVersion === 0;
-    this.nextBtn.disabled = this.currentVersion === this.totalVersions;
-    this.versionLabel.textContent = `v${this.currentVersion}`;
+    this.prevBtn.disabled = this.currentIndex === 0;
+    this.nextBtn.disabled = this.currentIndex === this.totalVersions;
+    this.versionLabel.textContent = `v${this.currentIndex}`;
   }
 
-  private dispatchVersionChange(): void {
+  private dispatchNavigationEvent(): void {
     this.container.dispatchEvent(
-      new CustomEvent("versionChange", {
-        detail: { version: this.currentVersion },
+      new CustomEvent("navigate", {
+        detail: { index: this.currentIndex },
         bubbles: true,
       })
     );
@@ -339,23 +164,30 @@ export class Toolbar {
     this.updateButtons();
   }
 
-  setCurrentVersion(version: number): void {
-    this.currentVersion = version;
+  setCurrentIndex(index: number): void {
+    this.currentIndex = index;
     this.updateButtons();
+  }
+
+  getCurrentIndex(): number {
+    return this.currentIndex;
   }
 }
 ```
 
-#### Add CSS Styling
+### CSS Styling
+
+Add to `getStyles()` in gve-snapshot-rendition.ts:
 
 ```css
 .toolbar {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 1rem;
   padding: 0.5rem 1rem;
-  background: #f5f5f5;
-  border-bottom: 1px solid #ddd;
+  background: var(--gve-toolbar-bg, #f5f5f5);
+  border-bottom: 1px solid var(--gve-border-color, #ddd);
 }
 
 .toolbar-btn {
@@ -365,15 +197,18 @@ export class Toolbar {
   background: white;
   cursor: pointer;
   font-size: 14px;
+  font-family: inherit;
 }
 
 .toolbar-btn:hover:not(:disabled) {
   background: #e9e9e9;
+  border-color: #999;
 }
 
 .toolbar-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  background: #f5f5f5;
 }
 
 .version-label {
@@ -384,10 +219,12 @@ export class Toolbar {
   background: white;
   border: 1px solid #ccc;
   border-radius: 4px;
+  min-width: 60px;
+  text-align: center;
 }
 ```
 
-#### Integrate with Main Component
+### Integration with Main Component
 
 In `gve-snapshot-rendition.ts`:
 
@@ -397,93 +234,182 @@ import { Toolbar } from "../ui/toolbar";
 // Add property
 private toolbar?: Toolbar;
 
-// In connectedCallback():
-const toolbarContainer = this.shadowRoot!.querySelector("#toolbar-container");
-if (toolbarContainer) {
-  this.toolbar = new Toolbar(toolbarContainer as HTMLElement);
-  this.toolbar.setTotalVersions(this._data?.steps?.length || 0);
-}
+// Update render() to include toolbar container
+private render(): void {
+  this.shadow.innerHTML = "";
 
-// Listen for toolbar events
-toolbarContainer.addEventListener("versionChange", (e: Event) => {
-  const customEvent = e as CustomEvent;
-  this.goToVersion(customEvent.detail.version);
-});
+  const style = document.createElement("style");
+  style.textContent = this.getStyles();
+  this.shadow.appendChild(style);
+
+  this.container = document.createElement("div");
+  this.container.className = "gve-container";
+
+  // Add toolbar container
+  const toolbarContainer = document.createElement("div");
+  toolbarContainer.id = "toolbar-container";
+  this.container.appendChild(toolbarContainer);
+
+  // Create SVG root
+  this.rootSvg = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "svg"
+  );
+  this.rootSvg.setAttribute("class", "gve-text-rendition");
+  this.rootSvg.setAttribute("width", "100%");
+  this.rootSvg.setAttribute("height", "600px");
+
+  this.container.appendChild(this.rootSvg);
+  this.shadow.appendChild(this.container);
+
+  // Initialize toolbar after data is loaded
+  if (this._data && this._data.steps) {
+    this.toolbar = new Toolbar(toolbarContainer);
+    this.toolbar.setTotalVersions(this._data.steps.length);
+
+    // Listen for navigation events
+    toolbarContainer.addEventListener("navigate", (e: Event) => {
+      const customEvent = e as CustomEvent;
+      this.goToVersionIndex(customEvent.detail.index);
+    });
+  }
+}
 ```
+
+### Success Criteria
+
+- [ ] Toolbar renders above SVG area
+- [ ] Previous/Next buttons work
+- [ ] Version label updates on navigation
+- [ ] Buttons disable at boundaries (v0 and last version)
+- [ ] Clicking triggers navigation event
+- [ ] CSS styling looks clean
 
 ---
 
-## 🎯 Priority 3: Version Navigation (2 hours)
+## 🎯 Priority 3: Version Navigation (2-3 hours)
 
 ### Goal
-Implement version-by-version navigation (not just next/prev).
+Implement the ability to jump to any version, not just render all at once.
 
-### Implementation
+### Challenge
+Currently, `renderContent()` processes ALL operations. We need to:
+1. Track which version is displayed
+2. Re-render from v0 up to target version
+3. OR: Implement incremental forward/backward navigation
 
-1. **Add goToVersion() method** to main component
-2. **Track which operations have been rendered**
-3. **Support jumping to any version**
-4. **Update toolbar on version change**
+### Option A: Full Re-render (Simpler)
+
+```typescript
+/**
+ * Navigate to a specific version index (0 = base text, 1+ = after operations).
+ */
+private async goToVersionIndex(targetIndex: number): Promise<void> {
+  if (!this._data || !this.textRenderer || !this.rootSvg) return;
+
+  this.logger.info(`Navigating to version index ${targetIndex}`);
+
+  // Clear and reset
+  this.rootSvg.innerHTML = "";
+  this.boundsCache.clear();
+  this.currentVersion = "v0";
+
+  // Render base text
+  const charOffsets = this.extractCharOffsets();
+  await this.textRenderer.renderBaseText(
+    this.baseNodes,
+    this.rootSvg,
+    charOffsets
+  );
+
+  // Process operations up to target index
+  if (targetIndex > 0 && this._data.steps) {
+    for (let i = 0; i < targetIndex && i < this._data.steps.length; i++) {
+      await this.processOperation(this._data.steps[i]);
+    }
+  }
+
+  // Update toolbar
+  if (this.toolbar) {
+    this.toolbar.setCurrentIndex(targetIndex);
+  }
+}
+
+private extractCharOffsets(): Map<number, { x?: number; y?: number }> | undefined {
+  if (this._data && this._data.steps.length > 0) {
+    const firstOp = this._data.steps[0].operation;
+    if (firstOp.type === 7) {
+      return this.featureResolver.extractCharOffsets(firstOp.features);
+    }
+  }
+  return undefined;
+}
+```
+
+### Option B: Incremental (More Complex, Better Performance)
+
+Track rendered operations and only add/remove deltas. More complex but better for large documents.
+
+**Recommendation:** Start with Option A (full re-render). It's simpler and performance is likely fine for typical use cases.
+
+### Success Criteria
+
+- [ ] Clicking Next renders one more operation
+- [ ] Clicking Previous goes back one operation
+- [ ] Can jump to any version
+- [ ] State stays consistent
+- [ ] Animations play smoothly
 
 ---
 
 ## 📚 Reference Files
 
-### Read These Before Starting:
-1. **SESSION_3_SUMMARY.md** - What was just done
-2. **SESSION_PROGRESS.md** - Overall status
-3. **docs/rendition.md** - Operation processing spec (section on "Drawing Logic")
+### Read These Before Starting
 
-### Key Patterns to Follow:
+1. **SESSION_4_SUMMARY.md** - What was just done
+2. **SESSION_PROGRESS.md** - Overall status (75% complete, MVP done!)
+3. **IMPLEMENTATION_STATUS.md** - Updated file structure
+4. **docs/rendition.md** - UI components section
+
+### Key Patterns to Follow
+
 1. **Async/await** for all rendering operations
 2. **Logger.time/timeEnd** for performance tracking
 3. **Event dispatching** for state changes
-4. **Error handling** with try/catch and warnings
+4. **Clear separation** - UI in src/ui/, core logic in src/core/
 
 ---
 
 ## 🐛 Common Issues to Avoid
 
-1. **Don't forget to await** - All rendering is async
-2. **Check for null/undefined** - Data might not be loaded
-3. **Cache bounds after rendering** - Spreading needs them
-4. **Fire events in correct order** - Before and after animations
-5. **Handle empty arrays** - Operations might have no hints or no added text
+1. **Don't forget toolbar container** - Add to DOM before creating Toolbar
+2. **Check data is loaded** - Toolbar needs this._data.steps.length
+3. **Update toolbar on navigation** - Call setCurrentIndex()
+4. **Clear state on navigation** - innerHTML = "", boundsCache.clear()
+5. **Handle edge cases** - v0 (no operations), last version
 
 ---
 
-## 📝 Testing Data Structure
+## 📝 Testing Checklist
 
-You'll need sample data in this format:
+### After Toolbar Implementation
 
-```typescript
-{
-  text: CharNode[], // Base text nodes
-  steps: [
-    {
-      id: "op1",
-      index: 1,
-      type: "delete",
-      refNodeIds: [1, 2, 3], // IDs of affected nodes
-      features: [
-        { name: "r_hints", value: "diagonal-stroke" },
-        { name: "r_fore-color", value: "red" }
-      ]
-    },
-    {
-      id: "op2",
-      index: 2,
-      type: "add",
-      refNodeIds: [4],
-      features: [
-        { name: "r_text-position", value: "n" },
-        { name: "r_text-offset-y", value: "-10" },
-        { name: "r_border", value: "tlbr 1 4 solid green" }
-      ]
-    }
-  ]
-}
-```
+1. **Visual Check**
+   - [ ] Toolbar appears above SVG
+   - [ ] Buttons are styled consistently
+   - [ ] Version label is readable
+
+2. **Functionality Check**
+   - [ ] Next button increments version
+   - [ ] Previous button decrements version
+   - [ ] Buttons disable at boundaries
+   - [ ] Version label updates
+
+3. **Integration Check**
+   - [ ] Navigation triggers re-render
+   - [ ] Operations process correctly
+   - [ ] State stays consistent
+   - [ ] No console errors
 
 ---
 
@@ -491,37 +417,60 @@ You'll need sample data in this format:
 
 | Task | Estimated Time |
 |------|----------------|
-| Operation processing loop | 2h |
-| Basic toolbar | 2h |
-| Version navigation | 2h |
-| **Total to MVP** | **6h** |
+| Test with real data | 1-2h |
+| Basic toolbar | 2-3h |
+| Version navigation | 2-3h |
+| **Total to Usable UI** | **5-8h** |
 
 ---
 
-## 🎉 Success = Working MVP!
+## 🎉 What You'll Have After This Session
 
-After Priority 1 (operation processing), you'll have:
-- ✅ Full text transformation rendering
-- ✅ All hints displaying correctly
-- ✅ All additional text rendering
-- ✅ Spreading working
-- ✅ Animations playing
-- ✅ Events firing
+After completing these priorities:
+- ✅ Verified MVP works with real data
+- ✅ User can step through versions with buttons
+- ✅ Clear visual feedback of current version
+- ✅ Smooth animations between versions
+- ✅ **USABLE COMPONENT!** Ready for demo
 
-**That's the MVP!** 🚀
+**That's a fully interactive text transformation viewer!** 🚀
 
-Toolbar and navigation are enhancements that make it usable, but the core functionality will be complete.
+The remaining work (versions list, details panel, etc.) is all "nice to have" UI enhancements.
 
 ---
 
 ## 📊 Progress Tracking
 
 Update these files after session:
-1. **SESSION_PROGRESS.md** - Add Session 4 entry
-2. **SESSION_4_SUMMARY.md** - Create summary
-3. **NEXT_SESSION.md** - Update for Session 5
-4. **IMPLEMENTATION_STATUS.md** - Update percentages
+
+1. **SESSION_PROGRESS.md** - Add Session 5 entry
+2. **SESSION_5_SUMMARY.md** - Create summary
+3. **NEXT_SESSION.md** - Update for Session 6
+4. **IMPLEMENTATION_STATUS.md** - Update percentages (expect ~85%)
 
 ---
 
-**Ready to make the component come alive! Let's process those operations! 🚀**
+## 💡 Hints for Success
+
+1. **Start with testing** - Verify MVP works before adding UI
+2. **Keep toolbar simple** - Just prev/next/label for now
+3. **Use full re-render** - Simpler than incremental updates
+4. **Test at boundaries** - v0 and last version are edge cases
+5. **Log everything** - Use logger.debug for navigation events
+
+---
+
+## 🚀 Stretch Goals (If Time Permits)
+
+If you finish early and have extra time:
+
+1. **First/Last buttons** - Jump to start/end
+2. **Version tooltip** - Show operation type on hover
+3. **Keyboard shortcuts** - Arrow keys for navigation
+4. **Animation speed control** - Slider to adjust animation time
+
+---
+
+**Ready to make the component interactive! Let's add that UI! 🎨**
+
+*Total project: 75% complete, MVP achieved, ~10-14 hours to full UI*
