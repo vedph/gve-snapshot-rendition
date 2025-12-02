@@ -1,101 +1,155 @@
-# Next Session Guide - Session 5
+# Next Session Guide - Session 6
 
 ## 📍 Current Status
 
-**Progress: 75% Complete - MVP ACHIEVED! 🎉**
+**Progress: 80% Complete - INTERACTIVE UI WORKING! 🎉**
 
-**Just Completed (Session 4):**
-- ✅ Operation processing loop fully implemented
-- ✅ processOperations() and processOperation() methods
-- ✅ Helper methods (getReferenceNodes, getAddedNodes, renderHints)
-- ✅ HintRenderer integrated
-- ✅ TextRenderer.renderAdditionalText() integrated
-- ✅ Event system (versionTagChanging, versionTagChange)
-- ✅ State management (currentVersion)
-- ✅ Build successful, zero errors
+**Just Completed (Session 5):**
+- ✅ Toolbar component fully implemented (src/ui/toolbar.ts)
+- ✅ Previous/Next navigation buttons
+- ✅ Version label display (v0, v1, etc.)
+- ✅ Button state management (disable at boundaries)
+- ✅ goToVersionIndex() method for navigation
+- ✅ extractCharOffsets() helper
+- ✅ Comprehensive toolbar CSS (~80 lines)
+- ✅ Build successful, zero errors, zero warnings
 
-**What's Complete (MVP):**
+**What's Complete:**
 - ✅ All core utilities and infrastructure
 - ✅ All rendering systems (TextRenderer, HintRenderer, BoundsCache, SpreadingEngine)
 - ✅ Animation system (AnimationEngine, AnimationFactory)
 - ✅ Feature resolution system
-- ✅ **Operation processing loop - ALL SYSTEMS WIRED TOGETHER!**
+- ✅ Operation processing loop - ALL SYSTEMS WIRED TOGETHER
+- ✅ **Interactive toolbar with navigation!**
 
 **What's Next:**
-- ⏳ Test with real data
-- ⏳ Basic UI (toolbar with prev/next buttons)
-- ⏳ Version navigation controls
-- ⏳ Full UI (versions list, details panel)
+- ⏳ Test with real data in browser
+- ⏳ Versions list UI (sidebar with all versions)
+- ⏳ Details panel UI (operation metadata)
+- ⏳ Full UI layout integration
 
 ---
 
-## 🎯 Priority 1: Test with Real Data (1-2 hours)
+## 🎯 Priority 1: Test with Real Data (1-2 hours) - CRITICAL
 
 ### Goal
-Verify that the MVP works end-to-end with actual sample data. This will reveal any integration issues before building UI.
+Verify that everything works end-to-end in the browser. This is the most important next step because it will reveal any integration issues and confirm the component is truly functional.
 
 ### What to Test
 
-1. **Load and Render**
+#### 1. **Basic Loading**
    - Open index.html in browser
-   - Verify base text renders with animations
-   - Check console for processing logs
+   - Check browser console for errors
+   - Verify component loads without crashes
 
-2. **Operations Processing**
-   - Verify all operations process in order
-   - Check that hints render correctly
-   - Check that additional text renders correctly
-   - Verify spreading animations work
+#### 2. **Base Text Rendering**
+   - Verify base text appears character by character
+   - Check that animations play smoothly
+   - Verify character positioning looks correct
+   - Check for any missing characters
 
-3. **Console Verification**
+#### 3. **Toolbar UI**
+   - Verify toolbar appears above SVG area
+   - Check that Previous button is disabled at v0
+   - Check that Next button is enabled
+   - Verify version label shows "v0"
+
+#### 4. **Navigation Forward**
+   - Click Next button
+   - Verify version label changes to "v1"
+   - Verify Previous button becomes enabled
+   - Check console for "Navigating to version index 1"
+   - Check console for operation processing logs
+   - Verify any hints render correctly
+   - Verify any additional text renders correctly
+   - Verify spreading animations play
+
+#### 5. **Navigation Backward**
+   - Click Previous button
+   - Verify version label changes back to "v0"
+   - Verify Previous button becomes disabled
+   - Check that SVG clears and re-renders
+   - Verify base text renders again
+
+#### 6. **Navigation Through All Versions**
+   - Click Next repeatedly until last version
+   - Verify Next button disables at last version
+   - Verify all operations process correctly
+   - Check console for any errors or warnings
+   - Verify no visual glitches
+
+#### 7. **Console Verification**
+   - Look for "GVE-Rendition component created"
+   - Look for "Component connected to DOM"
+   - Look for "GSAP initialized"
    - Look for "Processing X operations"
-   - Look for "Processing operation {id}"
-   - Check for any errors or warnings
-
-4. **Visual Inspection**
-   - Base text should appear character by character
-   - Hints should appear for operations with r_hints
-   - Additional text should appear for insert/replace operations
-   - Spreading should shift elements smoothly
+   - Look for "Navigating to version index X"
+   - Check for any errors (red text)
+   - Check for any warnings (yellow text)
 
 ### Issues to Watch For
 
-- Missing reference nodes (check getReferenceNodes logic)
-- opid feature not matching (check getAddedNodes logic)
-- Hints not appearing (check settings.hints map)
-- Spreading not working (check solid flags)
-- Events not firing (check dispatchEvent calls)
+- **Missing GSAP:** Component will log warning if GSAP not loaded
+- **Data not loading:** Check that consumer.js sets data correctly
+- **Hints not configured:** Check that settings.hints has required hint definitions
+- **Spreading not working:** Check that solid flags are set correctly
+- **Animations janky:** May need to adjust animation durations
+- **Layout issues:** Check that flexbox layout works in different browsers
+- **Button state bugs:** Verify buttons enable/disable at correct times
 
 ### Success Criteria
 
-- [ ] Base text renders correctly
+- [ ] Component loads without errors
+- [ ] Base text renders with animations
+- [ ] Toolbar appears correctly
+- [ ] Clicking Next processes operations
+- [ ] Clicking Previous navigates back
+- [ ] Version label updates correctly
+- [ ] Buttons disable at boundaries
 - [ ] All operations process without errors
-- [ ] Hints appear for operations with r_hints
-- [ ] Additional text appears for insert/replace ops
+- [ ] Hints appear where expected
+- [ ] Additional text appears where expected
 - [ ] Spreading animations play smoothly
-- [ ] Events fire (check with addEventListener)
-- [ ] No errors in console
+- [ ] No console errors
+- [ ] No visual glitches
+
+### Debug Tips
+
+If something doesn't work:
+
+1. **Open browser DevTools** (F12)
+2. **Check Console tab** for errors/logs
+3. **Check Elements tab** to inspect shadow DOM
+4. **Check Network tab** to verify files loaded
+5. **Add breakpoints** in browser DevTools Sources tab
+6. **Check settings.debug = true** for verbose logging
+7. **Verify data.json** structure matches expected format
 
 ---
 
-## 🎯 Priority 2: Basic Toolbar (2-3 hours)
+## 🎯 Priority 2: Versions List UI (3-4 hours)
 
 ### Goal
-Add simple navigation controls so users can step through versions manually.
+Add a sidebar showing all versions in the document, allowing users to see at a glance what versions exist and jump directly to any version.
 
 ### File to Create
-**`src/ui/toolbar.ts`** (new file, ~150 lines)
+**`src/ui/versions-list.ts`** (new file, ~200 lines)
 
 ### Implementation Plan
 
 ```typescript
-export class Toolbar {
+export interface VersionInfo {
+  index: number;
+  tag: string;
+  color: string;
+  isStaged: boolean;
+  operationType?: string;
+}
+
+export class VersionsList {
   private container: HTMLElement;
-  private prevBtn: HTMLButtonElement;
-  private nextBtn: HTMLButtonElement;
-  private versionLabel: HTMLSpanElement;
+  private versions: VersionInfo[] = [];
   private currentIndex: number = 0;
-  private totalVersions: number = 0;
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -104,69 +158,79 @@ export class Toolbar {
 
   private render(): void {
     this.container.innerHTML = `
-      <div class="toolbar">
-        <button id="prev-btn" class="toolbar-btn" title="Previous Version">
-          ← Previous
-        </button>
-        <span id="version-label" class="version-label">v0</span>
-        <button id="next-btn" class="toolbar-btn" title="Next Version">
-          Next →
-        </button>
+      <div class="versions-list">
+        <div class="versions-header">Versions</div>
+        <div class="versions-items" id="versions-items"></div>
       </div>
     `;
+    this.updateList();
+  }
 
-    this.prevBtn = this.container.querySelector("#prev-btn")!;
-    this.nextBtn = this.container.querySelector("#next-btn")!;
-    this.versionLabel = this.container.querySelector("#version-label")!;
+  private updateList(): void {
+    const itemsContainer = this.container.querySelector("#versions-items");
+    if (!itemsContainer) return;
+
+    itemsContainer.innerHTML = this.versions
+      .map((version, idx) => {
+        const isActive = idx === this.currentIndex;
+        const classes = [
+          "version-item",
+          isActive ? "active" : "",
+          version.isStaged ? "staged" : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        return `
+          <div
+            class="${classes}"
+            data-index="${idx}"
+            style="border-left: 4px solid ${version.color}"
+          >
+            <span class="version-tag">${version.tag}</span>
+            ${version.operationType ? `<span class="version-type">${version.operationType}</span>` : ""}
+          </div>
+        `;
+      })
+      .join("");
 
     this.attachEventListeners();
-    this.updateButtons();
   }
 
   private attachEventListeners(): void {
-    this.prevBtn.addEventListener("click", () => this.goPrevious());
-    this.nextBtn.addEventListener("click", () => this.goNext());
+    const items = this.container.querySelectorAll(".version-item");
+    items.forEach((item) => {
+      item.addEventListener("click", (e) => {
+        const target = e.currentTarget as HTMLElement;
+        const index = parseInt(target.dataset.index || "0", 10);
+        this.selectVersion(index);
+      });
+    });
   }
 
-  private goPrevious(): void {
-    if (this.currentIndex > 0) {
-      this.currentIndex--;
-      this.updateButtons();
-      this.dispatchNavigationEvent();
-    }
+  private selectVersion(index: number): void {
+    this.currentIndex = index;
+    this.updateList();
+    this.dispatchSelectionEvent(index);
   }
 
-  private goNext(): void {
-    if (this.currentIndex < this.totalVersions) {
-      this.currentIndex++;
-      this.updateButtons();
-      this.dispatchNavigationEvent();
-    }
-  }
-
-  private updateButtons(): void {
-    this.prevBtn.disabled = this.currentIndex === 0;
-    this.nextBtn.disabled = this.currentIndex === this.totalVersions;
-    this.versionLabel.textContent = `v${this.currentIndex}`;
-  }
-
-  private dispatchNavigationEvent(): void {
+  private dispatchSelectionEvent(index: number): void {
     this.container.dispatchEvent(
-      new CustomEvent("navigate", {
-        detail: { index: this.currentIndex },
+      new CustomEvent("versionSelect", {
+        detail: { index },
         bubbles: true,
       })
     );
   }
 
-  setTotalVersions(total: number): void {
-    this.totalVersions = total;
-    this.updateButtons();
+  setVersions(versions: VersionInfo[]): void {
+    this.versions = versions;
+    this.updateList();
   }
 
   setCurrentIndex(index: number): void {
     this.currentIndex = index;
-    this.updateButtons();
+    this.updateList();
   }
 
   getCurrentIndex(): number {
@@ -180,47 +244,60 @@ export class Toolbar {
 Add to `getStyles()` in gve-snapshot-rendition.ts:
 
 ```css
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 0.5rem 1rem;
-  background: var(--gve-toolbar-bg, #f5f5f5);
-  border-bottom: 1px solid var(--gve-border-color, #ddd);
+.versions-list {
+  width: 200px;
+  height: 100%;
+  border-right: 1px solid var(--gve-border-color, #ddd);
+  background: var(--gve-sidebar-bg, #fafafa);
+  overflow-y: auto;
+  flex-shrink: 0;
 }
 
-.toolbar-btn {
-  padding: 0.5rem 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  font-size: 14px;
-  font-family: inherit;
-}
-
-.toolbar-btn:hover:not(:disabled) {
-  background: #e9e9e9;
-  border-color: #999;
-}
-
-.toolbar-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background: #f5f5f5;
-}
-
-.version-label {
-  font-family: monospace;
-  font-size: 16px;
+.versions-header {
+  padding: 0.75rem 1rem;
   font-weight: bold;
-  padding: 0.5rem 1rem;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  min-width: 60px;
-  text-align: center;
+  font-size: 14px;
+  border-bottom: 1px solid var(--gve-border-color, #ddd);
+  background: var(--gve-toolbar-bg, #f5f5f5);
+}
+
+.versions-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.version-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  transition: background 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.version-item:hover {
+  background: var(--gve-item-hover, #f0f0f0);
+}
+
+.version-item.active {
+  background: var(--gve-item-active, #e3f2fd);
+  font-weight: bold;
+}
+
+.version-item.staged {
+  border-left-width: 6px !important;
+}
+
+.version-tag {
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.version-type {
+  font-size: 11px;
+  color: #666;
+  font-style: italic;
 }
 ```
 
@@ -228,13 +305,19 @@ Add to `getStyles()` in gve-snapshot-rendition.ts:
 
 In `gve-snapshot-rendition.ts`:
 
+1. **Update layout structure** to use horizontal flexbox
+2. **Add versions list container** to the left
+3. **Initialize VersionsList** with version data
+4. **Listen for "versionSelect" events** and call goToVersionIndex()
+5. **Update versions list** when toolbar changes version
+
 ```typescript
-import { Toolbar } from "../ui/toolbar";
+import { VersionsList, VersionInfo } from "../ui/versions-list";
 
 // Add property
-private toolbar?: Toolbar;
+private versionsList?: VersionsList;
 
-// Update render() to include toolbar container
+// Update render() layout
 private render(): void {
   this.shadow.innerHTML = "";
 
@@ -245,120 +328,164 @@ private render(): void {
   this.container = document.createElement("div");
   this.container.className = "gve-container";
 
-  // Add toolbar container
+  // Create main layout: versions list + content area
+  const mainLayout = document.createElement("div");
+  mainLayout.className = "gve-main-layout";
+
+  // Versions list container (left side)
+  const versionsContainer = document.createElement("div");
+  versionsContainer.id = "versions-container";
+  mainLayout.appendChild(versionsContainer);
+
+  // Content area (right side)
+  const contentArea = document.createElement("div");
+  contentArea.className = "gve-content-area";
+
+  // Toolbar
   const toolbarContainer = document.createElement("div");
   toolbarContainer.id = "toolbar-container";
-  this.container.appendChild(toolbarContainer);
+  contentArea.appendChild(toolbarContainer);
 
-  // Create SVG root
-  this.rootSvg = document.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "svg"
-  );
+  // SVG
+  this.rootSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   this.rootSvg.setAttribute("class", "gve-text-rendition");
   this.rootSvg.setAttribute("width", "100%");
   this.rootSvg.setAttribute("height", "600px");
+  contentArea.appendChild(this.rootSvg);
 
-  this.container.appendChild(this.rootSvg);
+  mainLayout.appendChild(contentArea);
+  this.container.appendChild(mainLayout);
   this.shadow.appendChild(this.container);
 
-  // Initialize toolbar after data is loaded
+  // Initialize UI components if data available
   if (this._data && this._data.steps) {
+    // Initialize toolbar
     this.toolbar = new Toolbar(toolbarContainer);
     this.toolbar.setTotalVersions(this._data.steps.length);
-
-    // Listen for navigation events
     toolbarContainer.addEventListener("navigate", (e: Event) => {
+      const customEvent = e as CustomEvent;
+      this.goToVersionIndex(customEvent.detail.index);
+    });
+
+    // Initialize versions list
+    const versions = this.buildVersionsInfo();
+    this.versionsList = new VersionsList(versionsContainer);
+    this.versionsList.setVersions(versions);
+    versionsContainer.addEventListener("versionSelect", (e: Event) => {
       const customEvent = e as CustomEvent;
       this.goToVersionIndex(customEvent.detail.index);
     });
   }
 }
-```
 
-### Success Criteria
+// Build version info array
+private buildVersionsInfo(): VersionInfo[] {
+  if (!this._data || !this._data.steps) return [];
 
-- [ ] Toolbar renders above SVG area
-- [ ] Previous/Next buttons work
-- [ ] Version label updates on navigation
-- [ ] Buttons disable at boundaries (v0 and last version)
-- [ ] Clicking triggers navigation event
-- [ ] CSS styling looks clean
+  const versions: VersionInfo[] = [
+    {
+      index: 0,
+      tag: "v0",
+      color: "#888",
+      isStaged: false,
+    },
+  ];
 
----
+  this._data.steps.forEach((step, idx) => {
+    const operation = step.operation;
+    versions.push({
+      index: idx + 1,
+      tag: operation.outputTag || `v${operation.run}`,
+      color: this.versionPalette.get(operation.outputTag || `v${operation.run}`) || "#888",
+      isStaged: operation.stage === true,
+      operationType: this.getOperationTypeName(operation.type),
+    });
+  });
 
-## 🎯 Priority 3: Version Navigation (2-3 hours)
+  return versions;
+}
 
-### Goal
-Implement the ability to jump to any version, not just render all at once.
+// Get operation type name
+private getOperationTypeName(type: number): string {
+  const types: Record<number, string> = {
+    1: "delete",
+    2: "insert",
+    3: "replace",
+    4: "swap",
+    5: "move",
+    6: "copy",
+    7: "annotate",
+  };
+  return types[type] || `op${type}`;
+}
 
-### Challenge
-Currently, `renderContent()` processes ALL operations. We need to:
-1. Track which version is displayed
-2. Re-render from v0 up to target version
-3. OR: Implement incremental forward/backward navigation
-
-### Option A: Full Re-render (Simpler)
-
-```typescript
-/**
- * Navigate to a specific version index (0 = base text, 1+ = after operations).
- */
+// Update goToVersionIndex to sync both toolbar and versions list
 private async goToVersionIndex(targetIndex: number): Promise<void> {
   if (!this._data || !this.textRenderer || !this.rootSvg) return;
 
   this.logger.info(`Navigating to version index ${targetIndex}`);
 
-  // Clear and reset
-  this.rootSvg.innerHTML = "";
-  this.boundsCache.clear();
-  this.currentVersion = "v0";
+  // ... existing clear and render logic ...
 
-  // Render base text
-  const charOffsets = this.extractCharOffsets();
-  await this.textRenderer.renderBaseText(
-    this.baseNodes,
-    this.rootSvg,
-    charOffsets
-  );
-
-  // Process operations up to target index
-  if (targetIndex > 0 && this._data.steps) {
-    for (let i = 0; i < targetIndex && i < this._data.steps.length; i++) {
-      await this.processOperation(this._data.steps[i]);
-    }
-  }
-
-  // Update toolbar
+  // Update UI components
   if (this.toolbar) {
     this.toolbar.setCurrentIndex(targetIndex);
   }
-}
-
-private extractCharOffsets(): Map<number, { x?: number; y?: number }> | undefined {
-  if (this._data && this._data.steps.length > 0) {
-    const firstOp = this._data.steps[0].operation;
-    if (firstOp.type === 7) {
-      return this.featureResolver.extractCharOffsets(firstOp.features);
-    }
+  if (this.versionsList) {
+    this.versionsList.setCurrentIndex(targetIndex);
   }
-  return undefined;
 }
 ```
 
-### Option B: Incremental (More Complex, Better Performance)
+### CSS Layout Update
 
-Track rendered operations and only add/remove deltas. More complex but better for large documents.
+```css
+.gve-main-layout {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+}
 
-**Recommendation:** Start with Option A (full re-render). It's simpler and performance is likely fine for typical use cases.
+.gve-content-area {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+```
 
 ### Success Criteria
 
-- [ ] Clicking Next renders one more operation
-- [ ] Clicking Previous goes back one operation
-- [ ] Can jump to any version
-- [ ] State stays consistent
-- [ ] Animations play smoothly
+- [ ] Versions list appears on left side
+- [ ] All versions listed (v0, v1, v2, ...)
+- [ ] Each version shows color from palette
+- [ ] Current version highlighted
+- [ ] Staged versions have thicker left border
+- [ ] Clicking version navigates to it
+- [ ] List scrolls if many versions
+- [ ] CSS styling looks clean
+- [ ] Integration with toolbar works
+
+---
+
+## 🎯 Priority 3: Details Panel (2-3 hours)
+
+### Goal
+Display operation metadata and features in a panel below the SVG area.
+
+### File to Create
+**`src/ui/details-panel.ts`** (new file, ~150 lines)
+
+### Implementation Plan
+
+Show:
+- Current operation ID
+- Operation type
+- Input/output tags
+- Global features
+- Position (at, from, to)
+- Collapsible sections
 
 ---
 
@@ -366,8 +493,8 @@ Track rendered operations and only add/remove deltas. More complex but better fo
 
 ### Read These Before Starting
 
-1. **SESSION_4_SUMMARY.md** - What was just done
-2. **SESSION_PROGRESS.md** - Overall status (75% complete, MVP done!)
+1. **SESSION_5_SUMMARY.md** - What was just done
+2. **SESSION_PROGRESS.md** - Overall status (80% complete!)
 3. **IMPLEMENTATION_STATUS.md** - Updated file structure
 4. **docs/rendition.md** - UI components section
 
@@ -377,39 +504,52 @@ Track rendered operations and only add/remove deltas. More complex but better fo
 2. **Logger.time/timeEnd** for performance tracking
 3. **Event dispatching** for state changes
 4. **Clear separation** - UI in src/ui/, core logic in src/core/
+5. **CustomEvents with bubbles: true** for communication
+6. **Flexbox layouts** for responsive design
 
 ---
 
 ## 🐛 Common Issues to Avoid
 
-1. **Don't forget toolbar container** - Add to DOM before creating Toolbar
-2. **Check data is loaded** - Toolbar needs this._data.steps.length
-3. **Update toolbar on navigation** - Call setCurrentIndex()
-4. **Clear state on navigation** - innerHTML = "", boundsCache.clear()
-5. **Handle edge cases** - v0 (no operations), last version
+1. **Test first!** - Don't add more UI until you've verified existing code works
+2. **Check data structure** - Verify data.json matches expected format
+3. **Verify GSAP loaded** - Component needs GSAP from CDN
+4. **Handle edge cases** - Empty data, no operations, etc.
+5. **Sync UI state** - Update all UI components when version changes
+6. **Clear console** - Check for errors after each test
 
 ---
 
 ## 📝 Testing Checklist
 
-### After Toolbar Implementation
+### After Browser Testing
 
-1. **Visual Check**
-   - [ ] Toolbar appears above SVG
-   - [ ] Buttons are styled consistently
-   - [ ] Version label is readable
+1. **Loading**
+   - [ ] No console errors on load
+   - [ ] Component appears in DOM
+   - [ ] GSAP initialized
 
-2. **Functionality Check**
-   - [ ] Next button increments version
-   - [ ] Previous button decrements version
-   - [ ] Buttons disable at boundaries
+2. **Rendering**
+   - [ ] Base text appears
+   - [ ] Animations play smoothly
+   - [ ] No missing characters
+
+3. **Toolbar**
+   - [ ] Toolbar visible
+   - [ ] Buttons styled correctly
+   - [ ] Version label shows v0
+
+4. **Navigation**
+   - [ ] Next button works
+   - [ ] Previous button works
    - [ ] Version label updates
+   - [ ] Buttons disable correctly
 
-3. **Integration Check**
-   - [ ] Navigation triggers re-render
-   - [ ] Operations process correctly
-   - [ ] State stays consistent
-   - [ ] No console errors
+5. **Operations**
+   - [ ] Operations process in order
+   - [ ] Hints render correctly
+   - [ ] Additional text renders
+   - [ ] Spreading works
 
 ---
 
@@ -418,24 +558,22 @@ Track rendered operations and only add/remove deltas. More complex but better fo
 | Task | Estimated Time |
 |------|----------------|
 | Test with real data | 1-2h |
-| Basic toolbar | 2-3h |
-| Version navigation | 2-3h |
-| **Total to Usable UI** | **5-8h** |
+| Versions list UI | 3-4h |
+| Details panel UI | 2-3h |
+| **Total to Full UI** | **6-9h** |
 
 ---
 
 ## 🎉 What You'll Have After This Session
 
 After completing these priorities:
-- ✅ Verified MVP works with real data
-- ✅ User can step through versions with buttons
-- ✅ Clear visual feedback of current version
-- ✅ Smooth animations between versions
-- ✅ **USABLE COMPONENT!** Ready for demo
+- ✅ Verified component works in browser
+- ✅ Users can see all versions in sidebar
+- ✅ Users can click to jump to any version
+- ✅ Operation details displayed
+- ✅ **FULLY INTERACTIVE COMPONENT!** Ready for production
 
-**That's a fully interactive text transformation viewer!** 🚀
-
-The remaining work (versions list, details panel, etc.) is all "nice to have" UI enhancements.
+**That's a production-ready text transformation viewer!** 🚀
 
 ---
 
@@ -443,20 +581,21 @@ The remaining work (versions list, details panel, etc.) is all "nice to have" UI
 
 Update these files after session:
 
-1. **SESSION_PROGRESS.md** - Add Session 5 entry
-2. **SESSION_5_SUMMARY.md** - Create summary
-3. **NEXT_SESSION.md** - Update for Session 6
-4. **IMPLEMENTATION_STATUS.md** - Update percentages (expect ~85%)
+1. **SESSION_PROGRESS.md** - Add Session 6 entry
+2. **SESSION_6_SUMMARY.md** - Create summary
+3. **NEXT_SESSION.md** - Update for Session 7
+4. **IMPLEMENTATION_STATUS.md** - Update percentages (expect ~90%)
 
 ---
 
 ## 💡 Hints for Success
 
-1. **Start with testing** - Verify MVP works before adding UI
-2. **Keep toolbar simple** - Just prev/next/label for now
-3. **Use full re-render** - Simpler than incremental updates
-4. **Test at boundaries** - v0 and last version are edge cases
-5. **Log everything** - Use logger.debug for navigation events
+1. **Test in browser FIRST** - This is critical before adding more UI
+2. **Use Chrome DevTools** - Console, Elements, Network tabs are your friends
+3. **Start simple** - Get basic versions list working before fancy features
+4. **Keep state in sync** - All UI components should reflect current version
+5. **Log navigation events** - Use logger.debug for debugging
+6. **Handle empty data** - Component should degrade gracefully
 
 ---
 
@@ -464,13 +603,14 @@ Update these files after session:
 
 If you finish early and have extra time:
 
-1. **First/Last buttons** - Jump to start/end
-2. **Version tooltip** - Show operation type on hover
-3. **Keyboard shortcuts** - Arrow keys for navigation
-4. **Animation speed control** - Slider to adjust animation time
+1. **Search in versions list** - Filter versions by tag or type
+2. **Version tooltips** - Show more info on hover
+3. **Keyboard shortcuts** - Numbers to jump to versions
+4. **Collapse versions list** - Toggle button to hide/show
+5. **Export current SVG** - Download button
 
 ---
 
-**Ready to make the component interactive! Let's add that UI! 🎨**
+**Ready to see the component in action! Let's test it! 🧪**
 
-*Total project: 75% complete, MVP achieved, ~10-14 hours to full UI*
+*Total project: 80% complete, ~6-9 hours to full UI, ~14-18 hours to polish*

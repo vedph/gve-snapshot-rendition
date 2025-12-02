@@ -11,6 +11,7 @@ import { SpreadingEngine } from "../rendering/spreading-engine";
 import { TextRenderer } from "../rendering/text-renderer";
 import { HintRenderer } from "../rendering/hint-renderer";
 import { FeatureResolver } from "../rendering/feature-resolver";
+import { Toolbar } from "../ui/toolbar";
 import { stringToNodes } from "../utils/node-utils";
 import { generateVersionPalette } from "../utils/color-palette";
 
@@ -37,6 +38,7 @@ export class GveSnapshotRendition extends HTMLElement {
   private shadow: ShadowRoot;
   private rootSvg?: SVGElement;
   private container?: HTMLElement;
+  private toolbar?: Toolbar;
 
   // State
   private baseNodes: CharNode[] = [];
@@ -210,6 +212,11 @@ export class GveSnapshotRendition extends HTMLElement {
     this.container = document.createElement("div");
     this.container.className = "gve-container";
 
+    // Create toolbar container
+    const toolbarContainer = document.createElement("div");
+    toolbarContainer.id = "toolbar-container";
+    this.container.appendChild(toolbarContainer);
+
     // Create SVG root
     this.rootSvg = document.createElementNS(
       "http://www.w3.org/2000/svg",
@@ -221,6 +228,18 @@ export class GveSnapshotRendition extends HTMLElement {
 
     this.container.appendChild(this.rootSvg);
     this.shadow.appendChild(this.container);
+
+    // Initialize toolbar if data is available
+    if (this._data && this._data.steps) {
+      this.toolbar = new Toolbar(toolbarContainer);
+      this.toolbar.setTotalVersions(this._data.steps.length);
+
+      // Listen for navigation events
+      toolbarContainer.addEventListener("navigate", (e: Event) => {
+        const customEvent = e as CustomEvent;
+        this.goToVersionIndex(customEvent.detail.index);
+      });
+    }
 
     this.logger.debug("Component", "UI structure rendered");
   }
@@ -241,17 +260,8 @@ export class GveSnapshotRendition extends HTMLElement {
     this.boundsCache.clear();
     this.currentVersion = "v0";
 
-    // Extract init features (from first operation if it's an annotate)
-    let charOffsets: Map<number, { x?: number; y?: number }> | undefined;
-    if (this._data && this._data.steps.length > 0) {
-      const firstOp = this._data.steps[0].operation;
-      if (firstOp.type === 7) {
-        // annotate
-        charOffsets = this.featureResolver.extractCharOffsets(firstOp.features);
-      }
-    }
-
-    // Render base text
+    // Extract init features and render base text
+    const charOffsets = this.extractCharOffsets();
     await this.textRenderer.renderBaseText(
       this.baseNodes,
       this.rootSvg,
@@ -441,6 +451,54 @@ export class GveSnapshotRendition extends HTMLElement {
   }
 
   /**
+   * Navigate to a specific version index (0 = base text, 1+ = after operations).
+   */
+  private async goToVersionIndex(targetIndex: number): Promise<void> {
+    if (!this._data || !this.textRenderer || !this.rootSvg) return;
+
+    this.logger.info(`Navigating to version index ${targetIndex}`);
+
+    // Clear and reset
+    this.rootSvg.innerHTML = "";
+    this.boundsCache.clear();
+    this.currentVersion = "v0";
+
+    // Render base text
+    const charOffsets = this.extractCharOffsets();
+    await this.textRenderer.renderBaseText(
+      this.baseNodes,
+      this.rootSvg,
+      charOffsets
+    );
+
+    // Process operations up to target index
+    if (targetIndex > 0 && this._data.steps) {
+      for (let i = 0; i < targetIndex && i < this._data.steps.length; i++) {
+        await this.processOperation(this._data.steps[i]);
+      }
+    }
+
+    // Update toolbar
+    if (this.toolbar) {
+      this.toolbar.setCurrentIndex(targetIndex);
+    }
+  }
+
+  /**
+   * Extract char offsets from first operation if it's an annotate.
+   */
+  private extractCharOffsets(): Map<number, { x?: number; y?: number }> | undefined {
+    if (this._data && this._data.steps.length > 0) {
+      const firstOp = this._data.steps[0].operation;
+      if (firstOp.type === 7) {
+        // annotate
+        return this.featureResolver.extractCharOffsets(firstOp.features);
+      }
+    }
+    return undefined;
+  }
+
+  /**
    * Navigate to a specific version.
    */
   private async navigateToVersion(
@@ -448,7 +506,7 @@ export class GveSnapshotRendition extends HTMLElement {
   ): Promise<void> {
     if (!versionTag) return;
     this.logger.info(`Navigating to version: ${versionTag}`);
-    // TODO: Implement version navigation
+    // TODO: Implement version navigation by tag
   }
 
   /**
@@ -466,9 +524,61 @@ export class GveSnapshotRendition extends HTMLElement {
         width: 100%;
         height: 100%;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        padding: 0.5rem 1rem;
+        background: var(--gve-toolbar-bg, #f5f5f5);
+        border-bottom: 1px solid var(--gve-border-color, #ddd);
+        flex-shrink: 0;
+      }
+
+      .toolbar-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+        font-size: 14px;
+        font-family: inherit;
+        transition: all 0.2s ease;
+      }
+
+      .toolbar-btn:hover:not(:disabled) {
+        background: #e9e9e9;
+        border-color: #999;
+      }
+
+      .toolbar-btn:active:not(:disabled) {
+        background: #ddd;
+      }
+
+      .toolbar-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f5f5f5;
+      }
+
+      .version-label {
+        font-family: monospace;
+        font-size: 16px;
+        font-weight: bold;
+        padding: 0.5rem 1rem;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        min-width: 60px;
+        text-align: center;
       }
 
       .gve-text-rendition {
+        flex: 1;
         background: var(--gve-bg-color, #fafafa);
         border: 1px solid var(--gve-border-color, #ddd);
       }
