@@ -7,7 +7,13 @@ import { SpreadingEngine } from "./spreading-engine";
 import { TextLayout, CharPosition } from "./text-layout";
 import { FeatureResolver, RenditionConfig } from "./feature-resolver";
 import { isLineBreak, isSpace, getNodeSpan } from "../utils/node-utils";
-import { createTextElement, applyTextStyle, getSafeBBox, createLine, getTextWidth } from "./svg-utils";
+import {
+  createTextElement,
+  applyTextStyle,
+  getSafeBBox,
+  createLine,
+  getTextWidth,
+} from "./svg-utils";
 import { parseOffset } from "../utils/text-utils";
 
 /**
@@ -495,7 +501,6 @@ export class TextRenderer {
     rootSvg: SVGElement,
     versionTag: string
   ): Promise<void> {
-
     this.logger.debug("TextRenderer", `Drawing border`, {
       edges,
       thickness,

@@ -1,4 +1,8 @@
-import { CharChainResult, CharNode, ChainOperationContextStep } from "../models";
+import {
+  CharChainResult,
+  CharNode,
+  ChainOperationContextStep,
+} from "../models";
 import { GveRenditionSettings, DEFAULT_SETTINGS } from "../settings/settings";
 import { Logger } from "./logger";
 import { AnimationEngine } from "../animation/animation-engine";
@@ -286,7 +290,9 @@ export class GveSnapshotRendition extends HTMLElement {
   /**
    * Process a single operation step.
    */
-  private async processOperation(step: ChainOperationContextStep): Promise<void> {
+  private async processOperation(
+    step: ChainOperationContextStep
+  ): Promise<void> {
     const operation = step.operation;
     this.logger.debug(
       "GveSnapshotRendition",
@@ -325,7 +331,12 @@ export class GveSnapshotRendition extends HTMLElement {
     );
 
     // Render hints if specified
-    if (config.hints && config.hints.length > 0 && this.hintRenderer && this.rootSvg) {
+    if (
+      config.hints &&
+      config.hints.length > 0 &&
+      this.hintRenderer &&
+      this.rootSvg
+    ) {
       await this.renderHints(
         config.hints,
         refNodes,

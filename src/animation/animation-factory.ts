@@ -1,4 +1,4 @@
-import { Logger } from '../core/logger';
+import { Logger } from "../core/logger";
 
 /**
  * Animation function signature.
@@ -32,30 +32,44 @@ export class AnimationFactory {
    * @returns An animation function that returns a Promise
    */
   createAnimation(code: string, label?: string): AnimationFunction {
-    return async (gsap: any, targetEl: SVGElement, rootEl: SVGElement): Promise<void> => {
+    return async (
+      gsap: any,
+      targetEl: SVGElement,
+      rootEl: SVGElement
+    ): Promise<void> => {
       try {
-        this.logger.debug('Animation', `Creating animation${label ? ` (${label})` : ''}`, { code });
+        this.logger.debug(
+          "Animation",
+          `Creating animation${label ? ` (${label})` : ""}`,
+          { code }
+        );
 
         // Create a function from the code string
         // The code has access to: gsap, targetEl, rootEl
-        const fn = new Function('gsap', 'targetEl', 'rootEl', code);
+        const fn = new Function("gsap", "targetEl", "rootEl", code);
 
         // Execute the function
         const result = fn(gsap, targetEl, rootEl);
 
         // If the result is a GSAP timeline or tween, wait for it to complete
-        if (result && typeof result.then === 'function') {
+        if (result && typeof result.then === "function") {
           await result;
-        } else if (result && typeof result.eventCallback === 'function') {
+        } else if (result && typeof result.eventCallback === "function") {
           // GSAP tween/timeline - wrap in promise
           await new Promise<void>((resolve) => {
-            result.eventCallback('onComplete', resolve);
+            result.eventCallback("onComplete", resolve);
           });
         }
 
-        this.logger.debug('Animation', `Animation complete${label ? ` (${label})` : ''}`);
+        this.logger.debug(
+          "Animation",
+          `Animation complete${label ? ` (${label})` : ""}`
+        );
       } catch (error) {
-        this.logger.error(`Animation error${label ? ` (${label})` : ''}:`, error);
+        this.logger.error(
+          `Animation error${label ? ` (${label})` : ""}:`,
+          error
+        );
         // Don't throw - allow rendering to continue even if animation fails
       }
     };
@@ -76,7 +90,9 @@ export class AnimationFactory {
     label?: string
   ): AnimationFunction | undefined {
     // Remove # prefix if present
-    const id = animationId.startsWith('#') ? animationId.substring(1) : animationId;
+    const id = animationId.startsWith("#")
+      ? animationId.substring(1)
+      : animationId;
 
     const code = animationsCatalog[id];
     if (!code) {
@@ -103,9 +119,13 @@ export class AnimationFactory {
   ): AnimationFunction | undefined {
     if (!animationValue) return undefined;
 
-    if (animationValue.startsWith('#')) {
+    if (animationValue.startsWith("#")) {
       // It's an ID reference
-      return this.createAnimationFromId(animationValue, animationsCatalog, label);
+      return this.createAnimationFromId(
+        animationValue,
+        animationsCatalog,
+        label
+      );
     } else {
       // It's direct code
       return this.createAnimation(animationValue, label);

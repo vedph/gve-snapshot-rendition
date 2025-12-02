@@ -1,5 +1,5 @@
-import { Logger } from '../core/logger';
-import { AnimationFactory, AnimationFunction } from './animation-factory';
+import { Logger } from "../core/logger";
+import { AnimationFactory, AnimationFunction } from "./animation-factory";
 
 /**
  * Animation engine that wraps GSAP and provides a consistent API.
@@ -38,7 +38,7 @@ export class AnimationEngine {
     try {
       await animation(this.gsap, element, rootElement);
     } catch (error) {
-      this.logger.error('Animation execution error:', error);
+      this.logger.error("Animation execution error:", error);
     }
   }
 
@@ -57,25 +57,32 @@ export class AnimationEngine {
     rootElement: SVGElement
   ): Promise<void> {
     if (shifts.size === 0) {
-      this.logger.debug('AnimationEngine', 'No elements to spread');
+      this.logger.debug("AnimationEngine", "No elements to spread");
       return;
     }
 
-    this.logger.debug('AnimationEngine', `Animating spreading for ${shifts.size} elements`);
-    this.logger.time('animateSpreading');
+    this.logger.debug(
+      "AnimationEngine",
+      `Animating spreading for ${shifts.size} elements`
+    );
+    this.logger.time("animateSpreading");
 
     const timeline = this.gsap.timeline();
 
     for (const [elementId, shift] of shifts.entries()) {
       const element = rootElement.querySelector(`#${elementId}`);
       if (!element) {
-        this.logger.warn(`Element ${elementId} not found for spreading animation`);
+        this.logger.warn(
+          `Element ${elementId} not found for spreading animation`
+        );
         continue;
       }
 
       // Get current transform
-      const currentTransform = element.getAttribute('transform') || '';
-      const translateMatch = currentTransform.match(/translate\(([-\d.]+),\s*([-\d.]+)\)/);
+      const currentTransform = element.getAttribute("transform") || "";
+      const translateMatch = currentTransform.match(
+        /translate\(([-\d.]+),\s*([-\d.]+)\)/
+      );
 
       let currentX = 0;
       let currentY = 0;
@@ -94,7 +101,7 @@ export class AnimationEngine {
         {
           attr: { transform: `translate(${newX}, ${newY})` },
           duration: duration / 1000, // Convert ms to seconds for GSAP
-          ease: 'power2.inOut',
+          ease: "power2.inOut",
         },
         0 // Start time: 0 means all animations start together
       );
@@ -102,10 +109,10 @@ export class AnimationEngine {
 
     // Wait for timeline to complete
     await new Promise<void>((resolve) => {
-      timeline.eventCallback('onComplete', resolve);
+      timeline.eventCallback("onComplete", resolve);
     });
 
-    this.logger.timeEnd('animateSpreading');
+    this.logger.timeEnd("animateSpreading");
   }
 
   /**
@@ -118,7 +125,10 @@ export class AnimationEngine {
   async fadeIn(elements: SVGElement[], duration: number): Promise<void> {
     if (elements.length === 0) return;
 
-    this.logger.debug('AnimationEngine', `Fading in ${elements.length} elements`);
+    this.logger.debug(
+      "AnimationEngine",
+      `Fading in ${elements.length} elements`
+    );
 
     return new Promise<void>((resolve) => {
       this.gsap.fromTo(
@@ -127,7 +137,7 @@ export class AnimationEngine {
         {
           opacity: 1,
           duration: duration / 1000,
-          ease: 'power2.inOut',
+          ease: "power2.inOut",
           onComplete: resolve,
         }
       );
@@ -144,13 +154,16 @@ export class AnimationEngine {
   async fadeOut(elements: SVGElement[], duration: number): Promise<void> {
     if (elements.length === 0) return;
 
-    this.logger.debug('AnimationEngine', `Fading out ${elements.length} elements`);
+    this.logger.debug(
+      "AnimationEngine",
+      `Fading out ${elements.length} elements`
+    );
 
     return new Promise<void>((resolve) => {
       this.gsap.to(elements, {
         opacity: 0,
         duration: duration / 1000,
-        ease: 'power2.inOut',
+        ease: "power2.inOut",
         onComplete: resolve,
       });
     });
@@ -171,7 +184,10 @@ export class AnimationEngine {
     newZoom: number,
     duration: number
   ): Promise<void> {
-    this.logger.debug('AnimationEngine', 'Animating pan/zoom transition', { newPan, newZoom });
+    this.logger.debug("AnimationEngine", "Animating pan/zoom transition", {
+      newPan,
+      newZoom,
+    });
 
     const currentPan = panZoomInstance.getPan();
     const currentZoom = panZoomInstance.getZoom();
@@ -183,7 +199,7 @@ export class AnimationEngine {
           pan: newPan,
           zoom: newZoom,
           duration: duration / 1000,
-          ease: 'power2.inOut',
+          ease: "power2.inOut",
           onUpdate: function () {
             panZoomInstance.pan(this.targets()[0].pan);
             panZoomInstance.zoom(this.targets()[0].zoom);
@@ -198,8 +214,8 @@ export class AnimationEngine {
    * Kill all active animations.
    */
   killAll(): void {
-    this.gsap.killTweensOf('*');
-    this.logger.debug('AnimationEngine', 'All animations killed');
+    this.gsap.killTweensOf("*");
+    this.logger.debug("AnimationEngine", "All animations killed");
   }
 
   /**
