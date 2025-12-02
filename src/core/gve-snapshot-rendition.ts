@@ -150,7 +150,8 @@ export class GveSnapshotRendition extends HTMLElement {
         this._settings,
         this.logger,
         this.animationEngine,
-        this.boundsCache
+        this.boundsCache,
+        this.spreadingEngine
       );
       this.logger.info("GSAP initialized");
       this.renderContent();
