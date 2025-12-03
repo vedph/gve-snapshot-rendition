@@ -15,6 +15,11 @@ import { Toolbar } from "../ui/toolbar";
 import { stringToNodes } from "../utils/node-utils";
 import { generateVersionPalette } from "../utils/color-palette";
 
+// External libraries
+import svgPanZoom from "svg-pan-zoom";
+type SvgPanZoomInstance = ReturnType<typeof svgPanZoom>;
+import gsap from "gsap";
+
 /**
  * GVE Snapshot Rendition Web Component.
  * Renders interactive text transformations from snapshot model data.
