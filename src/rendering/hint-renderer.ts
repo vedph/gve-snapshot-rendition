@@ -130,22 +130,27 @@ export class HintRenderer {
           currentHintGroup.setAttribute("id", `${uniqueId}-rbr${i + 1}`);
         }
 
-        // 7. Apply initial transformations (scale)
+        // 7. Append to SVG early (but invisible) so getBBox works
+        // Set visibility hidden temporarily for measurements
+        currentHintGroup.setAttribute("visibility", "hidden");
+        rootSvg.appendChild(currentHintGroup);
+
+        // 8. Apply initial transformations (scale)
         await this.applyHintTransformations(currentHintGroup, hint, rbr);
 
-        // 8. Position the hint
+        // 9. Position the hint
         await this.positionHint(currentHintGroup, hint, rbr);
 
-        // 9. Handle spreading if solid
+        // 10. Handle spreading if solid
         if (hint.solid) {
           await this.handleSpreading(currentHintGroup, rootSvg);
         }
 
-        // 10. Append to SVG (set initial opacity to 0 if animation present)
+        // 11. Make visible (set initial opacity to 0 if animation present)
+        currentHintGroup.removeAttribute("visibility");
         if (hint.animation) {
           currentHintGroup.setAttribute("opacity", "0");
         }
-        rootSvg.appendChild(currentHintGroup);
 
         // 11. Cache bounds
         const bbox = getSafeBBox(currentHintGroup);

@@ -196,7 +196,11 @@ export function parseSVGContent(svgString: string): SVGGElement | null {
     return null;
   }
 
-  return gElement as SVGGElement;
+  // Import the node into the current document's SVG namespace
+  // This ensures getBBox() will work properly
+  const importedElement = document.importNode(gElement, true) as SVGGElement;
+
+  return importedElement;
 }
 
 /**

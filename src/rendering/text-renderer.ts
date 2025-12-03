@@ -122,11 +122,6 @@ export class TextRenderer {
       bold: this.settings.bold,
     });
 
-    // Set initial opacity if animation is present
-    if (animationFn) {
-      textEl.setAttribute("opacity", "0");
-    }
-
     rootSvg.appendChild(textEl);
 
     // Cache bounds
@@ -135,6 +130,8 @@ export class TextRenderer {
 
     // Animate if function provided
     if (animationFn) {
+      // Set initial opacity to 0 for animation
+      textEl.setAttribute("opacity", "0");
       await this.animationEngine.animate(textEl, animationFn, rootSvg);
     }
   }

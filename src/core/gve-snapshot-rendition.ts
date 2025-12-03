@@ -245,7 +245,8 @@ export class GveSnapshotRendition extends HTMLElement {
   }
 
   /**
-   * Render content (base text and operations).
+   * Render content (base text only - starts at v0).
+   * Use goToVersionIndex() to navigate to specific versions.
    */
   private async renderContent(): Promise<void> {
     if (!this.textRenderer || !this.rootSvg || this.baseNodes.length === 0) {
@@ -268,13 +269,12 @@ export class GveSnapshotRendition extends HTMLElement {
       charOffsets
     );
 
-    // Process operations
-    if (this._data && this._data.steps && this._data.steps.length > 0) {
-      await this.processOperations();
-    }
+    // NOTE: Do NOT process operations here!
+    // Component starts at v0 (base text only)
+    // Use toolbar or goToVersionIndex() to navigate to other versions
 
     this.logger.timeEnd("renderContent");
-    this.logger.info("Content rendering complete");
+    this.logger.info("Content rendering complete - showing v0 (base text)");
   }
 
   /**
