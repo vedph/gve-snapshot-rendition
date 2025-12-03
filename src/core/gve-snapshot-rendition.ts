@@ -203,6 +203,21 @@ export class GveSnapshotRendition extends HTMLElement {
       `Processed data: ${this.baseNodes.length} base nodes, ${this._data.steps.length} steps`
     );
 
+    // Initialize toolbar if not already done
+    if (!this.toolbar && this._data.steps) {
+      const toolbarContainer = this.shadow.querySelector("#toolbar-container");
+      if (toolbarContainer) {
+        this.toolbar = new Toolbar(toolbarContainer as HTMLElement);
+        this.toolbar.setTotalVersions(this._data.steps.length);
+
+        // Listen for navigation events
+        toolbarContainer.addEventListener("navigate", (e: Event) => {
+          const customEvent = e as CustomEvent;
+          this.goToVersionIndex(customEvent.detail.index);
+        });
+      }
+    }
+
     // Trigger content rendering if renderers are ready
     if (this.textRenderer && this.rootSvg && this.baseNodes.length > 0) {
       this.renderContent();
@@ -240,18 +255,6 @@ export class GveSnapshotRendition extends HTMLElement {
 
     this.container.appendChild(this.rootSvg);
     this.shadow.appendChild(this.container);
-
-    // Initialize toolbar if data is available
-    if (this._data && this._data.steps) {
-      this.toolbar = new Toolbar(toolbarContainer);
-      this.toolbar.setTotalVersions(this._data.steps.length);
-
-      // Listen for navigation events
-      toolbarContainer.addEventListener("navigate", (e: Event) => {
-        const customEvent = e as CustomEvent;
-        this.goToVersionIndex(customEvent.detail.index);
-      });
-    }
 
     this.logger.debug("Component", "UI structure rendered");
   }
