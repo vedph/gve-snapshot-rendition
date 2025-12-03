@@ -125,7 +125,15 @@ export class GveSnapshotRendition extends HTMLElement {
   set settings(value: GveRenditionSettings) {
     this._settings = { ...DEFAULT_SETTINGS, ...value };
     this._logger.setEnabled(this._settings.debug || false);
-    this._logger.info("Settings updated");
+    this._logger.info("Settings updated", this._settings);
+
+    // When settings change, update renderers
+    if (this._textRenderer) {
+      this._textRenderer.updateSettings(this._settings);
+    }
+    if (this._hintRenderer) {
+      this._hintRenderer.updateSettings(this._settings);
+    }
     this.render();
   }
 
