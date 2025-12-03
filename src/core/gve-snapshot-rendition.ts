@@ -49,6 +49,7 @@ export class GveSnapshotRendition extends HTMLElement {
   private _baseNodes: CharNode[] = [];
   private _versionPalette: Map<string, string> = new Map();
   private _currentVersion: string = "v0";
+  private _currentVersionIndex: number = 0;
 
   constructor() {
     super();
@@ -291,6 +292,7 @@ export class GveSnapshotRendition extends HTMLElement {
     this._rootSvg.innerHTML = "";
     this._boundsCache.clear();
     this._currentVersion = "v0";
+    this._currentVersionIndex = 0;
 
     // Extract init features and render base text
     const charOffsets = this.extractCharOffsets();
@@ -356,6 +358,7 @@ export class GveSnapshotRendition extends HTMLElement {
       );
       // Still fire event even if no reference nodes
       this._currentVersion = versionTag;
+      this._currentVersionIndex = operation.run;
       this.dispatchEvent(
         new CustomEvent("versionTagChange", {
           detail: { from: this._currentVersion, to: versionTag },
@@ -382,7 +385,8 @@ export class GveSnapshotRendition extends HTMLElement {
         config.hints,
         refNodes,
         config.hintVars || new Map(),
-        operation.id || `op${operation.run}`
+        operation.id || `op${operation.run}`,
+        versionTag
       );
     }
 
@@ -401,6 +405,7 @@ export class GveSnapshotRendition extends HTMLElement {
 
     // Update current version
     this._currentVersion = versionTag;
+    this._currentVersionIndex = operation.run;
 
     // Fire versionTagChange event
     this.dispatchEvent(
@@ -473,7 +478,8 @@ export class GveSnapshotRendition extends HTMLElement {
     hintIds: string[],
     refNodes: CharNode[],
     hintVars: Map<string, string>,
-    operationId: string
+    operationId: string,
+    versionTag: string
   ): Promise<void> {
     if (!this._hintRenderer || !this._rootSvg) return;
 
@@ -494,43 +500,124 @@ export class GveSnapshotRendition extends HTMLElement {
         hintVars,
         operationId,
         i + 1, // ordinal (1-based)
-        this._baseNodes
+        this._baseNodes,
+        versionTag
       );
     }
   }
 
   /**
    * Navigate to a specific version index (0 = base text, 1+ = after operations).
+   * Uses accumulation model: forward adds elements, backward removes them.
    */
   private async goToVersionIndex(targetIndex: number): Promise<void> {
     if (!this._data || !this._textRenderer || !this._rootSvg) return;
 
-    this._logger.info(`Navigating to version index ${targetIndex}`);
-
-    // Clear and reset
-    this._rootSvg.innerHTML = "";
-    this._boundsCache.clear();
-    this._currentVersion = "v0";
-
-    // Render base text
-    const charOffsets = this.extractCharOffsets();
-    await this._textRenderer.renderBaseText(
-      this._baseNodes,
-      this._rootSvg,
-      charOffsets
+    this._logger.info(
+      `Navigating from v${this._currentVersionIndex} to v${targetIndex}`
     );
 
-    // Process operations up to target index
-    if (targetIndex > 0 && this._data.steps) {
-      for (let i = 0; i < targetIndex && i < this._data.steps.length; i++) {
-        await this.processOperation(this._data.steps[i]);
-      }
+    // Determine direction
+    if (targetIndex === this._currentVersionIndex) {
+      // Already at target
+      return;
+    }
+
+    if (targetIndex > this._currentVersionIndex) {
+      // FORWARD navigation: add elements
+      await this.navigateForward(targetIndex);
+    } else {
+      // BACKWARD navigation: remove elements
+      await this.navigateBackward(targetIndex);
     }
 
     // Update toolbar
     if (this._toolbar) {
       this._toolbar.setCurrentIndex(targetIndex);
     }
+  }
+
+  /**
+   * Navigate forward by processing operations one by one.
+   * Each operation adds hints and/or text that persist for all future versions.
+   */
+  private async navigateForward(targetIndex: number): Promise<void> {
+    if (!this._data || !this._data.steps) return;
+
+    // Process each operation from current+1 to target
+    for (
+      let i = this._currentVersionIndex;
+      i < targetIndex && i < this._data.steps.length;
+      i++
+    ) {
+      await this.processOperation(this._data.steps[i]);
+    }
+
+    this._currentVersionIndex = targetIndex;
+  }
+
+  /**
+   * Navigate backward by removing elements added in later versions.
+   * Reverses operations from current down to target.
+   */
+  private async navigateBackward(targetIndex: number): Promise<void> {
+    if (!this._rootSvg) return;
+
+    // Remove elements from each version going backward
+    for (let i = this._currentVersionIndex; i > targetIndex; i--) {
+      await this.removeVersionElements(i);
+    }
+
+    this._currentVersionIndex = targetIndex;
+
+    // Update current version tag
+    this._currentVersion = targetIndex === 0 ? "v0" : `v${targetIndex}`;
+  }
+
+  /**
+   * Remove all elements belonging to a specific version.
+   * Optionally fades them out before removal based on settings.
+   */
+  private async removeVersionElements(versionIndex: number): Promise<void> {
+    if (!this._rootSvg || !this._animationEngine) return;
+
+    const versionClass = `version-v${versionIndex}`;
+    const elements = Array.from(
+      this._rootSvg.querySelectorAll(`.${versionClass}`)
+    );
+
+    if (elements.length === 0) {
+      this._logger.debug(
+        "Navigation",
+        `No elements found for ${versionClass}`
+      );
+      return;
+    }
+
+    this._logger.info(
+      `Removing ${elements.length} elements from v${versionIndex}`
+    );
+
+    // If backwardFadeOutTime > 0, animate fadeout first
+    if (this._settings.backwardFadeOutTime > 0) {
+      const fadeOutPromises: Promise<void>[] = [];
+
+      elements.forEach((el) => {
+        const promise = gsap.to(el, {
+          opacity: 0,
+          duration: this._settings.backwardFadeOutTime / 1000,
+        });
+        fadeOutPromises.push(promise as any);
+      });
+
+      await Promise.all(fadeOutPromises);
+    }
+
+    // Remove elements from DOM
+    elements.forEach((el) => el.remove());
+
+    // TODO: Reverse spreading animation if spreadTime > 0
+    // This requires tracking which elements were affected by spreading
   }
 
   /**

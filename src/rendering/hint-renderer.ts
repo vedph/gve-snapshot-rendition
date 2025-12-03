@@ -51,6 +51,7 @@ export class HintRenderer {
    * @param operationId - ID of the operation (for unique hint ID)
    * @param hintOrdinal - Ordinal number of this hint for the operation (1, 2, 3...)
    * @param allBaseNodes - All base text nodes (for displaced span)
+   * @param versionTag - Version tag to add as CSS class
    * @returns Promise that resolves when rendering completes
    */
   async renderHint(
@@ -61,7 +62,8 @@ export class HintRenderer {
     variables: Map<string, string>,
     operationId: string,
     hintOrdinal: number,
-    allBaseNodes: CharNode[]
+    allBaseNodes: CharNode[],
+    versionTag: string
   ): Promise<void> {
     this._logger.time(`renderHint-${hintId}`);
     this._logger.info(`Rendering hint: ${hintId} for operation ${operationId}`);
@@ -81,9 +83,10 @@ export class HintRenderer {
         return;
       }
 
-      // 3. Set unique ID for the hint
+      // 3. Set unique ID and version class for the hint
       const uniqueId = `hint-${operationId}-${hintOrdinal}`;
       hintGroup.setAttribute("id", uniqueId);
+      hintGroup.setAttribute("class", `hint version-${versionTag}`);
 
       // 4. Calculate RBR(s) - may be multiple if text split across lines
       let rbrs: BoundingRect[];

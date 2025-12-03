@@ -119,7 +119,7 @@ export class TextRenderer {
   ): Promise<void> {
     const textEl = createTextElement(node.data, {
       id: `n_${node.id}`,
-      class: `node ${versionTag}`,
+      class: `node version-${versionTag}`,
       x: position.x,
       y: position.y,
     });
