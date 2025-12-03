@@ -409,6 +409,8 @@ The general drawing logic for the entities rendered by this component is outline
 
 The **spreading logic** is as follows; here "E" means the bounding rectangle of the element to be drawn, E.L its top-left corner X, E.R its top-right corner X, E.T its top-left corner Y, and E.B its bottom-left corner Y:
 
+TODO: update spreading logic description from code, this had flaws!
+
 - if E does not overlap with any other element's bounding rectangle, no spreading is required. ⚠️ Note: as calculating the bounding rectangles for all the elements in the text rendition area would be costly, it is suggested to store them in an internal private map in the renderer component; whenever a new element is added, the map is updated with its bounding rectangle. Elements once added are never removed, so this cache is effective.
 - else, spreading is computed for the X and Y axes separately, before applying it:
   - on the X (=horizontal) axis:

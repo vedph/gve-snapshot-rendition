@@ -21,6 +21,10 @@
   },
   "packageManager": "pnpm@10.24.0",
   "dependencies": {
+    "@types/gsap": "^3.0.0",
+    "@types/svg-pan-zoom": "^3.4.0",
+    "gsap": "^3.13.0",
+    "svg-pan-zoom": "^3.6.2",
     "tslib": "^2.8.1",
     "typescript": "^5.7.2"
   },
