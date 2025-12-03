@@ -164,8 +164,8 @@ export class TextRenderer {
 
     // Animate if function provided
     if (animationFn) {
-      // Set initial opacity to 0 for animation
-      textEl.setAttribute("opacity", "0");
+      // Set initial opacity to 0 for animation via CSS style (GSAP animates CSS)
+      textEl.style.opacity = "0";
       await this._animationEngine.animate(textEl, animationFn, rootSvg);
     }
   }
