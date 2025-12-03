@@ -78,14 +78,14 @@ export class GveSnapshotRendition extends HTMLElement {
   /**
    * Observed attributes for the web component.
    */
-  static get observedAttributes(): string[] {
+  public static get observedAttributes(): string[] {
     return ["version-tag"];
   }
 
   /**
    * Called when component is added to the DOM.
    */
-  connectedCallback(): void {
+  public connectedCallback(): void {
     this._logger.info("Component connected to DOM");
     this.render();
     this.initializeGsap();
@@ -94,7 +94,7 @@ export class GveSnapshotRendition extends HTMLElement {
   /**
    * Called when component is removed from the DOM.
    */
-  disconnectedCallback(): void {
+  public disconnectedCallback(): void {
     this._logger.info("Component disconnected from DOM");
     if (this._animationEngine) {
       this._animationEngine.killAll();
@@ -104,7 +104,7 @@ export class GveSnapshotRendition extends HTMLElement {
   /**
    * Called when observed attributes change.
    */
-  attributeChangedCallback(
+  public attributeChangedCallback(
     name: string,
     oldValue: string,
     newValue: string
@@ -118,11 +118,11 @@ export class GveSnapshotRendition extends HTMLElement {
   /**
    * Settings property (bindable).
    */
-  get settings(): GveRenditionSettings {
+  public get settings(): GveRenditionSettings {
     return this._settings;
   }
 
-  set settings(value: GveRenditionSettings) {
+  public set settings(value: GveRenditionSettings) {
     this._settings = { ...DEFAULT_SETTINGS, ...value };
     this._logger.setEnabled(this._settings.debug || false);
     this._logger.info("Settings updated", this._settings);
@@ -140,11 +140,11 @@ export class GveSnapshotRendition extends HTMLElement {
   /**
    * Data property (bindable).
    */
-  get data(): CharChainResult | undefined {
+  public get data(): CharChainResult | undefined {
     return this._data;
   }
 
-  set data(value: CharChainResult | undefined) {
+  public set data(value: CharChainResult | undefined) {
     this._data = value;
     this._logger.info("Data updated", value);
 
@@ -161,11 +161,11 @@ export class GveSnapshotRendition extends HTMLElement {
   /**
    * Version tag property (bindable).
    */
-  get versionTag(): string | undefined {
+  public get versionTag(): string | undefined {
     return this._versionTag;
   }
 
-  set versionTag(value: string | undefined) {
+  public set versionTag(value: string | undefined) {
     this._versionTag = value;
     this.navigateToVersion(value);
   }
