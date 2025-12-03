@@ -277,6 +277,24 @@ The hint transformation properties are:
 
 These properties define the position of the hint. As hint positioning is relative, _defining the position involves first defining the size_ of the hint's bounding rectangle.
 
+The hint size is calculated in such a way that it can be easily predicted, because this is essential to let users create and provide their own hint SVG code.
+
+In general, the idea is:
+
+(1) start with a hint which has exactly _the same size and position_ of the bounding rectangle (the RBR) containing the SVG `text` elements corresponding to the affected nodes. For instance, say you have a diagonal stroke hint representing the deletion of 3 characters ABC; we want this diagonal line to be drawn on top of these 3 characters: no more, no less. Thus, independently from the original (design) size of the hint's SVG, we must scale it so that it _fits_ this RBR. It is like having a patch we want to stick on top of a rectangle: first we enlarge/shrink it so that it perfectly fits in it, then we stick it on top of that rectangle (the RBR).
+
+This is complicated by two more aspects:
+
+- the position is always _relative to the RBR_. In its default value, `o`, it is equal to it and relative to its center (`o`=origin). We use the center because it will preserve the relative position when scaling the hint; otherwise, it would be displaced once scaled. Other relative positions can be specified: `n`=north, `ne`=north-east, etc.; but they are always relative to the RBR. Also, the other term of the "relative to RBR" is the `handle` element inside the SVG of the hint, if there is any. Otherwise, it is the center of the bounding rectangle of the whole hint, just like for RBR.
+- _there can be multiple RBR's_ when lines are split; but the logic is the same. In this case we will use the same logic for each single RBR, thus effectively multiplying the hints (except when they are placeholder hints, in which case they are displayed only for the first RBR). Anyway, this is an implementation detail; the logic stays the same, as we want to "cover" the RBR.
+- note that there can be a _displaced RBR_ using other nodes than those affected by the operation being rendered. This is not strictly of interest for the hint renderer once it has got its reference nodes. It is just that in this case they are taken from elsewhere.
+
+(2) optionally, hint designers might want to alter this default behavior, changing the calculated size (via `scale`) and/or position (via `offsetX` and `offsetY`). In this case, we first scale and then offset the hint as specified.
+
+(3) finally, hint designers might add a rotation. This is applied last.
+
+A special case is the text _placeholder hint_. When this hasn't the `fit` class, this means that we no longer use the fit-to-RBR logic described above; rather, we let the text be drawn character by character, just like for base text or added text. Once this is done, the bounding rectangle including the whole text (all the characters drawn) will be the hint's size. The hint's position instead is defined as above; and the same holds for scale, offset, and rotation.
+
 The **hint's size** is defined by this logic:
 
 1. the hint SVG `g` element is created;
