@@ -339,11 +339,12 @@ export class GveSnapshotRendition extends HTMLElement {
     const operation = step.operation;
     this._logger.debug(
       "GveSnapshotRendition",
-      `Processing operation ${operation.id} (type=${operation.type}, outputTag=${operation.outputTag})`
+      `Processing operation ${operation.id} (type=${operation.type}, outputTag=${step.outputTag})`
     );
 
     // Fire versionTagChanging event
-    const versionTag = operation.outputTag || `v${step.operation.run}`;
+    // Use step.outputTag which is the correct version tag for this operation's result
+    const versionTag = step.outputTag || `v${step.operation.run}`;
     this.dispatchEvent(
       new CustomEvent("versionTagChanging", {
         detail: { from: this._currentVersion, to: versionTag },
@@ -359,7 +360,9 @@ export class GveSnapshotRendition extends HTMLElement {
       );
       // Still fire event even if no reference nodes
       this._currentVersion = versionTag;
-      this._currentVersionIndex = operation.run;
+      // Extract version index from tag (e.g., "v2" → 2)
+      const versionMatch = versionTag.match(/v(\d+)/);
+      this._currentVersionIndex = versionMatch ? parseInt(versionMatch[1]) : 0;
       this.dispatchEvent(
         new CustomEvent("versionTagChange", {
           detail: { from: this._currentVersion, to: versionTag },
@@ -406,7 +409,9 @@ export class GveSnapshotRendition extends HTMLElement {
 
     // Update current version
     this._currentVersion = versionTag;
-    this._currentVersionIndex = operation.run;
+    // Extract version index from tag (e.g., "v2" → 2)
+    const versionMatch = versionTag.match(/v(\d+)/);
+    this._currentVersionIndex = versionMatch ? parseInt(versionMatch[1]) : 0;
 
     // Fire versionTagChange event
     this.dispatchEvent(
