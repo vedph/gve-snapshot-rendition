@@ -105,7 +105,7 @@ export class TextRenderer {
       rootEl: SVGElement
     ) => Promise<void>
   ): Promise<void> {
-    const textEl = createTextElement(node.label, {
+    const textEl = createTextElement(node.data, {
       id: `n_${node.id}`,
       class: `node ${versionTag}`,
       x: position.x,

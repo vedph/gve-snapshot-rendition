@@ -131,8 +131,15 @@ export class GveSnapshotRendition extends HTMLElement {
   set data(value: CharChainResult | undefined) {
     this._data = value;
     this.logger.info("Data updated", value);
+
+    // Check if we need to initialize UI first
+    const needsUISetup = !this.rootSvg || !this.container;
+
+    if (needsUISetup) {
+      this.render();
+    }
+
     this.processData();
-    this.render();
   }
 
   /**
@@ -195,6 +202,11 @@ export class GveSnapshotRendition extends HTMLElement {
     this.logger.info(
       `Processed data: ${this.baseNodes.length} base nodes, ${this._data.steps.length} steps`
     );
+
+    // Trigger content rendering if renderers are ready
+    if (this.textRenderer && this.rootSvg && this.baseNodes.length > 0) {
+      this.renderContent();
+    }
   }
 
   /**
