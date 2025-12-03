@@ -3,27 +3,27 @@
  * Logging is controlled by the debug setting in component settings.
  */
 export class Logger {
-  private enabled: boolean;
-  private prefix: string;
+  private _enabled: boolean;
+  private _prefix: string;
 
   constructor(prefix: string = "GVE", enabled: boolean = false) {
-    this.prefix = prefix;
-    this.enabled = enabled;
+    this._prefix = prefix;
+    this._enabled = enabled;
   }
 
   /**
    * Enable or disable logging.
    */
   setEnabled(enabled: boolean): void {
-    this.enabled = enabled;
+    this._enabled = enabled;
   }
 
   /**
    * Log an informational message.
    */
   info(message: string, ...args: any[]): void {
-    if (this.enabled) {
-      console.log(`[${this.prefix}] ${message}`, ...args);
+    if (this._enabled) {
+      console.log(`[${this._prefix}] ${message}`, ...args);
     }
   }
 
@@ -31,8 +31,8 @@ export class Logger {
    * Log a warning message.
    */
   warn(message: string, ...args: any[]): void {
-    if (this.enabled) {
-      console.warn(`[${this.prefix}] ${message}`, ...args);
+    if (this._enabled) {
+      console.warn(`[${this._prefix}] ${message}`, ...args);
     }
   }
 
@@ -40,18 +40,18 @@ export class Logger {
    * Log an error message (always logged, regardless of debug setting).
    */
   error(message: string, ...args: any[]): void {
-    console.error(`[${this.prefix}] ${message}`, ...args);
+    console.error(`[${this._prefix}] ${message}`, ...args);
   }
 
   /**
    * Log a debug message with detailed context.
    */
   debug(category: string, message: string, data?: any): void {
-    if (this.enabled) {
+    if (this._enabled) {
       if (data !== undefined) {
-        console.log(`[${this.prefix}:${category}] ${message}`, data);
+        console.log(`[${this._prefix}:${category}] ${message}`, data);
       } else {
-        console.log(`[${this.prefix}:${category}] ${message}`);
+        console.log(`[${this._prefix}:${category}] ${message}`);
       }
     }
   }
@@ -60,8 +60,8 @@ export class Logger {
    * Time a block of code execution.
    */
   time(label: string): void {
-    if (this.enabled) {
-      console.time(`[${this.prefix}] ${label}`);
+    if (this._enabled) {
+      console.time(`[${this._prefix}] ${label}`);
     }
   }
 
@@ -69,8 +69,8 @@ export class Logger {
    * End timing a block of code.
    */
   timeEnd(label: string): void {
-    if (this.enabled) {
-      console.timeEnd(`[${this.prefix}] ${label}`);
+    if (this._enabled) {
+      console.timeEnd(`[${this._prefix}] ${label}`);
     }
   }
 }

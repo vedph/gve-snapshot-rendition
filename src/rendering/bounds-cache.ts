@@ -17,12 +17,12 @@ export interface BoundingRect {
  * This avoids expensive getBBox() calls and improves spreading performance.
  */
 export class BoundsCache {
-  private cache: Map<string, BoundingRect>;
-  private logger: Logger;
+  private _cache: Map<string, BoundingRect>;
+  private _logger: Logger;
 
   constructor(logger: Logger) {
-    this.cache = new Map();
-    this.logger = logger;
+    this._cache = new Map();
+    this._logger = logger;
   }
 
   /**
@@ -38,51 +38,51 @@ export class BoundsCache {
       bottom: bounds.y + bounds.height,
     };
 
-    this.cache.set(elementId, rect);
-    this.logger.debug("BoundsCache", `Cached bounds for ${elementId}`, rect);
+    this._cache.set(elementId, rect);
+    this._logger.debug("BoundsCache", `Cached bounds for ${elementId}`, rect);
   }
 
   /**
    * Get the bounding rectangle for an element.
    */
   get(elementId: string): BoundingRect | undefined {
-    return this.cache.get(elementId);
+    return this._cache.get(elementId);
   }
 
   /**
    * Check if an element's bounds are cached.
    */
   has(elementId: string): boolean {
-    return this.cache.has(elementId);
+    return this._cache.has(elementId);
   }
 
   /**
    * Remove bounds for an element.
    */
   delete(elementId: string): void {
-    this.cache.delete(elementId);
+    this._cache.delete(elementId);
   }
 
   /**
    * Clear all cached bounds.
    */
   clear(): void {
-    this.cache.clear();
-    this.logger.debug("BoundsCache", "Cache cleared");
+    this._cache.clear();
+    this._logger.debug("BoundsCache", "Cache cleared");
   }
 
   /**
    * Get all cached element IDs.
    */
   getAllIds(): string[] {
-    return Array.from(this.cache.keys());
+    return Array.from(this._cache.keys());
   }
 
   /**
    * Get all cached bounds.
    */
   getAllBounds(): BoundingRect[] {
-    return Array.from(this.cache.values());
+    return Array.from(this._cache.values());
   }
 
   /**
@@ -92,7 +92,7 @@ export class BoundsCache {
   updateFromElement(element: SVGElement): boolean {
     const id = element.getAttribute("id");
     if (!id) {
-      this.logger.warn("Attempted to cache bounds for element without id");
+      this._logger.warn("Attempted to cache bounds for element without id");
       return false;
     }
 
@@ -101,7 +101,7 @@ export class BoundsCache {
       this.set(id, bbox);
       return true;
     } catch (error) {
-      this.logger.warn(`Failed to get bounds for element ${id}`, error);
+      this._logger.warn(`Failed to get bounds for element ${id}`, error);
       return false;
     }
   }
@@ -137,6 +137,6 @@ export class BoundsCache {
    * Get the number of cached items.
    */
   size(): number {
-    return this.cache.size;
+    return this._cache.size;
   }
 }

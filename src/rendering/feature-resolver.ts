@@ -47,10 +47,10 @@ export interface RenditionConfig {
  * a complete configuration for rendering.
  */
 export class FeatureResolver {
-  private logger: Logger;
+  private _logger: Logger;
 
   constructor(logger: Logger) {
-    this.logger = logger;
+    this._logger = logger;
   }
 
   /**
@@ -184,14 +184,14 @@ export class FeatureResolver {
         case "r_border":
           config.border = parseBorder(value);
           if (!config.border) {
-            this.logger.warn(`Invalid r_border value: ${value}`);
+            this._logger.warn(`Invalid r_border value: ${value}`);
           }
           break;
 
         case "r_text-displaced-span":
           config.textDisplacedSpan = parseDisplacedSpan(value);
           if (!config.textDisplacedSpan) {
-            this.logger.warn(`Invalid r_text-displaced-span value: ${value}`);
+            this._logger.warn(`Invalid r_text-displaced-span value: ${value}`);
           }
           break;
 

@@ -26,16 +26,16 @@ const REFERENCE_CHAR = "m";
  * spaces, and character offsets.
  */
 export class TextLayout {
-  private settings: GveRenditionSettings;
-  private logger: Logger;
-  private spaceWidth: number;
+  private _settings: GveRenditionSettings;
+  private _logger: Logger;
+  private _spaceWidth: number;
 
   constructor(settings: GveRenditionSettings, logger: Logger) {
-    this.settings = settings;
-    this.logger = logger;
+    this._settings = settings;
+    this._logger = logger;
 
     // Calculate space width based on reference character
-    this.spaceWidth = this.calculateSpaceWidth();
+    this._spaceWidth = this.calculateSpaceWidth();
   }
 
   /**
@@ -44,13 +44,13 @@ export class TextLayout {
   private calculateSpaceWidth(): number {
     const refCharWidth = getTextWidth(
       REFERENCE_CHAR,
-      this.settings.fontFamily,
-      this.settings.fontSize,
-      this.settings.bold,
-      this.settings.italic
+      this._settings.fontFamily,
+      this._settings.fontSize,
+      this._settings.bold,
+      this._settings.italic
     );
 
-    return refCharWidth * this.settings.spaceWidthFraction;
+    return refCharWidth * this._settings.spaceWidthFraction;
   }
 
   /**
@@ -64,11 +64,11 @@ export class TextLayout {
     nodes: CharNode[],
     charOffsets?: Map<number, { x?: number; y?: number }>
   ): CharPosition[] {
-    this.logger.time("calculateBaseTextPositions");
+    this._logger.time("calculateBaseTextPositions");
 
     const positions: CharPosition[] = [];
-    let currentX = this.settings.marginLeft;
-    let currentY = this.settings.marginTop + this.settings.fontSize;
+    let currentX = this._settings.marginLeft;
+    let currentY = this._settings.marginTop + this._settings.fontSize;
     let lineNumber = 0;
 
     for (let i = 0; i < nodes.length; i++) {
@@ -79,14 +79,14 @@ export class TextLayout {
       if (offset) {
         if (offset.x !== undefined) {
           currentX += offset.x;
-          this.logger.debug(
+          this._logger.debug(
             "TextLayout",
             `Applied X offset ${offset.x} to node ${node.id}`
           );
         }
         if (offset.y !== undefined) {
           currentY += offset.y;
-          this.logger.debug(
+          this._logger.debug(
             "TextLayout",
             `Applied Y offset ${offset.y} to node ${node.id}`
           );
@@ -95,10 +95,10 @@ export class TextLayout {
 
       if (isLineBreak(node)) {
         // Line break: move to next line
-        currentX = this.settings.marginLeft;
+        currentX = this._settings.marginLeft;
         currentY +=
-          this.settings.fontSize * this.settings.lineHeight +
-          this.settings.lineSpacing;
+          this._settings.fontSize * this._settings.lineHeight +
+          this._settings.lineSpacing;
         lineNumber++;
 
         // Store position even for line breaks (though they won't be rendered)
@@ -117,7 +117,7 @@ export class TextLayout {
           lineNumber,
         });
 
-        currentX += this.spaceWidth + this.settings.charSpacing;
+        currentX += this._spaceWidth + this._settings.charSpacing;
       } else {
         // Regular character
         positions.push({
@@ -130,21 +130,21 @@ export class TextLayout {
         // Calculate character width for next position
         const charWidth = getTextWidth(
           node.data,
-          this.settings.fontFamily,
-          this.settings.fontSize,
-          this.settings.bold,
-          this.settings.italic
+          this._settings.fontFamily,
+          this._settings.fontSize,
+          this._settings.bold,
+          this._settings.italic
         );
 
-        currentX += charWidth + this.settings.charSpacing;
+        currentX += charWidth + this._settings.charSpacing;
       }
     }
 
-    this.logger.debug(
+    this._logger.debug(
       "TextLayout",
       `Calculated ${positions.length} positions across ${lineNumber + 1} lines`
     );
-    this.logger.timeEnd("calculateBaseTextPositions");
+    this._logger.timeEnd("calculateBaseTextPositions");
 
     return positions;
   }
@@ -234,14 +234,14 @@ export class TextLayout {
    * Update settings and recalculate space width.
    */
   updateSettings(settings: GveRenditionSettings): void {
-    this.settings = settings;
-    this.spaceWidth = this.calculateSpaceWidth();
+    this._settings = settings;
+    this._spaceWidth = this.calculateSpaceWidth();
   }
 
   /**
    * Get the computed space width.
    */
   getSpaceWidth(): number {
-    return this.spaceWidth;
+    return this._spaceWidth;
   }
 }

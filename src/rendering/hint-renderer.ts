@@ -20,11 +20,11 @@ import { getNodeSpan } from "../utils/node-utils";
  * Hints are visual counterparts of editing operations.
  */
 export class HintRenderer {
-  private settings: GveRenditionSettings;
-  private logger: Logger;
-  private animationEngine: AnimationEngine;
-  private boundsCache: BoundsCache;
-  private spreadingEngine: SpreadingEngine;
+  private _settings: GveRenditionSettings;
+  private _logger: Logger;
+  private _animationEngine: AnimationEngine;
+  private _boundsCache: BoundsCache;
+  private _spreadingEngine: SpreadingEngine;
 
   constructor(
     settings: GveRenditionSettings,
@@ -33,11 +33,11 @@ export class HintRenderer {
     boundsCache: BoundsCache,
     spreadingEngine: SpreadingEngine
   ) {
-    this.settings = settings;
-    this.logger = logger;
-    this.animationEngine = animationEngine;
-    this.boundsCache = boundsCache;
-    this.spreadingEngine = spreadingEngine;
+    this._settings = settings;
+    this._logger = logger;
+    this._animationEngine = animationEngine;
+    this._boundsCache = boundsCache;
+    this._spreadingEngine = spreadingEngine;
   }
 
   /**
@@ -63,13 +63,13 @@ export class HintRenderer {
     hintOrdinal: number,
     allBaseNodes: CharNode[]
   ): Promise<void> {
-    this.logger.time(`renderHint-${hintId}`);
-    this.logger.info(`Rendering hint: ${hintId} for operation ${operationId}`);
+    this._logger.time(`renderHint-${hintId}`);
+    this._logger.info(`Rendering hint: ${hintId} for operation ${operationId}`);
 
     try {
       // 1. Resolve placeholders in SVG
       const resolvedSvg = resolvePlaceholders(hint.svg, variables);
-      this.logger.debug("HintRenderer", `Placeholders resolved`, {
+      this._logger.debug("HintRenderer", `Placeholders resolved`, {
         original: hint.svg,
         resolved: resolvedSvg,
       });
@@ -77,7 +77,7 @@ export class HintRenderer {
       // 2. Parse SVG to get root <g> element
       const hintGroup = parseSVGContent(resolvedSvg);
       if (!hintGroup) {
-        this.logger.error(`Failed to parse SVG for hint ${hintId}`);
+        this._logger.error(`Failed to parse SVG for hint ${hintId}`);
         return;
       }
 
@@ -95,11 +95,11 @@ export class HintRenderer {
       }
 
       if (rbrs.length === 0) {
-        this.logger.warn(`No RBRs calculated for hint ${hintId}, skipping`);
+        this._logger.warn(`No RBRs calculated for hint ${hintId}, skipping`);
         return;
       }
 
-      this.logger.debug(
+      this._logger.debug(
         "HintRenderer",
         `Calculated ${rbrs.length} RBR(s)`,
         rbrs
@@ -116,7 +116,7 @@ export class HintRenderer {
 
         // Skip if placeholder hint already rendered
         if (hasPlaceholder && placeholderRendered) {
-          this.logger.debug(
+          this._logger.debug(
             "HintRenderer",
             `Skipping RBR ${i + 1} for placeholder hint (already rendered once)`
           );
@@ -154,19 +154,19 @@ export class HintRenderer {
 
         // 11. Cache bounds
         const bbox = getSafeBBox(currentHintGroup);
-        this.boundsCache.set(currentHintGroup.getAttribute("id")!, bbox);
+        this._boundsCache.set(currentHintGroup.getAttribute("id")!, bbox);
 
         // 12. Animate entrance
         if (hint.animation) {
-          const animation = this.animationEngine
+          const animation = this._animationEngine
             .getFactory()
             .resolveAnimation(
               hint.animation,
-              this.settings.animations,
+              this._settings.animations,
               `hint-${hintId}`
             );
           if (animation) {
-            await this.animationEngine.animate(
+            await this._animationEngine.animate(
               currentHintGroup,
               animation,
               rootSvg
@@ -180,9 +180,9 @@ export class HintRenderer {
         }
       }
 
-      this.logger.timeEnd(`renderHint-${hintId}`);
+      this._logger.timeEnd(`renderHint-${hintId}`);
     } catch (error) {
-      this.logger.error(`Error rendering hint ${hintId}:`, error);
+      this._logger.error(`Error rendering hint ${hintId}:`, error);
     }
   }
 
@@ -202,9 +202,9 @@ export class HintRenderer {
     let lastY: number | null = null;
 
     for (const elementId of nodeElementIds) {
-      const bounds = this.boundsCache.get(elementId);
+      const bounds = this._boundsCache.get(elementId);
       if (!bounds) {
-        this.logger.warn(`Bounds not found for node element ${elementId}`);
+        this._logger.warn(`Bounds not found for node element ${elementId}`);
         continue;
       }
 
@@ -227,7 +227,7 @@ export class HintRenderer {
 
     // Calculate RBR for each line group
     for (const group of lineGroups) {
-      const rbr = this.boundsCache.getUnionBounds(group);
+      const rbr = this._boundsCache.getUnionBounds(group);
       if (rbr) {
         rbrs.push(rbr);
       }
@@ -245,13 +245,13 @@ export class HintRenderer {
   ): BoundingRect[] {
     const parsed = parseDisplacedSpan(displacedRefSpan);
     if (!parsed) {
-      this.logger.warn(`Invalid displaced span format: ${displacedRefSpan}`);
+      this._logger.warn(`Invalid displaced span format: ${displacedRefSpan}`);
       return [];
     }
 
     const nodes = getNodeSpan(allBaseNodes, parsed.nodeId, parsed.count);
     if (nodes.length === 0) {
-      this.logger.warn(`No nodes found for displaced span ${displacedRefSpan}`);
+      this._logger.warn(`No nodes found for displaced span ${displacedRefSpan}`);
       return [];
     }
 
@@ -275,7 +275,7 @@ export class HintRenderer {
       width *= hint.scaleX;
       height *= hint.scaleY;
 
-      this.logger.debug("HintRenderer", `Scaling hint`, {
+      this._logger.debug("HintRenderer", `Scaling hint`, {
         scaleX: hint.scaleX,
         scaleY: hint.scaleY,
         originalSize: { width: rbr.width, height: rbr.height },
@@ -284,13 +284,13 @@ export class HintRenderer {
     }
 
     // Apply hint margin
-    if (this.settings.hintMargin > 0) {
-      width += this.settings.hintMargin * 2;
-      height += this.settings.hintMargin * 2;
+    if (this._settings.hintMargin > 0) {
+      width += this._settings.hintMargin * 2;
+      height += this._settings.hintMargin * 2;
 
-      this.logger.debug(
+      this._logger.debug(
         "HintRenderer",
-        `Applied hint margin: ${this.settings.hintMargin}px`
+        `Applied hint margin: ${this._settings.hintMargin}px`
       );
     }
 
@@ -329,7 +329,7 @@ export class HintRenderer {
     const finalX = targetPos.x - handlePos.x + offsetX;
     const finalY = targetPos.y - handlePos.y + offsetY;
 
-    this.logger.debug("HintRenderer", `Positioning hint`, {
+    this._logger.debug("HintRenderer", `Positioning hint`, {
       position: hint.position,
       targetPos,
       handlePos,
@@ -347,7 +347,7 @@ export class HintRenderer {
     });
 
     // Handle hint handle visibility for debugging
-    if (this.settings.showHintHandles) {
+    if (this._settings.showHintHandles) {
       const handleElement = hintGroup.querySelector("#handle");
       if (handleElement) {
         handleElement.setAttribute("opacity", "1");
@@ -415,12 +415,12 @@ export class HintRenderer {
     const hintBounds = getSafeBBox(hintGroup);
     const hintId = hintGroup.getAttribute("id")!;
 
-    const spreading = this.spreadingEngine.calculateSpreading(hintBounds, [
+    const spreading = this._spreadingEngine.calculateSpreading(hintBounds, [
       hintId,
     ]);
 
     if (spreading.hasShifts) {
-      this.logger.debug(
+      this._logger.debug(
         "HintRenderer",
         `Spreading required for hint ${hintId}`,
         {
@@ -444,9 +444,9 @@ export class HintRenderer {
       }
 
       // Animate spreading
-      await this.animationEngine.animateSpreading(
+      await this._animationEngine.animateSpreading(
         combinedShifts,
-        this.settings.spreadTime,
+        this._settings.spreadTime,
         rootSvg
       );
 
@@ -454,7 +454,7 @@ export class HintRenderer {
       for (const id of allIds) {
         const element = rootSvg.querySelector(`#${id}`);
         if (element) {
-          this.boundsCache.updateFromElement(element as SVGElement);
+          this._boundsCache.updateFromElement(element as SVGElement);
         }
       }
     }
@@ -464,6 +464,6 @@ export class HintRenderer {
    * Update settings.
    */
   updateSettings(settings: GveRenditionSettings): void {
-    this.settings = settings;
+    this._settings = settings;
   }
 }

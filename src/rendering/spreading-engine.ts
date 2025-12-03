@@ -20,12 +20,12 @@ export interface SpreadingResult {
  * Implements the "stone in pond" ripple effect to preserve layout.
  */
 export class SpreadingEngine {
-  private boundsCache: BoundsCache;
-  private logger: Logger;
+  private _boundsCache: BoundsCache;
+  private _logger: Logger;
 
   constructor(boundsCache: BoundsCache, logger: Logger) {
-    this.boundsCache = boundsCache;
-    this.logger = logger;
+    this._boundsCache = boundsCache;
+    this._logger = logger;
   }
 
   /**
@@ -39,8 +39,8 @@ export class SpreadingEngine {
     newElementBounds: BoundingRect,
     excludeIds: string[] = []
   ): SpreadingResult {
-    this.logger.time("calculateSpreading");
-    this.logger.debug(
+    this._logger.time("calculateSpreading");
+    this._logger.debug(
       "Spreading",
       "Calculating spreading for new element",
       newElementBounds
@@ -50,7 +50,7 @@ export class SpreadingEngine {
     const verticalShifts = new Map<string, number>();
 
     // Get all existing elements
-    const allIds = this.boundsCache
+    const allIds = this._boundsCache
       .getAllIds()
       .filter((id) => !excludeIds.includes(id));
 
@@ -64,12 +64,12 @@ export class SpreadingEngine {
 
     const hasShifts = horizontalShifts.size > 0 || verticalShifts.size > 0;
 
-    this.logger.debug("Spreading", "Spreading calculation complete", {
+    this._logger.debug("Spreading", "Spreading calculation complete", {
       horizontalShifts: horizontalShifts.size,
       verticalShifts: verticalShifts.size,
       hasShifts,
     });
-    this.logger.timeEnd("calculateSpreading");
+    this._logger.timeEnd("calculateSpreading");
 
     return { horizontalShifts, verticalShifts, hasShifts };
   }
@@ -92,7 +92,7 @@ export class SpreadingEngine {
     const rightElements: string[] = [];
 
     for (const id of elementIds) {
-      const bounds = this.boundsCache.get(id);
+      const bounds = this._boundsCache.get(id);
       if (!bounds) continue;
 
       // Check for horizontal overlap
@@ -122,7 +122,7 @@ export class SpreadingEngine {
     if (maxLeftOverlap > 0) {
       for (const id of leftElements) {
         shifts.set(id, -maxLeftOverlap); // Shift left (negative)
-        this.logger.debug(
+        this._logger.debug(
           "Spreading",
           `Element ${id} shifts left by ${maxLeftOverlap}px`
         );
@@ -132,7 +132,7 @@ export class SpreadingEngine {
     if (maxRightOverlap > 0) {
       for (const id of rightElements) {
         shifts.set(id, maxRightOverlap); // Shift right (positive)
-        this.logger.debug(
+        this._logger.debug(
           "Spreading",
           `Element ${id} shifts right by ${maxRightOverlap}px`
         );
@@ -160,7 +160,7 @@ export class SpreadingEngine {
     const bottomElements: string[] = [];
 
     for (const id of elementIds) {
-      const bounds = this.boundsCache.get(id);
+      const bounds = this._boundsCache.get(id);
       if (!bounds) continue;
 
       // Check for vertical overlap
@@ -187,7 +187,7 @@ export class SpreadingEngine {
     if (maxTopOverlap > 0) {
       for (const id of topElements) {
         shifts.set(id, -maxTopOverlap); // Shift up (negative)
-        this.logger.debug(
+        this._logger.debug(
           "Spreading",
           `Element ${id} shifts up by ${maxTopOverlap}px`
         );
@@ -197,7 +197,7 @@ export class SpreadingEngine {
     if (maxBottomOverlap > 0) {
       for (const id of bottomElements) {
         shifts.set(id, maxBottomOverlap); // Shift down (positive)
-        this.logger.debug(
+        this._logger.debug(
           "Spreading",
           `Element ${id} shifts down by ${maxBottomOverlap}px`
         );
@@ -268,10 +268,10 @@ export class SpreadingEngine {
   ): string[] {
     const overlapping: string[] = [];
 
-    for (const id of this.boundsCache.getAllIds()) {
+    for (const id of this._boundsCache.getAllIds()) {
       if (excludeIds.includes(id)) continue;
 
-      const elementBounds = this.boundsCache.get(id);
+      const elementBounds = this._boundsCache.get(id);
       if (!elementBounds) continue;
 
       if (this.checkOverlap(bounds, elementBounds)) {

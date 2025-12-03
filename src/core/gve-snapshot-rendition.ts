@@ -26,24 +26,24 @@ export class GveSnapshotRendition extends HTMLElement {
   private _versionTag?: string;
 
   // Core systems
-  private logger: Logger;
-  private animationEngine?: AnimationEngine;
-  private boundsCache: BoundsCache;
-  private spreadingEngine: SpreadingEngine;
-  private textRenderer?: TextRenderer;
-  private hintRenderer?: HintRenderer;
-  private featureResolver: FeatureResolver;
+  private _logger: Logger;
+  private _animationEngine?: AnimationEngine;
+  private _boundsCache: BoundsCache;
+  private _spreadingEngine: SpreadingEngine;
+  private _textRenderer?: TextRenderer;
+  private _hintRenderer?: HintRenderer;
+  private _featureResolver: FeatureResolver;
 
   // UI elements
-  private shadow: ShadowRoot;
-  private rootSvg?: SVGElement;
-  private container?: HTMLElement;
-  private toolbar?: Toolbar;
+  private _shadow: ShadowRoot;
+  private _rootSvg?: SVGElement;
+  private _container?: HTMLElement;
+  private _toolbar?: Toolbar;
 
   // State
-  private baseNodes: CharNode[] = [];
-  private versionPalette: Map<string, string> = new Map();
-  private currentVersion: string = "v0";
+  private _baseNodes: CharNode[] = [];
+  private _versionPalette: Map<string, string> = new Map();
+  private _currentVersion: string = "v0";
 
   constructor() {
     super();
@@ -52,19 +52,22 @@ export class GveSnapshotRendition extends HTMLElement {
     this._settings = { ...DEFAULT_SETTINGS };
 
     // Create logger
-    this.logger = new Logger("GVE-Rendition", this._settings.debug);
+    this._logger = new Logger("GVE-Rendition", this._settings.debug);
 
     // Create bounds cache and spreading engine
-    this.boundsCache = new BoundsCache(this.logger);
-    this.spreadingEngine = new SpreadingEngine(this.boundsCache, this.logger);
+    this._boundsCache = new BoundsCache(this._logger);
+    this._spreadingEngine = new SpreadingEngine(
+      this._boundsCache,
+      this._logger
+    );
 
     // Create feature resolver
-    this.featureResolver = new FeatureResolver(this.logger);
+    this._featureResolver = new FeatureResolver(this._logger);
 
     // Create shadow DOM
-    this.shadow = this.attachShadow({ mode: "open" });
+    this._shadow = this.attachShadow({ mode: "open" });
 
-    this.logger.info("GveSnapshotRendition component created");
+    this._logger.info("GveSnapshotRendition component created");
   }
 
   /**
@@ -78,7 +81,7 @@ export class GveSnapshotRendition extends HTMLElement {
    * Called when component is added to the DOM.
    */
   connectedCallback(): void {
-    this.logger.info("Component connected to DOM");
+    this._logger.info("Component connected to DOM");
     this.render();
     this.initializeGsap();
   }
@@ -87,9 +90,9 @@ export class GveSnapshotRendition extends HTMLElement {
    * Called when component is removed from the DOM.
    */
   disconnectedCallback(): void {
-    this.logger.info("Component disconnected from DOM");
-    if (this.animationEngine) {
-      this.animationEngine.killAll();
+    this._logger.info("Component disconnected from DOM");
+    if (this._animationEngine) {
+      this._animationEngine.killAll();
     }
   }
 
@@ -116,8 +119,8 @@ export class GveSnapshotRendition extends HTMLElement {
 
   set settings(value: GveRenditionSettings) {
     this._settings = { ...DEFAULT_SETTINGS, ...value };
-    this.logger.setEnabled(this._settings.debug || false);
-    this.logger.info("Settings updated");
+    this._logger.setEnabled(this._settings.debug || false);
+    this._logger.info("Settings updated");
     this.render();
   }
 
@@ -130,10 +133,10 @@ export class GveSnapshotRendition extends HTMLElement {
 
   set data(value: CharChainResult | undefined) {
     this._data = value;
-    this.logger.info("Data updated", value);
+    this._logger.info("Data updated", value);
 
     // Check if we need to initialize UI first
-    const needsUISetup = !this.rootSvg || !this.container;
+    const needsUISetup = !this._rootSvg || !this._container;
 
     if (needsUISetup) {
       this.render();
@@ -161,25 +164,25 @@ export class GveSnapshotRendition extends HTMLElement {
     // Check if GSAP is available globally
     const gsap = (window as any).gsap;
     if (gsap) {
-      this.animationEngine = new AnimationEngine(gsap, this.logger);
-      this.textRenderer = new TextRenderer(
+      this._animationEngine = new AnimationEngine(gsap, this._logger);
+      this._textRenderer = new TextRenderer(
         this._settings,
-        this.logger,
-        this.animationEngine,
-        this.boundsCache,
-        this.spreadingEngine
+        this._logger,
+        this._animationEngine,
+        this._boundsCache,
+        this._spreadingEngine
       );
-      this.hintRenderer = new HintRenderer(
+      this._hintRenderer = new HintRenderer(
         this._settings,
-        this.logger,
-        this.animationEngine,
-        this.boundsCache,
-        this.spreadingEngine
+        this._logger,
+        this._animationEngine,
+        this._boundsCache,
+        this._spreadingEngine
       );
-      this.logger.info("GSAP initialized");
+      this._logger.info("GSAP initialized");
       this.renderContent();
     } else {
-      this.logger.warn("GSAP not available. Please include GSAP library.");
+      this._logger.warn("GSAP not available. Please include GSAP library.");
     }
   }
 
@@ -191,24 +194,24 @@ export class GveSnapshotRendition extends HTMLElement {
 
     // Convert text to nodes if it's a string
     if (typeof this._data.text === "string") {
-      this.baseNodes = stringToNodes(this._data.text);
+      this._baseNodes = stringToNodes(this._data.text);
     } else if (Array.isArray(this._data.text)) {
-      this.baseNodes = this._data.text;
+      this._baseNodes = this._data.text;
     }
 
     // Generate version color palette
-    this.versionPalette = generateVersionPalette(this._data.chainTags);
+    this._versionPalette = generateVersionPalette(this._data.chainTags);
 
-    this.logger.info(
-      `Processed data: ${this.baseNodes.length} base nodes, ${this._data.steps.length} steps`
+    this._logger.info(
+      `Processed data: ${this._baseNodes.length} base nodes, ${this._data.steps.length} steps`
     );
 
     // Initialize toolbar if not already done
-    if (!this.toolbar && this._data.steps) {
-      const toolbarContainer = this.shadow.querySelector("#toolbar-container");
+    if (!this._toolbar && this._data.steps) {
+      const toolbarContainer = this._shadow.querySelector("#toolbar-container");
       if (toolbarContainer) {
-        this.toolbar = new Toolbar(toolbarContainer as HTMLElement);
-        this.toolbar.setTotalVersions(this._data.steps.length);
+        this._toolbar = new Toolbar(toolbarContainer as HTMLElement);
+        this._toolbar.setTotalVersions(this._data.steps.length);
 
         // Listen for navigation events
         toolbarContainer.addEventListener("navigate", (e: Event) => {
@@ -219,7 +222,7 @@ export class GveSnapshotRendition extends HTMLElement {
     }
 
     // Trigger content rendering if renderers are ready
-    if (this.textRenderer && this.rootSvg && this.baseNodes.length > 0) {
+    if (this._textRenderer && this._rootSvg && this._baseNodes.length > 0) {
       this.renderContent();
     }
   }
@@ -228,35 +231,35 @@ export class GveSnapshotRendition extends HTMLElement {
    * Render the component UI.
    */
   private render(): void {
-    this.shadow.innerHTML = "";
+    this._shadow.innerHTML = "";
 
     // Add styles
     const style = document.createElement("style");
     style.textContent = this.getStyles();
-    this.shadow.appendChild(style);
+    this._shadow.appendChild(style);
 
     // Create container
-    this.container = document.createElement("div");
-    this.container.className = "gve-container";
+    this._container = document.createElement("div");
+    this._container.className = "gve-container";
 
     // Create toolbar container
     const toolbarContainer = document.createElement("div");
     toolbarContainer.id = "toolbar-container";
-    this.container.appendChild(toolbarContainer);
+    this._container.appendChild(toolbarContainer);
 
     // Create SVG root
-    this.rootSvg = document.createElementNS(
+    this._rootSvg = document.createElementNS(
       "http://www.w3.org/2000/svg",
       "svg"
     );
-    this.rootSvg.setAttribute("class", "gve-text-rendition");
-    this.rootSvg.setAttribute("width", "100%");
-    this.rootSvg.setAttribute("height", "600px");
+    this._rootSvg.setAttribute("class", "gve-text-rendition");
+    this._rootSvg.setAttribute("width", "100%");
+    this._rootSvg.setAttribute("height", "600px");
 
-    this.container.appendChild(this.rootSvg);
-    this.shadow.appendChild(this.container);
+    this._container.appendChild(this._rootSvg);
+    this._shadow.appendChild(this._container);
 
-    this.logger.debug("Component", "UI structure rendered");
+    this._logger.debug("Component", "UI structure rendered");
   }
 
   /**
@@ -264,23 +267,23 @@ export class GveSnapshotRendition extends HTMLElement {
    * Use goToVersionIndex() to navigate to specific versions.
    */
   private async renderContent(): Promise<void> {
-    if (!this.textRenderer || !this.rootSvg || this.baseNodes.length === 0) {
+    if (!this._textRenderer || !this._rootSvg || this._baseNodes.length === 0) {
       return;
     }
 
-    this.logger.time("renderContent");
-    this.logger.info("Rendering content");
+    this._logger.time("renderContent");
+    this._logger.info("Rendering content");
 
     // Clear existing content
-    this.rootSvg.innerHTML = "";
-    this.boundsCache.clear();
-    this.currentVersion = "v0";
+    this._rootSvg.innerHTML = "";
+    this._boundsCache.clear();
+    this._currentVersion = "v0";
 
     // Extract init features and render base text
     const charOffsets = this.extractCharOffsets();
-    await this.textRenderer.renderBaseText(
-      this.baseNodes,
-      this.rootSvg,
+    await this._textRenderer.renderBaseText(
+      this._baseNodes,
+      this._rootSvg,
       charOffsets
     );
 
@@ -288,8 +291,8 @@ export class GveSnapshotRendition extends HTMLElement {
     // Component starts at v0 (base text only)
     // Use toolbar or goToVersionIndex() to navigate to other versions
 
-    this.logger.timeEnd("renderContent");
-    this.logger.info("Content rendering complete - showing v0 (base text)");
+    this._logger.timeEnd("renderContent");
+    this._logger.info("Content rendering complete - showing v0 (base text)");
   }
 
   /**
@@ -298,18 +301,18 @@ export class GveSnapshotRendition extends HTMLElement {
    */
   private async processOperations(): Promise<void> {
     if (!this._data || !this._data.steps) {
-      this.logger.warn("No operations to process");
+      this._logger.warn("No operations to process");
       return;
     }
 
-    this.logger.time("processOperations");
-    this.logger.info(`Processing ${this._data.steps.length} operations`);
+    this._logger.time("processOperations");
+    this._logger.info(`Processing ${this._data.steps.length} operations`);
 
     for (const step of this._data.steps) {
       await this.processOperation(step);
     }
 
-    this.logger.timeEnd("processOperations");
+    this._logger.timeEnd("processOperations");
   }
 
   /**
@@ -319,7 +322,7 @@ export class GveSnapshotRendition extends HTMLElement {
     step: ChainOperationContextStep
   ): Promise<void> {
     const operation = step.operation;
-    this.logger.debug(
+    this._logger.debug(
       "GveSnapshotRendition",
       `Processing operation ${operation.id} (type=${operation.type}, outputTag=${operation.outputTag})`
     );
@@ -328,28 +331,28 @@ export class GveSnapshotRendition extends HTMLElement {
     const versionTag = operation.outputTag || `v${step.operation.run}`;
     this.dispatchEvent(
       new CustomEvent("versionTagChanging", {
-        detail: { from: this.currentVersion, to: versionTag },
+        detail: { from: this._currentVersion, to: versionTag },
       })
     );
 
     // Get reference nodes (nodes affected by this operation)
     const refNodes = this.getReferenceNodes(operation);
     if (refNodes.length === 0) {
-      this.logger.warn(
+      this._logger.warn(
         `No reference nodes found for operation ${operation.id}`
       );
       // Still fire event even if no reference nodes
-      this.currentVersion = versionTag;
+      this._currentVersion = versionTag;
       this.dispatchEvent(
         new CustomEvent("versionTagChange", {
-          detail: { from: this.currentVersion, to: versionTag },
+          detail: { from: this._currentVersion, to: versionTag },
         })
       );
       return;
     }
 
     // Resolve features to config
-    const config = this.featureResolver.resolve(
+    const config = this._featureResolver.resolve(
       this._settings,
       operation.features,
       undefined // textBounds - calculate if needed
@@ -359,8 +362,8 @@ export class GveSnapshotRendition extends HTMLElement {
     if (
       config.hints &&
       config.hints.length > 0 &&
-      this.hintRenderer &&
-      this.rootSvg
+      this._hintRenderer &&
+      this._rootSvg
     ) {
       await this.renderHints(
         config.hints,
@@ -372,19 +375,19 @@ export class GveSnapshotRendition extends HTMLElement {
 
     // Render additional text if this operation added nodes
     const addedNodes = this.getAddedNodes(operation.id || `op${operation.run}`);
-    if (addedNodes.length > 0 && this.textRenderer && this.rootSvg) {
-      await this.textRenderer.renderAdditionalText(
+    if (addedNodes.length > 0 && this._textRenderer && this._rootSvg) {
+      await this._textRenderer.renderAdditionalText(
         addedNodes,
-        this.rootSvg,
+        this._rootSvg,
         config,
         versionTag,
         refNodes,
-        this.baseNodes
+        this._baseNodes
       );
     }
 
     // Update current version
-    this.currentVersion = versionTag;
+    this._currentVersion = versionTag;
 
     // Fire versionTagChange event
     this.dispatchEvent(
@@ -402,18 +405,23 @@ export class GveSnapshotRendition extends HTMLElement {
    * Reference nodes are the nodes affected by the operation.
    */
   private getReferenceNodes(operation: any): CharNode[] {
-    if (!this.baseNodes || this.baseNodes.length === 0) return [];
+    if (!this._baseNodes || this._baseNodes.length === 0) return [];
 
     // For operations with 'from' and 'to' (like delete, move, copy)
     // Return all nodes in the range
-    if (typeof operation.from === "number" && typeof operation.to === "number") {
-      const fromIndex = operation.fromAsIndex ? operation.from : operation.from - 1;
+    if (
+      typeof operation.from === "number" &&
+      typeof operation.to === "number"
+    ) {
+      const fromIndex = operation.fromAsIndex
+        ? operation.from
+        : operation.from - 1;
       const toIndex = operation.toAsIndex ? operation.to : operation.to - 1;
 
       const nodes: CharNode[] = [];
       for (let i = fromIndex; i <= toIndex; i++) {
-        if (i >= 0 && i < this.baseNodes.length) {
-          nodes.push(this.baseNodes[i]);
+        if (i >= 0 && i < this._baseNodes.length) {
+          nodes.push(this._baseNodes[i]);
         }
       }
       return nodes;
@@ -423,7 +431,7 @@ export class GveSnapshotRendition extends HTMLElement {
     if (typeof operation.at === "number") {
       const index = operation.atAsIndex ? operation.at : operation.at - 1;
 
-      const node = this.baseNodes[index];
+      const node = this._baseNodes[index];
       if (node) {
         return [node];
       }
@@ -437,9 +445,9 @@ export class GveSnapshotRendition extends HTMLElement {
    * These are nodes with opid feature matching the operation ID.
    */
   private getAddedNodes(operationId: string): CharNode[] {
-    if (!this.baseNodes) return [];
+    if (!this._baseNodes) return [];
 
-    return this.baseNodes.filter((node) => {
+    return this._baseNodes.filter((node) => {
       const opidFeature = node.features?.find((f) => f.name === "opid");
       return opidFeature && opidFeature.value === operationId;
     });
@@ -454,26 +462,26 @@ export class GveSnapshotRendition extends HTMLElement {
     hintVars: Map<string, string>,
     operationId: string
   ): Promise<void> {
-    if (!this.hintRenderer || !this.rootSvg) return;
+    if (!this._hintRenderer || !this._rootSvg) return;
 
     for (let i = 0; i < hintIds.length; i++) {
       const hintId = hintIds[i];
       const hint = this._settings.hints[hintId];
 
       if (!hint) {
-        this.logger.warn(`Hint not found: ${hintId}`);
+        this._logger.warn(`Hint not found: ${hintId}`);
         continue;
       }
 
-      await this.hintRenderer.renderHint(
+      await this._hintRenderer.renderHint(
         hintId,
         hint,
         refNodes,
-        this.rootSvg,
+        this._rootSvg,
         hintVars,
         operationId,
         i + 1, // ordinal (1-based)
-        this.baseNodes
+        this._baseNodes
       );
     }
   }
@@ -482,20 +490,20 @@ export class GveSnapshotRendition extends HTMLElement {
    * Navigate to a specific version index (0 = base text, 1+ = after operations).
    */
   private async goToVersionIndex(targetIndex: number): Promise<void> {
-    if (!this._data || !this.textRenderer || !this.rootSvg) return;
+    if (!this._data || !this._textRenderer || !this._rootSvg) return;
 
-    this.logger.info(`Navigating to version index ${targetIndex}`);
+    this._logger.info(`Navigating to version index ${targetIndex}`);
 
     // Clear and reset
-    this.rootSvg.innerHTML = "";
-    this.boundsCache.clear();
-    this.currentVersion = "v0";
+    this._rootSvg.innerHTML = "";
+    this._boundsCache.clear();
+    this._currentVersion = "v0";
 
     // Render base text
     const charOffsets = this.extractCharOffsets();
-    await this.textRenderer.renderBaseText(
-      this.baseNodes,
-      this.rootSvg,
+    await this._textRenderer.renderBaseText(
+      this._baseNodes,
+      this._rootSvg,
       charOffsets
     );
 
@@ -507,20 +515,22 @@ export class GveSnapshotRendition extends HTMLElement {
     }
 
     // Update toolbar
-    if (this.toolbar) {
-      this.toolbar.setCurrentIndex(targetIndex);
+    if (this._toolbar) {
+      this._toolbar.setCurrentIndex(targetIndex);
     }
   }
 
   /**
    * Extract char offsets from first operation if it's an annotate.
    */
-  private extractCharOffsets(): Map<number, { x?: number; y?: number }> | undefined {
+  private extractCharOffsets():
+    | Map<number, { x?: number; y?: number }>
+    | undefined {
     if (this._data && this._data.steps.length > 0) {
       const firstOp = this._data.steps[0].operation;
       if (firstOp.type === 7) {
         // annotate
-        return this.featureResolver.extractCharOffsets(firstOp.features);
+        return this._featureResolver.extractCharOffsets(firstOp.features);
       }
     }
     return undefined;
@@ -533,7 +543,7 @@ export class GveSnapshotRendition extends HTMLElement {
     versionTag: string | undefined
   ): Promise<void> {
     if (!versionTag) return;
-    this.logger.info(`Navigating to version: ${versionTag}`);
+    this._logger.info(`Navigating to version: ${versionTag}`);
     // TODO: Implement version navigation by tag
   }
 

@@ -20,13 +20,13 @@ import { parseOffset } from "../utils/text-utils";
  * Text renderer handles rendering of base text and additional text.
  */
 export class TextRenderer {
-  private settings: GveRenditionSettings;
-  private logger: Logger;
-  private animationEngine: AnimationEngine;
-  private boundsCache: BoundsCache;
-  private spreadingEngine: SpreadingEngine;
-  private textLayout: TextLayout;
-  private featureResolver: FeatureResolver;
+  private _settings: GveRenditionSettings;
+  private _logger: Logger;
+  private _animationEngine: AnimationEngine;
+  private _boundsCache: BoundsCache;
+  private _spreadingEngine: SpreadingEngine;
+  private _textLayout: TextLayout;
+  private _featureResolver: FeatureResolver;
 
   constructor(
     settings: GveRenditionSettings,
@@ -35,13 +35,13 @@ export class TextRenderer {
     boundsCache: BoundsCache,
     spreadingEngine: SpreadingEngine
   ) {
-    this.settings = settings;
-    this.logger = logger;
-    this.animationEngine = animationEngine;
-    this.boundsCache = boundsCache;
-    this.spreadingEngine = spreadingEngine;
-    this.textLayout = new TextLayout(settings, logger);
-    this.featureResolver = new FeatureResolver(logger);
+    this._settings = settings;
+    this._logger = logger;
+    this._animationEngine = animationEngine;
+    this._boundsCache = boundsCache;
+    this._spreadingEngine = spreadingEngine;
+    this._textLayout = new TextLayout(settings, logger);
+    this._featureResolver = new FeatureResolver(logger);
   }
 
   /**
@@ -57,21 +57,21 @@ export class TextRenderer {
     rootSvg: SVGElement,
     charOffsets?: Map<number, { x?: number; y?: number }>
   ): Promise<void> {
-    this.logger.time("renderBaseText");
-    this.logger.info(`Rendering ${nodes.length} base text characters`);
+    this._logger.time("renderBaseText");
+    this._logger.info(`Rendering ${nodes.length} base text characters`);
 
-    const positions = this.textLayout.calculateBaseTextPositions(
+    const positions = this._textLayout.calculateBaseTextPositions(
       nodes,
       charOffsets
     );
 
     // Get animation function if specified
-    const animationFn = this.settings.charAnimationId
-      ? this.animationEngine
+    const animationFn = this._settings.charAnimationId
+      ? this._animationEngine
           .getFactory()
           .resolveAnimation(
-            `#${this.settings.charAnimationId}`,
-            this.settings.animations,
+            `#${this._settings.charAnimationId}`,
+            this._settings.animations,
             "char"
           )
       : undefined;
@@ -94,7 +94,7 @@ export class TextRenderer {
       await this.renderCharacter(node, pos, rootSvg, "v0", animationFn);
     }
 
-    this.logger.timeEnd("renderBaseText");
+    this._logger.timeEnd("renderBaseText");
   }
 
   /**
@@ -120,25 +120,25 @@ export class TextRenderer {
 
     // Apply default styling
     applyTextStyle(textEl, {
-      fontFamily: this.settings.fontFamily,
-      fontSize: this.settings.fontSize,
-      foreColor: this.settings.foreColor,
-      backColor: this.settings.backColor,
-      italic: this.settings.italic,
-      bold: this.settings.bold,
+      fontFamily: this._settings.fontFamily,
+      fontSize: this._settings.fontSize,
+      foreColor: this._settings.foreColor,
+      backColor: this._settings.backColor,
+      italic: this._settings.italic,
+      bold: this._settings.bold,
     });
 
     rootSvg.appendChild(textEl);
 
     // Cache bounds
     const bbox = getSafeBBox(textEl);
-    this.boundsCache.set(`n_${node.id}`, bbox);
+    this._boundsCache.set(`n_${node.id}`, bbox);
 
     // Animate if function provided
     if (animationFn) {
       // Set initial opacity to 0 for animation
       textEl.setAttribute("opacity", "0");
-      await this.animationEngine.animate(textEl, animationFn, rootSvg);
+      await this._animationEngine.animate(textEl, animationFn, rootSvg);
     }
   }
 
@@ -161,13 +161,13 @@ export class TextRenderer {
     referenceNodes: CharNode[],
     allBaseNodes: CharNode[]
   ): Promise<void> {
-    this.logger.time(`renderAdditionalText-${versionTag}`);
-    this.logger.info(
+    this._logger.time(`renderAdditionalText-${versionTag}`);
+    this._logger.info(
       `Rendering ${nodes.length} additional text characters for ${versionTag}`
     );
 
     if (nodes.length === 0) {
-      this.logger.warn("No nodes to render");
+      this._logger.warn("No nodes to render");
       return;
     }
 
@@ -185,14 +185,14 @@ export class TextRenderer {
     }
 
     if (rbrs.length === 0) {
-      this.logger.warn("No RBRs calculated for additional text, skipping");
+      this._logger.warn("No RBRs calculated for additional text, skipping");
       return;
     }
 
     // Use first RBR for positioning (additional text doesn't repeat per RBR)
     const rbr = rbrs[0];
 
-    this.logger.debug("TextRenderer", `Using RBR for positioning`, rbr);
+    this._logger.debug("TextRenderer", `Using RBR for positioning`, rbr);
 
     // 2. Calculate text position based on r_text-position + offsets
     const position = config.textPosition || "o"; // Default to origin if not specified
@@ -204,7 +204,7 @@ export class TextRenderer {
     const baseX = targetPos.x + offsetX;
     const baseY = targetPos.y + offsetY;
 
-    this.logger.debug("TextRenderer", `Text position calculated`, {
+    this._logger.debug("TextRenderer", `Text position calculated`, {
       position,
       targetPos,
       offsets: { x: offsetX, y: offsetY },
@@ -223,13 +223,13 @@ export class TextRenderer {
     const textBounds = this.calculateTextBounds(nodes, positions);
 
     if (textBounds) {
-      this.logger.debug(
+      this._logger.debug(
         "TextRenderer",
         `Applying spreading for additional text`,
         textBounds
       );
 
-      const spreading = this.spreadingEngine.calculateSpreading(textBounds, [
+      const spreading = this._spreadingEngine.calculateSpreading(textBounds, [
         `text-group-${versionTag}`,
       ]);
 
@@ -249,9 +249,9 @@ export class TextRenderer {
         }
 
         // Animate spreading
-        await this.animationEngine.animateSpreading(
+        await this._animationEngine.animateSpreading(
           combinedShifts,
-          this.settings.spreadTime,
+          this._settings.spreadTime,
           rootSvg
         );
 
@@ -259,19 +259,19 @@ export class TextRenderer {
         for (const id of allIds) {
           const element = rootSvg.querySelector(`#${id}`);
           if (element) {
-            this.boundsCache.updateFromElement(element as SVGElement);
+            this._boundsCache.updateFromElement(element as SVGElement);
           }
         }
       }
     }
 
     // 5. Get animation function if specified
-    const animationFn = this.settings.charAnimationId
-      ? this.animationEngine
+    const animationFn = this._settings.charAnimationId
+      ? this._animationEngine
           .getFactory()
           .resolveAnimation(
-            `#${this.settings.charAnimationId}`,
-            this.settings.animations,
+            `#${this._settings.charAnimationId}`,
+            this._settings.animations,
             "char"
           )
       : undefined;
@@ -303,7 +303,7 @@ export class TextRenderer {
       );
     }
 
-    this.logger.timeEnd(`renderAdditionalText-${versionTag}`);
+    this._logger.timeEnd(`renderAdditionalText-${versionTag}`);
   }
 
   /**
@@ -332,14 +332,14 @@ export class TextRenderer {
         });
       } else if (isSpace(node)) {
         // Space: advance by space width
-        const spaceWidth = this.settings.fontSize * 0.33;
+        const spaceWidth = this._settings.fontSize * 0.33;
         positions.push({
           x: currentX,
           y: currentY,
           nodeId: node.id,
           lineNumber: 0,
         });
-        currentX += spaceWidth + this.settings.charSpacing;
+        currentX += spaceWidth + this._settings.charSpacing;
       } else {
         // Regular character
         positions.push({
@@ -352,13 +352,13 @@ export class TextRenderer {
         // Calculate character width for next position
         const charWidth = getTextWidth(
           node.data,
-          this.settings.fontFamily,
-          this.settings.fontSize,
-          this.settings.bold,
-          this.settings.italic
+          this._settings.fontFamily,
+          this._settings.fontSize,
+          this._settings.bold,
+          this._settings.italic
         );
 
-        currentX += charWidth + this.settings.charSpacing;
+        currentX += charWidth + this._settings.charSpacing;
       }
     }
 
@@ -381,9 +381,9 @@ export class TextRenderer {
     let lastY: number | null = null;
 
     for (const elementId of nodeElementIds) {
-      const bounds = this.boundsCache.get(elementId);
+      const bounds = this._boundsCache.get(elementId);
       if (!bounds) {
-        this.logger.warn(`Bounds not found for node element ${elementId}`);
+        this._logger.warn(`Bounds not found for node element ${elementId}`);
         continue;
       }
 
@@ -406,7 +406,7 @@ export class TextRenderer {
 
     // Calculate RBR for each line group
     for (const group of lineGroups) {
-      const rbr = this.boundsCache.getUnionBounds(group);
+      const rbr = this._boundsCache.getUnionBounds(group);
       if (rbr) {
         rbrs.push(rbr);
       }
@@ -459,8 +459,8 @@ export class TextRenderer {
 
     // We need to estimate bounds before rendering
     // Use approximate character dimensions based on settings
-    const charWidth = this.settings.fontSize * 0.6; // Approximate
-    const charHeight = this.settings.fontSize;
+    const charWidth = this._settings.fontSize * 0.6; // Approximate
+    const charHeight = this._settings.fontSize;
 
     let minX = Infinity;
     let minY = Infinity;
@@ -504,7 +504,7 @@ export class TextRenderer {
     rootSvg: SVGElement,
     versionTag: string
   ): Promise<void> {
-    this.logger.debug("TextRenderer", `Drawing border`, {
+    this._logger.debug("TextRenderer", `Drawing border`, {
       edges,
       thickness,
       padding,
@@ -571,7 +571,7 @@ export class TextRenderer {
 
     // Cache bounds for the border group
     const bbox = getSafeBBox(borderGroup);
-    this.boundsCache.set(groupId, bbox);
+    this._boundsCache.set(groupId, bbox);
   }
 
   /**
@@ -596,7 +596,7 @@ export class TextRenderer {
    * Update settings.
    */
   updateSettings(settings: GveRenditionSettings): void {
-    this.settings = settings;
-    this.textLayout.updateSettings(settings);
+    this._settings = settings;
+    this._textLayout.updateSettings(settings);
   }
 }
