@@ -138,11 +138,14 @@ export class HintRenderer {
         currentHintGroup.setAttribute("visibility", "hidden");
         rootSvg.appendChild(currentHintGroup);
 
-        // 8. Apply initial transformations (scale)
+        // 8. Find handle position BEFORE scaling (important!)
+        const handlePos = this.findHandlePosition(currentHintGroup);
+
+        // 9. Apply initial transformations (scale)
         await this.applyHintTransformations(currentHintGroup, hint, rbr);
 
-        // 9. Position the hint
-        await this.positionHint(currentHintGroup, hint, rbr);
+        // 10. Position the hint (using pre-scale handle position)
+        await this.positionHint(currentHintGroup, hint, rbr, handlePos);
 
         // 10. Handle spreading if solid
         if (hint.solid) {
@@ -316,15 +319,15 @@ export class HintRenderer {
 
   /**
    * Position the hint relative to its RBR.
+   *
+   * @param handlePos - Pre-calculated handle position (before scaling)
    */
   private async positionHint(
     hintGroup: SVGGElement,
     hint: OperationHint,
-    rbr: BoundingRect
+    rbr: BoundingRect,
+    handlePos: { x: number; y: number }
   ): Promise<void> {
-    // Find handle position in the hint
-    const handlePos = this.findHandlePosition(hintGroup);
-
     // Calculate target position based on hint.position
     const targetPos = this.calculateTargetPosition(hint.position, rbr);
 
