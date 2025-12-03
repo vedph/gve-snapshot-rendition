@@ -123,8 +123,11 @@ export interface GveRenditionSettings {
   /** ID of animation to use for each character (from animations catalog) */
   charAnimationId?: string;
 
-  /** Duration in milliseconds for spreading animation */
+  /** Duration in milliseconds for spreading animation (0=no animation) */
   spreadTime: number;
+
+  /** Duration in milliseconds for element fade-out animation (backward navigation only): 0=no animation */
+  backwardFadeOutTime: number;
 
   // ==================== Hints ====================
 
@@ -230,6 +233,7 @@ export const DEFAULT_SETTINGS: GveRenditionSettings = {
   },
   charAnimationId: undefined, // No character animation by default
   spreadTime: 1500,
+  backwardFadeOutTime: 300,
 
   // Hints - empty by default, to be filled by consumer code
   hints: {},

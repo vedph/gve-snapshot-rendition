@@ -473,6 +473,15 @@ When navigating:
 - before starting the navigation, fire `versionTagChanging` with the current version tag and the next one. If there are any [hilites](#text-hilites), remove them (fading them out).
 - once navigation has completed with all its animations, fire `versionTagChange` with the current version tag and the previous one.
 
+Note that the diplomatic focus of the rendition implies a fundamental **difference** in navigation:
+
+1. when navigating **forward**, we only _add_ elements (additional text, i.e. `text` SVG elements; or hints, i.e. `g` SVG elements). Once added, they are there to stay, and get inherited by all the following versions.
+2. when navigating **backward**, we must:
+   1. _remove_ the elements which were added (if any) by the last operation. This is why we designed the SVG elements to carry a version tag in their `class` attribute. This way, we can easily determine which were the elements added in the last step, whatever their origin, and just _animate_ them out. So, when navigating backward, we do not simply remove added elements: when setting `backwardFadeOutTime` is not 0, we _first_ fade them out, and _then_ remove them. When instead this setting is 0, we just remove the elements with no animation.
+   2. _undo the spreading effect_ by reversing its animation (unless setting `spreadTime` is 0, meaning that spreading is not animated).
+
+So, on forward movement we add more elements; on backward movements we undo our additions, one version at a time.
+
 ### Component Settings
 
 Component settings are modeled in a `GveRenditionSettings` class; a `DEFAULT_SETTINGS` constant then provides defaults for the component. Settings are passed via binding to the web component's `settings` property.
@@ -668,7 +677,13 @@ A small **toolbar** here contains buttons for the following actions:
 - **increase font size**.
 - **decrease font size**.
 
->The reason for this area is to help users read the rendered text. This rendition is focused on a diplomatic representation, which might not always immediately readable to end users. For instance, when two words are moved or swapped by means of arrows or numbers annotated above them (e.g. "2" and "1" on two words meaning that the second one should be swapped with the first one), the text stays the same, but it should be read in a different way, as suggested by hints. In the same way, a deleted text may (or sometimes may even not) be annotated by some hint, but nonetheless it stays there. So, having a plain text with the current state helps in interpreting the rendition. In this context, note that when text is deleted, it no longer appears among the nodes of the corresponding version in backend data. Yet, the visualization logic of this component is acting like a real sheet of paper with ink on it: once you write something on it, like the initial "In", it is there forever. We can draw a stroke on it to mean we want it deleted; but it stays there. This implies that the text elements on the component will accumulate, and will not be necessarily in synch with the node elements of each version; there will surely be in synch with all the nodes from that version, but there will be also all the nodes added before it. This is why we are also adding the version text area: its task is to show the resulting text, which corresponds to the nodes in the targeted version, but in many cases will not correspond to the text elements on the component text rendition surface.
+The reason for this area is to help users read the rendered text. This rendition is focused on a diplomatic representation ("ink and paper"), which might not always immediately readable to end users. For instance, when two words are moved or swapped by means of arrows or numbers annotated above them (e.g. "2" and "1" on two words meaning that the second one should be swapped with the first one), the text stays the same, but it should be read in a different way, as suggested by hints.
+
+In the same way, a deleted text may (or sometimes may even not) be annotated by some hint, but nonetheless it stays there: whatever the component adds to the text rendition surface, it stays there forever, for all the successive versions. If I write "In this test" on paper, and then add a stroke on "In" because I want to mean that is must be deleted, all what I do visually is _adding_ a sign hinting at its deletion: yet, the text for "In" stays there, for all the successive versions.
+
+This implies that elements on text rendition area and the corresponding nodes in the current version often are not perfectly aligned. So, having a plain text with the current state helps in interpreting the rendition. For instance, when text is deleted, it no longer appears among the nodes of the corresponding version in backend data. Yet, the visualization logic of this component is acting like a real sheet of paper with ink on it: once you write something on it, like the initial "In", it is there forever. We can draw a stroke on it to mean we want it deleted; but it stays there.
+
+This implies that the text elements on the component will accumulate, and will not be necessarily in synch with the node elements of each version; there will surely be in synch with all the nodes from that version, but there will be also all the nodes added before it. This is why we are also adding the version text area: its task is to show the resulting text, which corresponds to the nodes in the targeted version, but in many cases will not correspond to the text elements on the component text rendition surface.
 
 #### Component UI: Details Area
 
