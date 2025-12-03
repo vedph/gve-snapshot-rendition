@@ -85,6 +85,12 @@ export class TextRenderer {
         continue;
       }
 
+      // Skip nodes that have opid feature - they'll be rendered by operations
+      const opidFeature = node.features?.find((f) => f.name === "opid");
+      if (opidFeature) {
+        continue;
+      }
+
       await this.renderCharacter(node, pos, rootSvg, "v0", animationFn);
     }
 

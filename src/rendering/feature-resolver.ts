@@ -85,11 +85,18 @@ export class FeatureResolver {
       return config;
     }
 
+    // Initialize hintVars map - will contain ALL r_* feature values for placeholder replacement
+    config.hintVars = new Map<string, string>();
+
     // Process each rendition feature
     for (const feature of features) {
       if (!feature.name.startsWith("r_")) continue;
 
       const value = feature.value;
+
+      // Add ALL r_* features to hintVars for placeholder replacement
+      // This allows {{r_fore-color}}, {{r_font-size}}, etc. in hint SVG templates
+      config.hintVars.set(feature.name, value);
 
       switch (feature.name) {
         case "r_font-size":
@@ -189,7 +196,11 @@ export class FeatureResolver {
           break;
 
         case "r_hint-vars":
-          config.hintVars = parseHintVars(value);
+          // Parse custom variables and merge with existing hintVars
+          const customVars = parseHintVars(value);
+          customVars.forEach((val, key) => {
+            config.hintVars!.set(key, val);
+          });
           break;
       }
     }

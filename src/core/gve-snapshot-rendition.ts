@@ -399,17 +399,30 @@ export class GveSnapshotRendition extends HTMLElement {
 
   /**
    * Get reference nodes for an operation.
-   * Reference nodes are the nodes at the operation's position.
+   * Reference nodes are the nodes affected by the operation.
    */
   private getReferenceNodes(operation: any): CharNode[] {
     if (!this.baseNodes || this.baseNodes.length === 0) return [];
 
-    // For operations with 'at' position
+    // For operations with 'from' and 'to' (like delete, move, copy)
+    // Return all nodes in the range
+    if (typeof operation.from === "number" && typeof operation.to === "number") {
+      const fromIndex = operation.fromAsIndex ? operation.from : operation.from - 1;
+      const toIndex = operation.toAsIndex ? operation.to : operation.to - 1;
+
+      const nodes: CharNode[] = [];
+      for (let i = fromIndex; i <= toIndex; i++) {
+        if (i >= 0 && i < this.baseNodes.length) {
+          nodes.push(this.baseNodes[i]);
+        }
+      }
+      return nodes;
+    }
+
+    // For operations with 'at' position (like insert, replace)
     if (typeof operation.at === "number") {
       const index = operation.atAsIndex ? operation.at : operation.at - 1;
 
-      // Get nodes around the operation position
-      // For most operations, we want the node at 'at' position
       const node = this.baseNodes[index];
       if (node) {
         return [node];

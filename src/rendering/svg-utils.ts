@@ -180,27 +180,24 @@ export function applyLineDecoration(
  * Assumes the SVG content has a root <g> element.
  */
 export function parseSVGContent(svgString: string): SVGGElement | null {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(svgString, "image/svg+xml");
+  // Create a temporary SVG element in the current document
+  // This ensures elements are created in the proper SVG namespace
+  const tempSvg = document.createElementNS(SVG_NS, "svg");
 
-  const parseError = doc.querySelector("parsererror");
-  if (parseError) {
-    console.error("SVG parsing error:", parseError.textContent);
-    return null;
-  }
+  // Set the inner HTML of the temp SVG
+  tempSvg.innerHTML = svgString;
 
   // Find the root g element
-  const gElement = doc.querySelector("g");
+  const gElement = tempSvg.querySelector("g");
   if (!gElement) {
     console.error("SVG content must have a root <g> element");
     return null;
   }
 
-  // Import the node into the current document's SVG namespace
-  // This ensures getBBox() will work properly
-  const importedElement = document.importNode(gElement, true) as SVGGElement;
-
-  return importedElement;
+  // Remove from temp container and return
+  // Element is already in the correct namespace since it was created via innerHTML on an SVG element
+  gElement.remove();
+  return gElement as SVGGElement;
 }
 
 /**
