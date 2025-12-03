@@ -52,7 +52,7 @@ export class TextRenderer {
    * @param charOffsets - Optional character offset overrides
    * @returns Promise that resolves when rendering completes
    */
-  async renderBaseText(
+  public async renderBaseText(
     nodes: CharNode[],
     rootSvg: SVGElement,
     charOffsets?: Map<number, { x?: number; y?: number }>
@@ -75,6 +75,12 @@ export class TextRenderer {
             "char"
           )
       : undefined;
+    if (!animationFn) {
+      this._logger.debug(
+        "TextRenderer",
+        "No character animation function specified"
+      );
+    }
 
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
@@ -153,7 +159,7 @@ export class TextRenderer {
    * @param allBaseNodes - All base text nodes (for displaced span)
    * @returns Promise that resolves when rendering completes
    */
-  async renderAdditionalText(
+  public async renderAdditionalText(
     nodes: CharNode[],
     rootSvg: SVGElement,
     config: RenditionConfig,
@@ -595,7 +601,7 @@ export class TextRenderer {
   /**
    * Update settings.
    */
-  updateSettings(settings: GveRenditionSettings): void {
+  public updateSettings(settings: GveRenditionSettings): void {
     this._settings = settings;
     this._textLayout.updateSettings(settings);
   }
