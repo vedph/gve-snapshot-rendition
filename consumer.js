@@ -81,27 +81,41 @@ This too, is another line`;
 
       // Animations
       animations: {
+        "text-fade-in": `
+          return new Promise(resolve => {
+            gsap.fromTo(targetEl,
+              { opacity: 0 },
+              { opacity: 1, duration: 0.05, onComplete: resolve }
+            );
+          });
+        `,
         "fade-in": `
-          gsap.fromTo(targetEl,
-            { opacity: 0 },
-            { opacity: 1, duration: 0.5 }
-          );
+          return new Promise(resolve => {
+            gsap.fromTo(targetEl,
+              { opacity: 0 },
+              { opacity: 1, duration: 0.3, onComplete: resolve }
+            );
+          });
         `,
         "wipe-right": `
-          gsap.fromTo(targetEl,
-            { opacity: 0, x: -20 },
-            { opacity: 1, x: 0, duration: 0.6, ease: 'power2.out' }
-          );
+          return new Promise(resolve => {
+            gsap.fromTo(targetEl,
+              { opacity: 0, x: -20 },
+              { opacity: 1, x: 0, duration: 0.6, ease: 'power2.out', onComplete: resolve }
+            );
+          });
         `,
         "scale-in": `
-          gsap.fromTo(targetEl,
-            { opacity: 0, scale: 0.5 },
-            { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' }
-          );
+          return new Promise(resolve => {
+            gsap.fromTo(targetEl,
+              { opacity: 0, scale: 0.5 },
+              { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)', onComplete: resolve }
+            );
+          });
         `,
       },
 
-      charAnimationId: "fade-in", // Animate each character
+      charAnimationId: "text-fade-in", // Animate each character
     };
 
     // Apply settings and data to component
