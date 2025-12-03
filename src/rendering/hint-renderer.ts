@@ -152,7 +152,7 @@ export class HintRenderer {
         // 11. Make visible (set initial opacity to 0 if animation present)
         currentHintGroup.removeAttribute("visibility");
         if (hint.animation) {
-          currentHintGroup.setAttribute("opacity", "0");
+          currentHintGroup.style.opacity = "0";
         }
 
         // 11. Cache bounds
@@ -174,6 +174,8 @@ export class HintRenderer {
               animation,
               rootSvg
             );
+            // Remove opacity attribute after animation to avoid conflicts with style
+            currentHintGroup.removeAttribute("opacity");
           }
         }
 

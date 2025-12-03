@@ -86,8 +86,30 @@ export class TextRenderer {
       const node = nodes[i];
       const pos = positions[i];
 
-      // Skip rendering for line breaks and spaces (they affect layout but aren't visible)
-      if (isLineBreak(node) || isSpace(node)) {
+      // Cache bounds for spaces even though they're not rendered
+      // This is needed for RBR calculations that include spaces
+      if (isSpace(node)) {
+        const spaceWidth =
+          this._settings.fontSize * this._settings.spaceWidthFraction;
+        const spaceY = pos.y - this._settings.fontSize; // Approximate top of character
+        // Create a DOMRect-like object for the space bounds
+        const spaceBounds = {
+          x: pos.x,
+          y: spaceY,
+          width: spaceWidth,
+          height: this._settings.fontSize,
+          top: spaceY,
+          right: pos.x + spaceWidth,
+          bottom: spaceY + this._settings.fontSize,
+          left: pos.x,
+          toJSON: () => ({}),
+        } as DOMRect;
+        this._boundsCache.set(`n_${node.id}`, spaceBounds);
+        continue;
+      }
+
+      // Skip rendering for line breaks (they affect layout but aren't visible)
+      if (isLineBreak(node)) {
         continue;
       }
 

@@ -62,7 +62,8 @@ export function resolvePlaceholders(
   svgContent: string,
   variables: Map<string, string>
 ): string {
-  return svgContent.replace(/\{\{(\w+)\}\}/g, (match, name) => {
+  // Match {{placeholder}} where placeholder can contain letters, numbers, hyphens, and underscores
+  return svgContent.replace(/\{\{([\w\-]+)\}\}/g, (match, name) => {
     return variables.get(name) || match; // Keep placeholder if not found
   });
 }

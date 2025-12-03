@@ -587,10 +587,7 @@ export class GveSnapshotRendition extends HTMLElement {
     );
 
     if (elements.length === 0) {
-      this._logger.debug(
-        "Navigation",
-        `No elements found for ${versionClass}`
-      );
+      this._logger.debug("Navigation", `No elements found for ${versionClass}`);
       return;
     }
 
