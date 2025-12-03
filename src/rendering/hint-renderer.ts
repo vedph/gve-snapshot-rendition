@@ -141,11 +141,21 @@ export class HintRenderer {
         // 8. Find handle position BEFORE scaling (important!)
         const handlePos = this.findHandlePosition(currentHintGroup);
 
-        // 9. Apply initial transformations (scale)
-        await this.applyHintTransformations(currentHintGroup, hint, rbr);
+        // 9. Get the scale factors needed to fit RBR
+        const scalingInfo = this.calculateScalingInfo(
+          currentHintGroup,
+          hint,
+          rbr
+        );
 
-        // 10. Position the hint (using pre-scale handle position)
-        await this.positionHint(currentHintGroup, hint, rbr, handlePos);
+        // 10. Apply combined transform (scale + position) in one operation
+        await this.applyHintTransform(
+          currentHintGroup,
+          hint,
+          rbr,
+          handlePos,
+          scalingInfo
+        );
 
         // 10. Handle spreading if solid
         if (hint.solid) {
@@ -269,18 +279,19 @@ export class HintRenderer {
   }
 
   /**
-   * Apply transformations (scaling) to the hint.
+   * Calculate scaling information for the hint.
+   * Returns scale factors and target dimensions.
    */
-  private async applyHintTransformations(
+  private calculateScalingInfo(
     hintGroup: SVGGElement,
     hint: OperationHint,
     rbr: BoundingRect
-  ): Promise<void> {
+  ): { scaleX: number; scaleY: number; width: number; height: number } {
     // Calculate initial size based on RBR
     let width = rbr.width;
     let height = rbr.height;
 
-    // Apply scaling
+    // Apply custom scaling
     if (hint.scaleX !== 1 || hint.scaleY !== 1) {
       width *= hint.scaleX;
       height *= hint.scaleY;
@@ -304,29 +315,26 @@ export class HintRenderer {
       );
     }
 
-    // Scale the hint group to match calculated size
+    // Calculate scale factors based on current hint size
     const currentBBox = getSafeBBox(hintGroup);
-    if (currentBBox.width > 0 && currentBBox.height > 0) {
-      const scaleX = width / currentBBox.width;
-      const scaleY = height / currentBBox.height;
+    const scaleX =
+      currentBBox.width > 0 ? width / currentBBox.width : 1;
+    const scaleY =
+      currentBBox.height > 0 ? height / currentBBox.height : 1;
 
-      applyTransform(hintGroup, {
-        scaleX,
-        scaleY,
-      });
-    }
+    return { scaleX, scaleY, width, height };
   }
 
   /**
-   * Position the hint relative to its RBR.
-   *
-   * @param handlePos - Pre-calculated handle position (before scaling)
+   * Apply combined transform (scale + position + rotation) to the hint.
+   * This must be done in a single operation to avoid transform conflicts.
    */
-  private async positionHint(
+  private async applyHintTransform(
     hintGroup: SVGGElement,
     hint: OperationHint,
     rbr: BoundingRect,
-    handlePos: { x: number; y: number }
+    handlePos: { x: number; y: number },
+    scalingInfo: { scaleX: number; scaleY: number }
   ): Promise<void> {
     // Calculate target position based on hint.position
     const targetPos = this.calculateTargetPosition(hint.position, rbr);
@@ -335,34 +343,36 @@ export class HintRenderer {
     const offsetX = parseOffset(hint.offsetX, rbr.height, rbr.width);
     const offsetY = parseOffset(hint.offsetY, rbr.height, rbr.width);
 
-    // Calculate final position: target - handle + offsets
-    const finalX = targetPos.x - handlePos.x + offsetX;
-    const finalY = targetPos.y - handlePos.y + offsetY;
+    // After scaling, the handle will be at: handlePos * scale
+    // We want it at: targetPos + offset
+    // So translate by: targetPos + offset - (handlePos * scale)
+    const scaledHandleX = handlePos.x * scalingInfo.scaleX;
+    const scaledHandleY = handlePos.y * scalingInfo.scaleY;
 
-    this._logger.debug("HintRenderer", `Positioning hint`, {
+    const translateX = targetPos.x + offsetX - scaledHandleX;
+    const translateY = targetPos.y + offsetY - scaledHandleY;
+
+    this._logger.debug("HintRenderer", `Applying hint transform`, {
       position: hint.position,
+      rbr,
       targetPos,
       handlePos,
+      scalingInfo,
+      scaledHandle: { x: scaledHandleX, y: scaledHandleY },
       offsets: { x: offsetX, y: offsetY },
-      final: { x: finalX, y: finalY },
+      translate: { x: translateX, y: translateY },
     });
 
-    // Apply position and rotation
+    // Apply combined transform: translate then scale (order matters!)
     applyTransform(hintGroup, {
-      translateX: finalX,
-      translateY: finalY,
+      translateX,
+      translateY,
+      scaleX: scalingInfo.scaleX,
+      scaleY: scalingInfo.scaleY,
       rotate: hint.rotation,
       originX: targetPos.x,
       originY: targetPos.y,
     });
-
-    // Handle hint handle visibility for debugging
-    if (this._settings.showHintHandles) {
-      const handleElement = hintGroup.querySelector("#handle");
-      if (handleElement) {
-        handleElement.setAttribute("opacity", "1");
-      }
-    }
   }
 
   /**
