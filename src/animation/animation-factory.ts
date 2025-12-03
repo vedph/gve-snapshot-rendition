@@ -16,12 +16,12 @@ export type AnimationFunction = (
  * This wraps user-provided GSAP animation code into executable functions.
  */
 export class AnimationFactory {
-  private logger: Logger;
-  private gsap: any;
+  private _logger: Logger;
+  private _gsap: any;
 
   constructor(gsap: any, logger: Logger) {
-    this.gsap = gsap;
-    this.logger = logger;
+    this._gsap = gsap;
+    this._logger = logger;
   }
 
   /**
@@ -31,14 +31,14 @@ export class AnimationFactory {
    * @param label - Optional label for debugging
    * @returns An animation function that returns a Promise
    */
-  createAnimation(code: string, label?: string): AnimationFunction {
+  public createAnimation(code: string, label?: string): AnimationFunction {
     return async (
       gsap: any,
       targetEl: SVGElement,
       rootEl: SVGElement
     ): Promise<void> => {
       try {
-        this.logger.debug(
+        this._logger.debug(
           "Animation",
           `Creating animation${label ? ` (${label})` : ""}`,
           { code }
@@ -61,12 +61,12 @@ export class AnimationFactory {
           });
         }
 
-        this.logger.debug(
+        this._logger.debug(
           "Animation",
           `Animation complete${label ? ` (${label})` : ""}`
         );
       } catch (error) {
-        this.logger.error(
+        this._logger.error(
           `Animation error${label ? ` (${label})` : ""}:`,
           error
         );
@@ -84,7 +84,7 @@ export class AnimationFactory {
    * @param label - Optional label for debugging
    * @returns An animation function or undefined if not found
    */
-  createAnimationFromId(
+  public createAnimationFromId(
     animationId: string,
     animationsCatalog: Record<string, string>,
     label?: string
@@ -96,7 +96,7 @@ export class AnimationFactory {
 
     const code = animationsCatalog[id];
     if (!code) {
-      this.logger.warn(`Animation ID "${id}" not found in catalog`);
+      this._logger.warn(`Animation ID "${id}" not found in catalog`);
       return undefined;
     }
 
@@ -112,7 +112,7 @@ export class AnimationFactory {
    * @param label - Optional label for debugging
    * @returns An animation function or undefined
    */
-  resolveAnimation(
+  public resolveAnimation(
     animationValue: string | undefined,
     animationsCatalog: Record<string, string>,
     label?: string
@@ -136,7 +136,7 @@ export class AnimationFactory {
    * Create a no-op animation that resolves immediately.
    * Used when no animation is specified.
    */
-  createNoOpAnimation(): AnimationFunction {
+  public createNoOpAnimation(): AnimationFunction {
     return async () => {
       // Do nothing, resolve immediately
     };
