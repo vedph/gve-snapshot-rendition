@@ -29,7 +29,7 @@ This too, is another line`;
 
     // Create settings with hints
     const settings = {
-      fontSize: 16,
+      fontSize: 24,
       fontFamily: "Georgia, serif",
       foreColor: "#000000",
       debug: true, // Enable logging

@@ -493,7 +493,7 @@ export interface CustomButtonSettings {
 
 export interface GveRenditionSettings {
   // display settings
-  fontSize: number; // default=16
+  fontSize: number; // default=24
   fontFamily: string; // default=monospace
   foreColor: string; // default=#000000
   backColor: string; // default=transparent
@@ -740,7 +740,7 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
 - `v3`: **replace** `t` with `T` (whose ID will be equal to 95, the next available ID in the snapshot) in `this`, to make it uppercase, as this has become the first word of the sentence. Features:
   - `r_text_position`=`n` (north = top of `t`).
   - `r_fore-color`=`red`.
-  - `r_font-size`=`14` (the default being `16`, this is smaller).
+  - `r_font-size`=`14` (the default being `24`, this is smaller).
 - `v4`: **delete** `I` and its following space. Features:
   - `r_fore-color`=`red`.
   - `r_hints`=`diagonal-stroke`.

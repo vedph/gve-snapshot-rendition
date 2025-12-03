@@ -157,7 +157,7 @@ export interface GveRenditionSettings {
  */
 export const DEFAULT_SETTINGS: GveRenditionSettings = {
   // Display settings
-  fontSize: 16,
+  fontSize: 24,
   fontFamily: "monospace",
   foreColor: "#000000",
   backColor: "transparent",
