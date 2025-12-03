@@ -256,7 +256,9 @@ export class HintRenderer {
 
     const nodes = getNodeSpan(allBaseNodes, parsed.nodeId, parsed.count);
     if (nodes.length === 0) {
-      this._logger.warn(`No nodes found for displaced span ${displacedRefSpan}`);
+      this._logger.warn(
+        `No nodes found for displaced span ${displacedRefSpan}`
+      );
       return [];
     }
 

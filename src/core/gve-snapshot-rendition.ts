@@ -351,7 +351,8 @@ export class GveSnapshotRendition extends HTMLElement {
     );
 
     // Get reference nodes (nodes affected by this operation)
-    const refNodes = this.getReferenceNodes(operation);
+    // Use refNodeIds from the step (populated from trace features)
+    const refNodes = this.getReferenceNodes(step.refNodeIds);
     if (refNodes.length === 0) {
       this._logger.warn(
         `No reference nodes found for operation ${operation.id}`
@@ -419,43 +420,31 @@ export class GveSnapshotRendition extends HTMLElement {
   }
 
   /**
-   * Get reference nodes for an operation.
+   * Get reference nodes for an operation using node IDs from trace features.
    * Reference nodes are the nodes affected by the operation.
+   *
+   * @param nodeIds - Array of node IDs from step.refNodeIds (extracted from trace features)
+   * @returns Array of CharNode objects matching the IDs
    */
-  private getReferenceNodes(operation: any): CharNode[] {
-    if (!this._baseNodes || this._baseNodes.length === 0) return [];
+  private getReferenceNodes(nodeIds: number[]): CharNode[] {
+    if (!this._baseNodes || this._baseNodes.length === 0 || !nodeIds) return [];
 
-    // For operations with 'from' and 'to' (like delete, move, copy)
-    // Return all nodes in the range
-    if (
-      typeof operation.from === "number" &&
-      typeof operation.to === "number"
-    ) {
-      const fromIndex = operation.fromAsIndex
-        ? operation.from
-        : operation.from - 1;
-      const toIndex = operation.toAsIndex ? operation.to : operation.to - 1;
+    const nodes: CharNode[] = [];
 
-      const nodes: CharNode[] = [];
-      for (let i = fromIndex; i <= toIndex; i++) {
-        if (i >= 0 && i < this._baseNodes.length) {
-          nodes.push(this._baseNodes[i]);
-        }
-      }
-      return nodes;
-    }
-
-    // For operations with 'at' position (like insert, replace)
-    if (typeof operation.at === "number") {
-      const index = operation.atAsIndex ? operation.at : operation.at - 1;
-
-      const node = this._baseNodes[index];
+    // Find nodes by their IDs
+    for (const nodeId of nodeIds) {
+      const node = this._baseNodes.find((n) => n.id === nodeId);
       if (node) {
-        return [node];
+        nodes.push(node);
+      } else {
+        this._logger.warn(
+          "Navigation",
+          `Node with ID ${nodeId} not found in base nodes`
+        );
       }
     }
 
-    return [];
+    return nodes;
   }
 
   /**
