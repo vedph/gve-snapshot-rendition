@@ -5,21 +5,21 @@ import { AnimationFactory, AnimationFunction } from "./animation-factory";
  * Animation engine that wraps GSAP and provides a consistent API.
  */
 export class AnimationEngine {
-  private gsap: any;
-  private logger: Logger;
-  private factory: AnimationFactory;
+  private _gsap: any;
+  private _logger: Logger;
+  private _factory: AnimationFactory;
 
   constructor(gsap: any, logger: Logger) {
-    this.gsap = gsap;
-    this.logger = logger;
-    this.factory = new AnimationFactory(gsap, logger);
+    this._gsap = gsap;
+    this._logger = logger;
+    this._factory = new AnimationFactory(gsap, logger);
   }
 
   /**
    * Get the animation factory.
    */
-  getFactory(): AnimationFactory {
-    return this.factory;
+  public getFactory(): AnimationFactory {
+    return this._factory;
   }
 
   /**
@@ -30,15 +30,15 @@ export class AnimationEngine {
    * @param rootElement - The root SVG element
    * @returns Promise that resolves when animation completes
    */
-  async animate(
+  public async animate(
     element: SVGElement,
     animation: AnimationFunction,
     rootElement: SVGElement
   ): Promise<void> {
     try {
-      await animation(this.gsap, element, rootElement);
+      await animation(this._gsap, element, rootElement);
     } catch (error) {
-      this.logger.error("Animation execution error:", error);
+      this._logger.error("Animation execution error:", error);
     }
   }
 
@@ -51,28 +51,28 @@ export class AnimationEngine {
    * @param rootElement - The root SVG element containing all elements
    * @returns Promise that resolves when all animations complete
    */
-  async animateSpreading(
+  public async animateSpreading(
     shifts: Map<string, { x: number; y: number }>,
     duration: number,
     rootElement: SVGElement
   ): Promise<void> {
     if (shifts.size === 0) {
-      this.logger.debug("AnimationEngine", "No elements to spread");
+      this._logger.debug("AnimationEngine", "No elements to spread");
       return;
     }
 
-    this.logger.debug(
+    this._logger.debug(
       "AnimationEngine",
       `Animating spreading for ${shifts.size} elements`
     );
-    this.logger.time("animateSpreading");
+    this._logger.time("animateSpreading");
 
-    const timeline = this.gsap.timeline();
+    const timeline = this._gsap.timeline();
 
     for (const [elementId, shift] of shifts.entries()) {
       const element = rootElement.querySelector(`#${elementId}`);
       if (!element) {
-        this.logger.warn(
+        this._logger.warn(
           `Element ${elementId} not found for spreading animation`
         );
         continue;
@@ -112,7 +112,7 @@ export class AnimationEngine {
       timeline.eventCallback("onComplete", resolve);
     });
 
-    this.logger.timeEnd("animateSpreading");
+    this._logger.timeEnd("animateSpreading");
   }
 
   /**
@@ -122,16 +122,16 @@ export class AnimationEngine {
    * @param duration - Duration in milliseconds
    * @returns Promise that resolves when animation completes
    */
-  async fadeIn(elements: SVGElement[], duration: number): Promise<void> {
+  public async fadeIn(elements: SVGElement[], duration: number): Promise<void> {
     if (elements.length === 0) return;
 
-    this.logger.debug(
+    this._logger.debug(
       "AnimationEngine",
       `Fading in ${elements.length} elements`
     );
 
     return new Promise<void>((resolve) => {
-      this.gsap.fromTo(
+      this._gsap.fromTo(
         elements,
         { opacity: 0 },
         {
@@ -151,16 +151,16 @@ export class AnimationEngine {
    * @param duration - Duration in milliseconds
    * @returns Promise that resolves when animation completes
    */
-  async fadeOut(elements: SVGElement[], duration: number): Promise<void> {
+  public async fadeOut(elements: SVGElement[], duration: number): Promise<void> {
     if (elements.length === 0) return;
 
-    this.logger.debug(
+    this._logger.debug(
       "AnimationEngine",
       `Fading out ${elements.length} elements`
     );
 
     return new Promise<void>((resolve) => {
-      this.gsap.to(elements, {
+      this._gsap.to(elements, {
         opacity: 0,
         duration: duration / 1000,
         ease: "power2.inOut",
@@ -178,13 +178,13 @@ export class AnimationEngine {
    * @param duration - Duration in milliseconds
    * @returns Promise that resolves when animation completes
    */
-  async animatePanZoom(
+  public async animatePanZoom(
     panZoomInstance: any,
     newPan: { x: number; y: number },
     newZoom: number,
     duration: number
   ): Promise<void> {
-    this.logger.debug("AnimationEngine", "Animating pan/zoom transition", {
+    this._logger.debug("AnimationEngine", "Animating pan/zoom transition", {
       newPan,
       newZoom,
     });
@@ -193,7 +193,7 @@ export class AnimationEngine {
     const currentZoom = panZoomInstance.getZoom();
 
     return new Promise<void>((resolve) => {
-      this.gsap.to(
+      this._gsap.to(
         { pan: currentPan, zoom: currentZoom },
         {
           pan: newPan,
@@ -213,15 +213,15 @@ export class AnimationEngine {
   /**
    * Kill all active animations.
    */
-  killAll(): void {
-    this.gsap.killTweensOf("*");
-    this.logger.debug("AnimationEngine", "All animations killed");
+  public killAll(): void {
+    this._gsap.killTweensOf("*");
+    this._logger.debug("AnimationEngine", "All animations killed");
   }
 
   /**
    * Get the GSAP instance.
    */
-  getGsap(): any {
-    return this.gsap;
+  public getGsap(): any {
+    return this._gsap;
   }
 }
