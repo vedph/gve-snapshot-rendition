@@ -4,10 +4,14 @@ Custom web component for feature-based GVE snapshot rendition.
 
 ## Documentation
 
+Conceptual documentation and sample data:
+
 - [snapshot backend model](docs/snapshot.md)
 - [rendition description](docs/rendition.md)
 - [sample request to backend snapshot processor](docs/sample/request.json)
 - [sample response from backend snapshot processor](docs/sample/response.json)
+
+The test page used in this project is `index.html` and its code is `consumer.js`.
 
 ## Quick Start
 
