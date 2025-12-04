@@ -589,7 +589,55 @@ export class GveSnapshotRendition extends HTMLElement {
       `Removing ${elements.length} elements from v${versionIndex}`
     );
 
-    // If backwardFadeOutTime > 0, animate fadeout first
+    // Step 1: Reverse spreading animation if spreadTime > 0
+    // This must happen BEFORE removing elements and BEFORE fadeout
+    if (
+      this._settings.spreadTime > 0 &&
+      this._spreadingEngine &&
+      this._animationEngine
+    ) {
+      const spreadingMetadata =
+        this._spreadingEngine.getSpreadingForVersion(versionIndex);
+
+      if (spreadingMetadata.size > 0) {
+        this._logger.debug(
+          "Navigation",
+          `Reversing spreading for ${spreadingMetadata.size} elements from v${versionIndex}`
+        );
+
+        // Build combined shifts (negative of original shifts to reverse)
+        const reverseShifts = new Map<string, { x: number; y: number }>();
+
+        for (const [elementId, metadata] of spreadingMetadata.entries()) {
+          reverseShifts.set(elementId, {
+            x: -metadata.horizontalShift, // Negative to reverse
+            y: -metadata.verticalShift, // Negative to reverse
+          });
+        }
+
+        // Animate spreading reversal
+        await this._animationEngine.animateSpreading(
+          reverseShifts,
+          this._settings.spreadTime,
+          this._rootSvg
+        );
+
+        // Update cached bounds for shifted elements
+        if (this._boundsCache) {
+          for (const elementId of reverseShifts.keys()) {
+            const element = this._rootSvg.querySelector(`#${elementId}`);
+            if (element) {
+              this._boundsCache.updateFromElement(element as SVGElement);
+            }
+          }
+        }
+
+        // Clear spreading history for this version
+        this._spreadingEngine.clearSpreadingForVersion(versionIndex);
+      }
+    }
+
+    // Step 2: If backwardFadeOutTime > 0, animate fadeout
     if (this._settings.backwardFadeOutTime > 0) {
       const fadeOutPromises: Promise<void>[] = [];
 
@@ -604,11 +652,8 @@ export class GveSnapshotRendition extends HTMLElement {
       await Promise.all(fadeOutPromises);
     }
 
-    // Remove elements from DOM
+    // Step 3: Remove elements from DOM
     elements.forEach((el) => el.remove());
-
-    // TODO: Reverse spreading animation if spreadTime > 0
-    // This requires tracking which elements were affected by spreading
   }
 
   /**

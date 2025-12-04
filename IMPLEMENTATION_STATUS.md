@@ -4,9 +4,9 @@
 
 This document tracks the implementation progress of the GVE Snapshot Rendition web component, a complex SVG-based renderer for displaying text transformations based on the GVE snapshot model.
 
-**Project Status**: ✅ **INTERACTIVE UI WORKING - Users Can Navigate!**
+**Project Status**: ✅ **BACKWARD SPREADING REVERSAL COMPLETE!**
 **Build Status**: ✅ **Builds Successfully**
-**Last Updated**: 2025-12-02 (Session 5)
+**Last Updated**: 2025-12-04 (Session 7)
 
 ---
 
@@ -93,13 +93,14 @@ This document tracks the implementation progress of the GVE Snapshot Rendition w
   - [ ] Responsive CSS grid layout
   - [ ] Collapsible areas
 
-### Navigation System (50%) - ✅ Manual Navigation Complete!
+### Navigation System (70%) - ✅ Spreading Reversal Complete!
 
-- [x] **Version Navigator** - **COMPLETE (Session 5)**
+- [x] **Version Navigator** - **COMPLETE (Session 5-7)**
   - [x] Move to prev/next version (goToVersionIndex method)
   - [x] State synchronization with toolbar
-  - [x] Full re-render approach
+  - [x] Accumulation model (forward adds, backward removes)
   - [x] Event firing (versionTagChanging, versionTagChange)
+  - [x] **Backward spreading reversal (NEW - Session 7)**
   - [ ] Move to prev/next staged version
   - [ ] Move to first/last
   - [ ] Jump to specific version by tag
@@ -120,25 +121,26 @@ This document tracks the implementation progress of the GVE Snapshot Rendition w
 
 ## 🔧 Known Issues & TODOs
 
-### ✅ RESOLVED (Session 3 & 4)
+### ✅ RESOLVED (Sessions 2-7)
 
 1. ~~Additional Text Rendering~~ - **COMPLETE** (Session 3)
 2. ~~Hint Rendering~~ - **COMPLETE** (Session 2)
 3. ~~Operation Processing~~ - **COMPLETE** (Session 4)
 4. ~~Spreading Integration~~ - **COMPLETE** (Sessions 2, 3, 4)
+5. ~~Backward Spreading Reversal~~ - **COMPLETE** (Session 7)
 
 ### Important (Next Priority)
 
-1. **Real-World Testing** - Test with actual sample data in browser
-2. **Versions List** - Sidebar showing all versions with colors
-3. **Details Panel** - Display operation metadata and features
+1. **Pan/Zoom Integration** - svg-pan-zoom library integration (CRITICAL - affects all coordinate math)
+2. **First/Last Navigation** - Add first/last buttons and keyboard shortcuts
+3. **Versions List** - Sidebar showing all versions with colors
+4. **Details Panel** - Display operation metadata and features
 
 ### Nice to Have
 
-1. **Pan/Zoom** - svg-pan-zoom library not integrated
-2. **Better Error Handling** - More graceful degradation when features are missing
-3. **Performance** - Profile and optimize for large texts
-4. **Testing** - No unit tests yet
+1. **Better Error Handling** - More graceful degradation when features are missing
+2. **Performance** - Profile and optimize for large texts
+3. **Testing** - No unit tests yet
 
 ---
 
@@ -154,7 +156,7 @@ src/
 │   └── hint-models.ts                ✅ Hint type definitions
 ├── rendering/
 │   ├── bounds-cache.ts               ✅ Bounding rect cache
-│   ├── spreading-engine.ts           ✅ Spreading algorithm
+│   ├── spreading-engine.ts           ✅ Spreading algorithm (with history tracking)
 │   ├── svg-utils.ts                  ✅ SVG utilities
 │   ├── text-layout.ts                ✅ Text positioning
 │   ├── feature-resolver.ts           ✅ Feature → config
@@ -184,13 +186,14 @@ src/
 3. ✅ ~~**Build Operation Processing Loop**~~ - **COMPLETE (Session 4)**
 4. ✅ ~~**Create Basic Toolbar**~~ - **COMPLETE (Session 5)**
 5. ✅ ~~**Implement Version Navigator**~~ - **COMPLETE (Session 5)**
-6. **Test with Real Data** - Verify everything works end-to-end in browser
-7. **Build Versions List** - Show all versions with colors in sidebar
-8. **Add Details Panel** - Display operation metadata and features
-9. **Integrate svg-pan-zoom** - Add pan and zoom support
-10. **Add Event System** - Wire up nodeHover, nodeClick events
-11. **Implement Remaining UI** - Version text area, layout manager
-12. **Add Slideshow Controller** - Auto-play functionality
+6. ✅ ~~**Implement Backward Spreading Reversal**~~ - **COMPLETE (Session 7)**
+7. **Integrate svg-pan-zoom** - Add pan and zoom support (CRITICAL NEXT STEP)
+8. **Add First/Last Navigation** - Complete navigation commands with keyboard shortcuts
+9. **Build Versions List** - Show all versions with colors in sidebar
+10. **Add Details Panel** - Display operation metadata and features
+11. **Add Event System** - Wire up nodeHover, nodeClick events
+12. **Implement Remaining UI** - Version text area, layout manager
+13. **Add Slideshow Controller** - Auto-play functionality
 
 ---
 
@@ -217,7 +220,7 @@ All styles use `--gve-*` CSS variables to enable easy theming by consumers.
 
 ---
 
-## 🎯 Current Capabilities (INTERACTIVE UI COMPLETE!)
+## 🎯 Current Capabilities (BACKWARD NAVIGATION COMPLETE!)
 
 As of now, the component can:
 
@@ -238,10 +241,13 @@ As of now, the component can:
 15. ✅ **Session 4:** Call hint/text renderers for each operation
 16. ✅ **Session 4:** Fire version change events
 17. ✅ **Session 4:** Track current version state
-18. ✅ **NEW (Session 5):** Display navigation toolbar with prev/next buttons
-19. ✅ **NEW (Session 5):** Navigate between versions interactively
-20. ✅ **NEW (Session 5):** Update version label dynamically
-21. ✅ **NEW (Session 5):** Disable buttons at navigation boundaries
+18. ✅ **Session 5:** Display navigation toolbar with prev/next buttons
+19. ✅ **Session 5:** Navigate between versions interactively
+20. ✅ **Session 5:** Update version label dynamically
+21. ✅ **Session 5:** Disable buttons at navigation boundaries
+22. ✅ **NEW (Session 7):** Track spreading metadata by version
+23. ✅ **NEW (Session 7):** Reverse spreading animations on backward navigation
+24. ✅ **NEW (Session 7):** Complete "ink on paper" accumulation model
 
 The component **cannot yet**:
 
@@ -263,17 +269,19 @@ The component **cannot yet**:
 | **MVP** | **100%** ✅ | **0** | **COMPLETE** |
 | UI Components | 20% | 4 | HIGH |
 | Navigation (Manual) | 100% | 0 | **COMPLETE** ✅ |
+| Spreading Reversal | 100% | 0 | **COMPLETE** ✅ |
 | **Basic UI** | **100%** ✅ | **0** | **COMPLETE** |
-| **TOTAL** | **~80%** | **~4 files** | - |
+| **TOTAL** | **~87%** | **~4 files** | - |
 
 **MVP Status:** ✅ **COMPLETE!** Core rendering fully functional.
-**Basic UI Status:** ✅ **COMPLETE!** Toolbar and navigation working.
+**Navigation Status:** ✅ **COMPLETE!** Forward/backward with spreading reversal.
 
 Estimated remaining work:
 
-- Testing: **1-2 hours**
+- Pan/Zoom Integration: **2-3 hours** (CRITICAL NEXT)
+- First/Last Navigation: **1 hour**
 - Full UI: **8-12 hours**
-- Polish: **14-18 hours total**
+- Polish: **11-16 hours total**
 
 ---
 

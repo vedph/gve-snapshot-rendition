@@ -16,6 +16,20 @@ export interface SpreadingResult {
 }
 
 /**
+ * Metadata about spreading applied to an element for a specific version.
+ */
+export interface SpreadingMetadata {
+  /** Version index that caused this spreading */
+  versionIndex: number;
+
+  /** Horizontal shift applied (in pixels) */
+  horizontalShift: number;
+
+  /** Vertical shift applied (in pixels) */
+  verticalShift: number;
+}
+
+/**
  * Engine for calculating spreading (making room for new elements).
  * Implements the "stone in pond" ripple effect to preserve layout.
  */
@@ -23,9 +37,109 @@ export class SpreadingEngine {
   private _boundsCache: BoundsCache;
   private _logger: Logger;
 
+  /**
+   * Map of element ID to array of spreading metadata (one per version).
+   * Each element can be shifted multiple times by different versions.
+   */
+  private _spreadingHistory: Map<string, SpreadingMetadata[]> = new Map();
+
   constructor(boundsCache: BoundsCache, logger: Logger) {
     this._boundsCache = boundsCache;
     this._logger = logger;
+  }
+
+  /**
+   * Track spreading metadata for elements affected by a version.
+   * Called after spreading is applied to record what happened.
+   *
+   * @param versionIndex - Version index that caused the spreading
+   * @param horizontalShifts - Map of element IDs to horizontal shifts
+   * @param verticalShifts - Map of element IDs to vertical shifts
+   */
+  public trackSpreading(
+    versionIndex: number,
+    horizontalShifts: Map<string, number>,
+    verticalShifts: Map<string, number>
+  ): void {
+    // Collect all affected element IDs
+    const affectedIds = new Set([
+      ...horizontalShifts.keys(),
+      ...verticalShifts.keys(),
+    ]);
+
+    for (const elementId of affectedIds) {
+      const hShift = horizontalShifts.get(elementId) || 0;
+      const vShift = verticalShifts.get(elementId) || 0;
+
+      const metadata: SpreadingMetadata = {
+        versionIndex,
+        horizontalShift: hShift,
+        verticalShift: vShift,
+      };
+
+      // Get or create history array for this element
+      let history = this._spreadingHistory.get(elementId);
+      if (!history) {
+        history = [];
+        this._spreadingHistory.set(elementId, history);
+      }
+
+      // Add to history
+      history.push(metadata);
+
+      this._logger.debug(
+        "Spreading",
+        `Tracked spreading for ${elementId} at v${versionIndex}: h=${hShift}, v=${vShift}`
+      );
+    }
+  }
+
+  /**
+   * Get spreading metadata for elements affected by a specific version.
+   * Used when reversing spreading during backward navigation.
+   *
+   * @param versionIndex - Version index to get spreading for
+   * @returns Map of element ID to spreading metadata
+   */
+  public getSpreadingForVersion(
+    versionIndex: number
+  ): Map<string, SpreadingMetadata> {
+    const result = new Map<string, SpreadingMetadata>();
+
+    for (const [elementId, history] of this._spreadingHistory.entries()) {
+      // Find spreading caused by this version
+      const metadata = history.find((m) => m.versionIndex === versionIndex);
+      if (metadata) {
+        result.set(elementId, metadata);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Remove spreading history for a specific version.
+   * Called after spreading is reversed during backward navigation.
+   *
+   * @param versionIndex - Version index to remove history for
+   */
+  public clearSpreadingForVersion(versionIndex: number): void {
+    for (const [elementId, history] of this._spreadingHistory.entries()) {
+      // Remove entries for this version
+      const filtered = history.filter((m) => m.versionIndex !== versionIndex);
+
+      if (filtered.length === 0) {
+        // No more history for this element
+        this._spreadingHistory.delete(elementId);
+      } else {
+        this._spreadingHistory.set(elementId, filtered);
+      }
+    }
+
+    this._logger.debug(
+      "Spreading",
+      `Cleared spreading history for v${versionIndex}`
+    );
   }
 
   /**

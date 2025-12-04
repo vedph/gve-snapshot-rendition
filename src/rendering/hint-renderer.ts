@@ -159,7 +159,7 @@ export class HintRenderer {
 
         // 10. Handle spreading if solid
         if (hint.solid) {
-          await this.handleSpreading(currentHintGroup, rootSvg);
+          await this.handleSpreading(currentHintGroup, rootSvg, versionTag);
         }
 
         // 11. Make visible (set initial opacity to 0 if animation present)
@@ -317,10 +317,8 @@ export class HintRenderer {
 
     // Calculate scale factors based on current hint size
     const currentBBox = getSafeBBox(hintGroup);
-    const scaleX =
-      currentBBox.width > 0 ? width / currentBBox.width : 1;
-    const scaleY =
-      currentBBox.height > 0 ? height / currentBBox.height : 1;
+    const scaleX = currentBBox.width > 0 ? width / currentBBox.width : 1;
+    const scaleY = currentBBox.height > 0 ? height / currentBBox.height : 1;
 
     return { scaleX, scaleY, width, height };
   }
@@ -427,10 +425,12 @@ export class HintRenderer {
 
   /**
    * Handle spreading for solid hints.
+   * @param versionTag - Version tag for tracking spreading history
    */
   private async handleSpreading(
     hintGroup: SVGGElement,
-    rootSvg: SVGElement
+    rootSvg: SVGElement,
+    versionTag: string
   ): Promise<void> {
     const hintBounds = getSafeBBox(hintGroup);
     const hintId = hintGroup.getAttribute("id")!;
@@ -476,6 +476,18 @@ export class HintRenderer {
         if (element) {
           this._boundsCache.updateFromElement(element as SVGElement);
         }
+      }
+
+      // Track spreading metadata for backward navigation
+      // Extract version index from versionTag (e.g., "v2" → 2)
+      const versionMatch = versionTag.match(/v(\d+)/);
+      if (versionMatch) {
+        const versionIndex = parseInt(versionMatch[1]);
+        this._spreadingEngine.trackSpreading(
+          versionIndex,
+          spreading.horizontalShifts,
+          spreading.verticalShifts
+        );
       }
     }
   }

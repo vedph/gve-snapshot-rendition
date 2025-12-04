@@ -1,491 +1,693 @@
-# Next Session Guide - Session 6
+# Next Session Guide - Session 8
 
 ## 📍 Current Status
 
-**Progress: 80% Complete - INTERACTIVE UI WORKING! 🎉**
+**Progress: 87% Complete - SPREADING REVERSAL COMPLETE! 🎉**
 
-**Just Completed (Session 5):**
-- ✅ Toolbar component fully implemented (src/ui/toolbar.ts)
-- ✅ Previous/Next navigation buttons
-- ✅ Version label display (v0, v1, etc.)
-- ✅ Button state management (disable at boundaries)
-- ✅ goToVersionIndex() method for navigation
-- ✅ extractCharOffsets() helper
-- ✅ Comprehensive toolbar CSS (~80 lines)
+**Just Completed (Session 7):**
+- ✅ Implemented backward spreading reversal
+- ✅ Added spreading history tracking to SpreadingEngine
+- ✅ Updated HintRenderer to track spreading by version
+- ✅ Completed removeVersionElements() with reverse spreading
+- ✅ Full "ink on paper" accumulation model working in both directions
 - ✅ Build successful, zero errors, zero warnings
 
 **What's Complete:**
 - ✅ All core utilities and infrastructure
 - ✅ All rendering systems (TextRenderer, HintRenderer, BoundsCache, SpreadingEngine)
 - ✅ Animation system (AnimationEngine, AnimationFactory)
-- ✅ Feature resolution system
-- ✅ Operation processing loop - ALL SYSTEMS WIRED TOGETHER
-- ✅ **Interactive toolbar with navigation!**
+- ✅ Feature resolution with hintVars
+- ✅ Operation processing with trace features
+- ✅ Accumulation-based navigation (forward and backward)
+- ✅ **Spreading reversal with history tracking**
+- ✅ Interactive toolbar with navigation
+- ✅ Version tag tracking
 
 **What's Next:**
-- ⏳ Test with real data in browser
-- ⏳ Versions list UI (sidebar with all versions)
-- ⏳ Details panel UI (operation metadata)
-- ⏳ Full UI layout integration
+- ⏳ **Integrate svg-pan-zoom for pan/zoom capabilities (CRITICAL)**
+- ⏳ Add First/Last navigation and keyboard shortcuts
+- ⏳ Add remaining UI components (versions list, details panel)
+- ⏳ Polish and optimization
 
 ---
 
-## 🎯 Priority 1: Test with Real Data (1-2 hours) - CRITICAL
+## 🎯 Priority 1: Integrate svg-pan-zoom (2-3 hours) ⚠️ CRITICAL
 
 ### Goal
-Verify that everything works end-to-end in the browser. This is the most important next step because it will reveal any integration issues and confirm the component is truly functional.
+Add pan and zoom capabilities to the SVG canvas. This is CRITICAL because pan/zoom affects all coordinate math throughout the component.
 
-### What to Test
+### Why Critical
+Pan/zoom integration affects:
+- Hit testing (finding elements at mouse position)
+- RBR calculation (reference bounding rectangles)
+- Hint positioning (absolute coordinates)
+- Spreading calculations (overlap detection)
+- Bounds caching (must account for zoom scale)
 
-#### 1. **Basic Loading**
-   - Open index.html in browser
-   - Check browser console for errors
-   - Verify component loads without crashes
-
-#### 2. **Base Text Rendering**
-   - Verify base text appears character by character
-   - Check that animations play smoothly
-   - Verify character positioning looks correct
-   - Check for any missing characters
-
-#### 3. **Toolbar UI**
-   - Verify toolbar appears above SVG area
-   - Check that Previous button is disabled at v0
-   - Check that Next button is enabled
-   - Verify version label shows "v0"
-
-#### 4. **Navigation Forward**
-   - Click Next button
-   - Verify version label changes to "v1"
-   - Verify Previous button becomes enabled
-   - Check console for "Navigating to version index 1"
-   - Check console for operation processing logs
-   - Verify any hints render correctly
-   - Verify any additional text renders correctly
-   - Verify spreading animations play
-
-#### 5. **Navigation Backward**
-   - Click Previous button
-   - Verify version label changes back to "v0"
-   - Verify Previous button becomes disabled
-   - Check that SVG clears and re-renders
-   - Verify base text renders again
-
-#### 6. **Navigation Through All Versions**
-   - Click Next repeatedly until last version
-   - Verify Next button disables at last version
-   - Verify all operations process correctly
-   - Check console for any errors or warnings
-   - Verify no visual glitches
-
-#### 7. **Console Verification**
-   - Look for "GVE-Rendition component created"
-   - Look for "Component connected to DOM"
-   - Look for "GSAP initialized"
-   - Look for "Processing X operations"
-   - Look for "Navigating to version index X"
-   - Check for any errors (red text)
-   - Check for any warnings (yellow text)
-
-### Issues to Watch For
-
-- **Missing GSAP:** Component will log warning if GSAP not loaded
-- **Data not loading:** Check that consumer.js sets data correctly
-- **Hints not configured:** Check that settings.hints has required hint definitions
-- **Spreading not working:** Check that solid flags are set correctly
-- **Animations janky:** May need to adjust animation durations
-- **Layout issues:** Check that flexbox layout works in different browsers
-- **Button state bugs:** Verify buttons enable/disable at correct times
-
-### Success Criteria
-
-- [ ] Component loads without errors
-- [ ] Base text renders with animations
-- [ ] Toolbar appears correctly
-- [ ] Clicking Next processes operations
-- [ ] Clicking Previous navigates back
-- [ ] Version label updates correctly
-- [ ] Buttons disable at boundaries
-- [ ] All operations process without errors
-- [ ] Hints appear where expected
-- [ ] Additional text appears where expected
-- [ ] Spreading animations play smoothly
-- [ ] No console errors
-- [ ] No visual glitches
-
-### Debug Tips
-
-If something doesn't work:
-
-1. **Open browser DevTools** (F12)
-2. **Check Console tab** for errors/logs
-3. **Check Elements tab** to inspect shadow DOM
-4. **Check Network tab** to verify files loaded
-5. **Add breakpoints** in browser DevTools Sources tab
-6. **Check settings.debug = true** for verbose logging
-7. **Verify data.json** structure matches expected format
-
----
-
-## 🎯 Priority 2: Versions List UI (3-4 hours)
-
-### Goal
-Add a sidebar showing all versions in the document, allowing users to see at a glance what versions exist and jump directly to any version.
-
-### File to Create
-**`src/ui/versions-list.ts`** (new file, ~200 lines)
+### Current Status
+- svg-pan-zoom package already installed (from Session 6)
+- No pan/zoom functionality implemented yet
+- All rendering uses viewport coordinates (needs to handle transform)
 
 ### Implementation Plan
 
+#### 1. Verify Package Installation
+
+Check if svg-pan-zoom is installed:
+
+```bash
+pnpm list svg-pan-zoom
+```
+
+If not installed:
+
+```bash
+pnpm add svg-pan-zoom @types/svg-pan-zoom
+```
+
+#### 2. Initialize Pan/Zoom
+
+**File**: `src/core/gve-snapshot-rendition.ts`
+
+Add import and instance field:
+
 ```typescript
-export interface VersionInfo {
-  index: number;
-  tag: string;
-  color: string;
-  isStaged: boolean;
-  operationType?: string;
-}
+import svgPanZoom from 'svg-pan-zoom';
 
-export class VersionsList {
-  private container: HTMLElement;
-  private versions: VersionInfo[] = [];
-  private currentIndex: number = 0;
+export class GveSnapsh otRendition extends HTMLElement {
+  // ... existing fields ...
+  private _panZoomInstance?: SvgPanZoom.Instance;
 
-  constructor(container: HTMLElement) {
-    this.container = container;
-    this.render();
-  }
+  // ... existing methods ...
 
-  private render(): void {
-    this.container.innerHTML = `
-      <div class="versions-list">
-        <div class="versions-header">Versions</div>
-        <div class="versions-items" id="versions-items"></div>
-      </div>
-    `;
-    this.updateList();
-  }
+  private initializePanZoom(): void {
+    if (!this._rootSvg) return;
 
-  private updateList(): void {
-    const itemsContainer = this.container.querySelector("#versions-items");
-    if (!itemsContainer) return;
-
-    itemsContainer.innerHTML = this.versions
-      .map((version, idx) => {
-        const isActive = idx === this.currentIndex;
-        const classes = [
-          "version-item",
-          isActive ? "active" : "",
-          version.isStaged ? "staged" : "",
-        ]
-          .filter(Boolean)
-          .join(" ");
-
-        return `
-          <div
-            class="${classes}"
-            data-index="${idx}"
-            style="border-left: 4px solid ${version.color}"
-          >
-            <span class="version-tag">${version.tag}</span>
-            ${version.operationType ? `<span class="version-type">${version.operationType}</span>` : ""}
-          </div>
-        `;
-      })
-      .join("");
-
-    this.attachEventListeners();
-  }
-
-  private attachEventListeners(): void {
-    const items = this.container.querySelectorAll(".version-item");
-    items.forEach((item) => {
-      item.addEventListener("click", (e) => {
-        const target = e.currentTarget as HTMLElement;
-        const index = parseInt(target.dataset.index || "0", 10);
-        this.selectVersion(index);
-      });
+    this._panZoomInstance = svgPanZoom(this._rootSvg, {
+      zoomEnabled: true,
+      panEnabled: true,
+      controlIconsEnabled: false, // We'll use toolbar buttons
+      fit: false,
+      center: false,
+      minZoom: 0.1,
+      maxZoom: 10,
+      zoomScaleSensitivity: 0.3,
     });
+
+    this._logger.info("Pan/Zoom initialized");
   }
 
-  private selectVersion(index: number): void {
-    this.currentIndex = index;
-    this.updateList();
-    this.dispatchSelectionEvent(index);
+  // Call from renderBaseText() after SVG is ready:
+  private async renderBaseText(): Promise<void> {
+    // ... existing code ...
+
+    // Initialize pan/zoom after initial render
+    this.initializePanZoom();
   }
 
-  private dispatchSelectionEvent(index: number): void {
-    this.container.dispatchEvent(
-      new CustomEvent("versionSelect", {
-        detail: { index },
-        bubbles: true,
-      })
-    );
-  }
-
-  setVersions(versions: VersionInfo[]): void {
-    this.versions = versions;
-    this.updateList();
-  }
-
-  setCurrentIndex(index: number): void {
-    this.currentIndex = index;
-    this.updateList();
-  }
-
-  getCurrentIndex(): number {
-    return this.currentIndex;
+  // Add cleanup
+  disconnectedCallback(): void {
+    if (this._panZoomInstance) {
+      this._panZoomInstance.destroy();
+      this._panZoomInstance = undefined;
+    }
   }
 }
 ```
 
-### CSS Styling
+#### 3. Add Toolbar Zoom Controls
 
-Add to `getStyles()` in gve-snapshot-rendition.ts:
+**File**: `src/ui/toolbar.ts`
+
+Add zoom buttons to toolbar:
+
+```typescript
+private createToolbarButtons(): void {
+  // ... existing prev/next buttons ...
+
+  // Zoom controls group
+  const zoomGroup = document.createElement("div");
+  zoomGroup.className = "gve-toolbar-group";
+
+  // Zoom In button
+  this._zoomInBtn = this.createButton("➕", "Zoom In");
+  this._zoomInBtn.addEventListener("click", () => this.handleZoomIn());
+
+  // Zoom Out button
+  this._zoomOutBtn = this.createButton("➖", "Zoom Out");
+  this._zoomOutBtn.addEventListener("click", () => this.handleZoomOut());
+
+  // Reset Zoom button
+  this._resetZoomBtn = this.createButton("⊡", "Reset Zoom");
+  this._resetZoomBtn.addEventListener("click", () => this.handleResetZoom());
+
+  // Zoom level display
+  this._zoomLabel = document.createElement("span");
+  this._zoomLabel.className = "gve-zoom-label";
+  this._zoomLabel.textContent = "100%";
+
+  zoomGroup.appendChild(this._zoomInBtn);
+  zoomGroup.appendChild(this._zoomOutBtn);
+  zoomGroup.appendChild(this._resetZoomBtn);
+  zoomGroup.appendChild(this._zoomLabel);
+
+  this._container.appendChild(zoomGroup);
+}
+
+private handleZoomIn(): void {
+  this.dispatchEvent(new CustomEvent("zoom-in"));
+}
+
+private handleZoomOut(): void {
+  this.dispatchEvent(new CustomEvent("zoom-out"));
+}
+
+private handleResetZoom(): void {
+  this.dispatchEvent(new CustomEvent("reset-zoom"));
+}
+
+public updateZoomLevel(zoom: number): void {
+  if (this._zoomLabel) {
+    this._zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
+  }
+}
+```
+
+#### 4. Wire Up Zoom Events
+
+**File**: `src/core/gve-snapshot-rendition.ts`
+
+Add event listeners:
+
+```typescript
+private setupToolbar(): void {
+  if (!this._toolbar) return;
+
+  // Existing navigation events
+  this._toolbar.addEventListener("navigate-prev", () => this.goToPrevious());
+  this._toolbar.addEventListener("navigate-next", () => this.goToNext());
+
+  // NEW: Zoom events
+  this._toolbar.addEventListener("zoom-in", () => this.handleZoomIn());
+  this._toolbar.addEventListener("zoom-out", () => this.handleZoomOut());
+  this._toolbar.addEventListener("reset-zoom", () => this.handleResetZoom());
+}
+
+private handleZoomIn(): void {
+  if (!this._panZoomInstance) return;
+  this._panZoomInstance.zoomIn();
+  this.updateToolbarZoom();
+}
+
+private handleZoomOut(): void {
+  if (!this._panZoomInstance) return;
+  this._panZoomInstance.zoomOut();
+  this.updateToolbarZoom();
+}
+
+private handleResetZoom(): void {
+  if (!this._panZoomInstance) return;
+  this._panZoomInstance.resetZoom();
+  this._panZoomInstance.resetPan();
+  this.updateToolbarZoom();
+}
+
+private updateToolbarZoom(): void {
+  if (!this._panZoomInstance || !this._toolbar) return;
+  const zoom = this._panZoomInstance.getZoom();
+  this._toolbar.updateZoomLevel(zoom);
+}
+```
+
+#### 5. Add CSS for Zoom Controls
+
+**File**: `src/ui/toolbar.ts` (in styles)
 
 ```css
-.versions-list {
-  width: 200px;
-  height: 100%;
-  border-right: 1px solid var(--gve-border-color, #ddd);
-  background: var(--gve-sidebar-bg, #fafafa);
-  overflow-y: auto;
-  flex-shrink: 0;
-}
-
-.versions-header {
-  padding: 0.75rem 1rem;
-  font-weight: bold;
-  font-size: 14px;
-  border-bottom: 1px solid var(--gve-border-color, #ddd);
-  background: var(--gve-toolbar-bg, #f5f5f5);
-}
-
-.versions-items {
+.gve-toolbar-group {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-left: 12px;
+  border-left: 1px solid var(--gve-toolbar-border-color, #ddd);
 }
 
-.version-item {
-  padding: 0.75rem 1rem;
-  cursor: pointer;
-  border-bottom: 1px solid #eee;
-  transition: background 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.version-item:hover {
-  background: var(--gve-item-hover, #f0f0f0);
-}
-
-.version-item.active {
-  background: var(--gve-item-active, #e3f2fd);
-  font-weight: bold;
-}
-
-.version-item.staged {
-  border-left-width: 6px !important;
-}
-
-.version-tag {
+.gve-zoom-label {
+  font-size: 12px;
+  color: var(--gve-toolbar-text-color, #333);
+  min-width: 48px;
+  text-align: center;
   font-family: monospace;
-  font-size: 13px;
-}
-
-.version-type {
-  font-size: 11px;
-  color: #666;
-  font-style: italic;
 }
 ```
 
-### Integration with Main Component
+### Design Decisions
 
-In `gve-snapshot-rendition.ts`:
+**Q: Should zoom reset when navigating between versions?**
+**A: NO** - Preserve zoom/pan state. Users often want to zoom into a specific area and then navigate.
 
-1. **Update layout structure** to use horizontal flexbox
-2. **Add versions list container** to the left
-3. **Initialize VersionsList** with version data
-4. **Listen for "versionSelect" events** and call goToVersionIndex()
-5. **Update versions list** when toolbar changes version
+**Q: Should there be a "fit to content" button?**
+**A: YES** - Useful for large texts. Add as optional feature:
 
 ```typescript
-import { VersionsList, VersionInfo } from "../ui/versions-list";
+private handleFitToContent(): void {
+  if (!this._panZoomInstance || !this._rootSvg) return;
+  const bbox = this._rootSvg.getBBox();
+  this._panZoomInstance.fit();
+  this._panZoomInstance.center();
+}
+```
 
-// Add property
-private versionsList?: VersionsList;
+**Q: Should zoom/pan state be saved in settings?**
+**A: NO** - State is session-specific, not document-specific.
 
-// Update render() layout
-private render(): void {
-  this.shadow.innerHTML = "";
+### Testing
 
-  const style = document.createElement("style");
-  style.textContent = this.getStyles();
-  this.shadow.appendChild(style);
+1. Open component in browser
+2. Verify zoom buttons appear in toolbar
+3. Click zoom in - verify canvas zooms in
+4. Click zoom out - verify canvas zooms out
+5. Use mouse wheel - verify zoom works (if enabled)
+6. Click and drag - verify pan works
+7. Click reset - verify zoom returns to 100% and pan resets
+8. Verify zoom level display updates correctly
+9. Navigate between versions - verify zoom/pan persists
 
-  this.container = document.createElement("div");
-  this.container.className = "gve-container";
+### Success Criteria
 
-  // Create main layout: versions list + content area
-  const mainLayout = document.createElement("div");
-  mainLayout.className = "gve-main-layout";
+- [ ] Pan/zoom initialized after initial render
+- [ ] Toolbar shows zoom controls
+- [ ] Zoom in/out buttons work
+- [ ] Reset zoom button works
+- [ ] Zoom level displays correctly (e.g., "150%")
+- [ ] Mouse wheel zoom works (if enabled)
+- [ ] Click-and-drag pan works
+- [ ] Zoom/pan state persists across navigation
+- [ ] Component cleans up pan/zoom on disconnect
 
-  // Versions list container (left side)
-  const versionsContainer = document.createElement("div");
-  versionsContainer.id = "versions-container";
-  mainLayout.appendChild(versionsContainer);
+---
 
-  // Content area (right side)
-  const contentArea = document.createElement("div");
-  contentArea.className = "gve-content-area";
+## 🎯 Priority 2: Add First/Last Navigation (1 hour)
 
-  // Toolbar
-  const toolbarContainer = document.createElement("div");
-  toolbarContainer.id = "toolbar-container";
-  contentArea.appendChild(toolbarContainer);
+### Goal
+Add First/Last buttons to toolbar and implement keyboard shortcuts for complete navigation control.
 
-  // SVG
-  this.rootSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  this.rootSvg.setAttribute("class", "gve-text-rendition");
-  this.rootSvg.setAttribute("width", "100%");
-  this.rootSvg.setAttribute("height", "600px");
-  contentArea.appendChild(this.rootSvg);
+### Current Status
+- Previous/Next buttons working
+- No First/Last buttons
+- No keyboard shortcuts
+- Version navigation complete but missing convenience features
 
-  mainLayout.appendChild(contentArea);
-  this.container.appendChild(mainLayout);
-  this.shadow.appendChild(this.container);
+### Implementation Plan
 
-  // Initialize UI components if data available
-  if (this._data && this._data.steps) {
-    // Initialize toolbar
-    this.toolbar = new Toolbar(toolbarContainer);
-    this.toolbar.setTotalVersions(this._data.steps.length);
-    toolbarContainer.addEventListener("navigate", (e: Event) => {
-      const customEvent = e as CustomEvent;
-      this.goToVersionIndex(customEvent.detail.index);
-    });
+#### 1. Add First/Last Buttons to Toolbar
 
-    // Initialize versions list
-    const versions = this.buildVersionsInfo();
-    this.versionsList = new VersionsList(versionsContainer);
-    this.versionsList.setVersions(versions);
-    versionsContainer.addEventListener("versionSelect", (e: Event) => {
-      const customEvent = e as CustomEvent;
-      this.goToVersionIndex(customEvent.detail.index);
-    });
-  }
+**File**: `src/ui/toolbar.ts`
+
+Add button fields:
+
+```typescript
+private _firstBtn!: HTMLButtonElement;
+private _lastBtn!: HTMLButtonElement;
+```
+
+Update `createToolbarButtons()`:
+
+```typescript
+private createToolbarButtons(): void {
+  const navGroup = document.createElement("div");
+  navGroup.className = "gve-toolbar-group";
+
+  // First button (NEW)
+  this._firstBtn = this.createButton("|◀", "First Version");
+  this._firstBtn.addEventListener("click", () => this.handleFirst());
+
+  // Previous button (existing)
+  this._prevBtn = this.createButton("◀", "Previous");
+  this._prevBtn.addEventListener("click", () => this.handlePrevious());
+
+  // Version label (existing)
+  this._versionLabel = document.createElement("span");
+  this._versionLabel.className = "gve-version-label";
+  this._versionLabel.textContent = "v0";
+
+  // Next button (existing)
+  this._nextBtn = this.createButton("▶", "Next");
+  this._nextBtn.addEventListener("click", () => this.handleNext());
+
+  // Last button (NEW)
+  this._lastBtn = this.createButton("▶|", "Last Version");
+  this._lastBtn.addEventListener("click", () => this.handleLast());
+
+  navGroup.appendChild(this._firstBtn);
+  navGroup.appendChild(this._prevBtn);
+  navGroup.appendChild(this._versionLabel);
+  navGroup.appendChild(this._nextBtn);
+  navGroup.appendChild(this._lastBtn);
+
+  this._container.appendChild(navGroup);
 }
 
-// Build version info array
-private buildVersionsInfo(): VersionInfo[] {
-  if (!this._data || !this._data.steps) return [];
-
-  const versions: VersionInfo[] = [
-    {
-      index: 0,
-      tag: "v0",
-      color: "#888",
-      isStaged: false,
-    },
-  ];
-
-  this._data.steps.forEach((step, idx) => {
-    const operation = step.operation;
-    versions.push({
-      index: idx + 1,
-      tag: operation.outputTag || `v${operation.run}`,
-      color: this.versionPalette.get(operation.outputTag || `v${operation.run}`) || "#888",
-      isStaged: operation.stage === true,
-      operationType: this.getOperationTypeName(operation.type),
-    });
-  });
-
-  return versions;
+private handleFirst(): void {
+  this.dispatchEvent(new CustomEvent("navigate-first"));
 }
 
-// Get operation type name
-private getOperationTypeName(type: number): string {
-  const types: Record<number, string> = {
-    1: "delete",
-    2: "insert",
-    3: "replace",
-    4: "swap",
-    5: "move",
-    6: "copy",
-    7: "annotate",
-  };
-  return types[type] || `op${type}`;
+private handleLast(): void {
+  this.dispatchEvent(new CustomEvent("navigate-last"));
+}
+```
+
+Update `setCurrentIndex()` to enable/disable first/last buttons:
+
+```typescript
+public setCurrentIndex(index: number): void {
+  this._currentIndex = index;
+  this._versionLabel.textContent = `v${index}`;
+
+  // Disable first/prev at start
+  this._firstBtn.disabled = index === 0;
+  this._prevBtn.disabled = index === 0;
+
+  // Disable next/last at end
+  this._nextBtn.disabled = index >= this._maxIndex;
+  this._lastBtn.disabled = index >= this._maxIndex;
+}
+```
+
+#### 2. Implement Navigation Methods
+
+**File**: `src/core/gve-snapshot-rendition.ts`
+
+Add toolbar event listeners:
+
+```typescript
+private setupToolbar(): void {
+  if (!this._toolbar) return;
+
+  this._toolbar.addEventListener("navigate-prev", () => this.goToPrevious());
+  this._toolbar.addEventListener("navigate-next", () => this.goToNext());
+
+  // NEW: First/Last handlers
+  this._toolbar.addEventListener("navigate-first", () => this.goToFirst());
+  this._toolbar.addEventListener("navigate-last", () => this.goToLast());
+}
+```
+
+Add navigation methods:
+
+```typescript
+/**
+ * Navigate to the first version (v0 - base text).
+ */
+public async goToFirst(): Promise<void> {
+  await this.goToVersionIndex(0);
 }
 
-// Update goToVersionIndex to sync both toolbar and versions list
-private async goToVersionIndex(targetIndex: number): Promise<void> {
-  if (!this._data || !this.textRenderer || !this.rootSvg) return;
+/**
+ * Navigate to the last version.
+ */
+public async goToLast(): Promise<void> {
+  if (!this._data || !this._data.steps) return;
+  const lastIndex = this._data.steps.length;
+  await this.goToVersionIndex(lastIndex);
+}
+```
 
-  this.logger.info(`Navigating to version index ${targetIndex}`);
+#### 3. Add Keyboard Shortcuts
 
-  // ... existing clear and render logic ...
+**File**: `src/core/gve-snapshot-rendition.ts`
 
-  // Update UI components
-  if (this.toolbar) {
-    this.toolbar.setCurrentIndex(targetIndex);
-  }
-  if (this.versionsList) {
-    this.versionsList.setCurrentIndex(targetIndex);
+Add keyboard listener in `connectedCallback()`:
+
+```typescript
+connectedCallback(): void {
+  this.innerHTML = "";
+  this.setAttribute("tabindex", "0"); // Make focusable for keyboard events
+
+  // Add keyboard listener
+  this.addEventListener("keydown", (e) => this.handleKeyDown(e));
+
+  // ... existing code ...
+}
+
+private handleKeyDown(event: KeyboardEvent): void {
+  // Prevent default for navigation keys
+  switch (event.key) {
+    case "ArrowLeft":
+      event.preventDefault();
+      this.goToPrevious();
+      break;
+
+    case "ArrowRight":
+      event.preventDefault();
+      this.goToNext();
+      break;
+
+    case "Home":
+      event.preventDefault();
+      this.goToFirst();
+      break;
+
+    case "End":
+      event.preventDefault();
+      this.goToLast();
+      break;
+
+    // Number keys 0-9 for quick jump
+    case "0":
+    case "1":
+    case "2":
+    case "3":
+    case "4":
+    case "5":
+    case "6":
+    case "7":
+    case "8":
+    case "9":
+      event.preventDefault();
+      const targetIndex = parseInt(event.key);
+      if (this._data && targetIndex <= this._data.steps.length) {
+        this.goToVersionIndex(targetIndex);
+      }
+      break;
+
+    // Space for play/pause (future feature)
+    case " ":
+      event.preventDefault();
+      // TODO: Toggle slideshow
+      break;
   }
 }
 ```
 
-### CSS Layout Update
+### Testing
 
-```css
-.gve-main-layout {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  height: 100%;
+1. Open component in browser
+2. Verify First/Last buttons appear in toolbar
+3. Click First button - should go to v0
+4. Click Last button - should go to last version
+5. Test keyboard shortcuts:
+   - Press Left Arrow - previous version
+   - Press Right Arrow - next version
+   - Press Home - first version
+   - Press End - last version
+   - Press "2" - jump to v2
+6. Verify buttons disable correctly at boundaries
+7. Verify focus works (component accepts keyboard input)
+
+### Success Criteria
+
+- [ ] First button appears in toolbar
+- [ ] Last button appears in toolbar
+- [ ] First button navigates to v0
+- [ ] Last button navigates to last version
+- [ ] Buttons disable at appropriate boundaries
+- [ ] Arrow keys navigate prev/next
+- [ ] Home key goes to first
+- [ ] End key goes to last
+- [ ] Number keys 0-9 jump to specific version
+- [ ] Component is focusable for keyboard events
+- [ ] Keyboard shortcuts don't interfere with page scroll
 }
 
-.gve-content-area {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  overflow: hidden;
+private dispatchZoomEvent(action: "in" | "out" | "reset"): void {
+  this._container.dispatchEvent(
+    new CustomEvent("zoom", {
+      detail: { action },
+      bubbles: true,
+    })
+  );
+}
+```
+
+#### 3. Wire Up Zoom Events
+**File**: `src/core/gve-snapshot-rendition.ts`
+
+In `processData()` where toolbar is initialized:
+
+```typescript
+// Listen for zoom events
+toolbarContainer.addEventListener("zoom", (e: Event) => {
+  const customEvent = e as CustomEvent;
+  this.handleZoom(customEvent.detail.action);
+});
+```
+
+Add zoom handler:
+
+```typescript
+private handleZoom(action: "in" | "out" | "reset"): void {
+  if (!this._panZoomInstance) return;
+
+  switch (action) {
+    case "in":
+      this._panZoomInstance.zoomIn();
+      break;
+    case "out":
+      this._panZoomInstance.zoomOut();
+      break;
+    case "reset":
+      this._panZoomInstance.resetZoom();
+      this._panZoomInstance.center();
+      break;
+  }
+}
+```
+
+#### 4. Handle Navigation with Pan/Zoom
+**Important**: When navigating between versions, you may want to reset zoom or keep current view. Design decision needed.
+
+Option A - Reset on navigation:
+```typescript
+private async goToVersionIndex(targetIndex: number): Promise<void> {
+  // ... existing code ...
+
+  // Reset zoom after navigation
+  if (this._panZoomInstance) {
+    this._panZoomInstance.reset();
+  }
+}
+```
+
+Option B - Preserve zoom:
+```typescript
+// Do nothing - pan/zoom state persists
+```
+
+### Testing
+1. Load component
+2. Try zooming in/out with mouse wheel
+3. Try panning by dragging
+4. Click zoom toolbar buttons
+5. Verify zoom limits (minZoom/maxZoom)
+6. Navigate between versions
+7. Verify zoom behavior is as expected
+
+### Success Criteria
+- [ ] svg-pan-zoom installed and imported
+- [ ] Pan/zoom initializes correctly
+- [ ] Mouse wheel zooms
+- [ ] Drag pans
+- [ ] Toolbar zoom buttons work
+- [ ] Zoom limits enforced
+- [ ] Clean up on component disconnect
+
+### Known Issues to Watch
+- Pan/zoom may interfere with element selection
+- Coordinate transforms need accounting in hit testing
+- Performance may degrade with many elements
+
+---
+
+## 🎯 Priority 3: Add First/Last/Jump Navigation (1 hour)
+
+### Goal
+Complete the toolbar with first/last buttons and ability to jump to specific version.
+
+### Implementation Plan
+
+#### 1. Update Toolbar
+Already have buttons in HTML (see Priority 2), just need handlers:
+
+```typescript
+private attachEventListeners(): void {
+  const firstBtn = this._container.querySelector("#first-btn");
+  const lastBtn = this._container.querySelector("#last-btn");
+
+  firstBtn?.addEventListener("click", () => this.navigateToFirst());
+  lastBtn?.addEventListener("click", () => this.navigateToLast());
+}
+
+private navigateToFirst(): void {
+  this.dispatchNavigateEvent(0);
+}
+
+private navigateToLast(): void {
+  if (this._totalVersions > 0) {
+    this.dispatchNavigateEvent(this._totalVersions - 1);
+  }
+}
+```
+
+#### 2. Add Keyboard Shortcuts
+**File**: `src/core/gve-snapshot-rendition.ts`
+
+```typescript
+public connectedCallback(): void {
+  this._logger.info("Component connected to DOM");
+  this.render();
+  this.initializeGsap();
+  this.attachKeyboardListeners();
+}
+
+private attachKeyboardListeners(): void {
+  this.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (!this._data || !this._data.steps) return;
+
+    switch (e.key) {
+      case "ArrowLeft":
+        if (this._currentVersionIndex > 0) {
+          this.goToVersionIndex(this._currentVersionIndex - 1);
+        }
+        break;
+      case "ArrowRight":
+        if (this._currentVersionIndex < this._data.steps.length) {
+          this.goToVersionIndex(this._currentVersionIndex + 1);
+        }
+        break;
+      case "Home":
+        this.goToVersionIndex(0);
+        break;
+      case "End":
+        this.goToVersionIndex(this._data.steps.length);
+        break;
+      case "0":
+      case "1":
+      case "2":
+      case "3":
+      case "4":
+      case "5":
+      case "6":
+      case "7":
+      case "8":
+      case "9":
+        const targetIndex = parseInt(e.key);
+        if (targetIndex <= this._data.steps.length) {
+          this.goToVersionIndex(targetIndex);
+        }
+        break;
+    }
+  });
 }
 ```
 
 ### Success Criteria
-
-- [ ] Versions list appears on left side
-- [ ] All versions listed (v0, v1, v2, ...)
-- [ ] Each version shows color from palette
-- [ ] Current version highlighted
-- [ ] Staged versions have thicker left border
-- [ ] Clicking version navigates to it
-- [ ] List scrolls if many versions
-- [ ] CSS styling looks clean
-- [ ] Integration with toolbar works
-
----
-
-## 🎯 Priority 3: Details Panel (2-3 hours)
-
-### Goal
-Display operation metadata and features in a panel below the SVG area.
-
-### File to Create
-**`src/ui/details-panel.ts`** (new file, ~150 lines)
-
-### Implementation Plan
-
-Show:
-- Current operation ID
-- Operation type
-- Input/output tags
-- Global features
-- Position (at, from, to)
-- Collapsible sections
+- [ ] First button jumps to v0
+- [ ] Last button jumps to last version
+- [ ] Arrow keys navigate
+- [ ] Home/End keys work
+- [ ] Number keys jump to versions
+- [ ] Buttons disable appropriately
 
 ---
 
@@ -493,87 +695,28 @@ Show:
 
 ### Read These Before Starting
 
-1. **SESSION_5_SUMMARY.md** - What was just done
-2. **SESSION_PROGRESS.md** - Overall status (80% complete!)
-3. **IMPLEMENTATION_STATUS.md** - Updated file structure
-4. **docs/rendition.md** - UI components section
+1. **SESSION_6_SUMMARY.md** - What was just done
+2. **IMPLEMENTATION_STATUS.md** - Current status (85% complete!)
+3. **docs/rendition.md** - Main reference guide
+4. **docs/snapshot.md** - Trace features (lines 124-247)
 
 ### Key Patterns to Follow
 
-1. **Async/await** for all rendering operations
-2. **Logger.time/timeEnd** for performance tracking
-3. **Event dispatching** for state changes
-4. **Clear separation** - UI in src/ui/, core logic in src/core/
-5. **CustomEvents with bubbles: true** for communication
-6. **Flexbox layouts** for responsive design
+1. **Track metadata** for reversible operations
+2. **Async/await** for all animations
+3. **GSAP promises** for animation coordination
+4. **Logger.time/timeEnd** for performance tracking
+5. **Clean up resources** in disconnectedCallback
 
 ---
 
 ## 🐛 Common Issues to Avoid
 
-1. **Test first!** - Don't add more UI until you've verified existing code works
-2. **Check data structure** - Verify data.json matches expected format
-3. **Verify GSAP loaded** - Component needs GSAP from CDN
-4. **Handle edge cases** - Empty data, no operations, etc.
-5. **Sync UI state** - Update all UI components when version changes
-6. **Clear console** - Check for errors after each test
-
----
-
-## 📝 Testing Checklist
-
-### After Browser Testing
-
-1. **Loading**
-   - [ ] No console errors on load
-   - [ ] Component appears in DOM
-   - [ ] GSAP initialized
-
-2. **Rendering**
-   - [ ] Base text appears
-   - [ ] Animations play smoothly
-   - [ ] No missing characters
-
-3. **Toolbar**
-   - [ ] Toolbar visible
-   - [ ] Buttons styled correctly
-   - [ ] Version label shows v0
-
-4. **Navigation**
-   - [ ] Next button works
-   - [ ] Previous button works
-   - [ ] Version label updates
-   - [ ] Buttons disable correctly
-
-5. **Operations**
-   - [ ] Operations process in order
-   - [ ] Hints render correctly
-   - [ ] Additional text renders
-   - [ ] Spreading works
-
----
-
-## ⏱️ Time Estimates
-
-| Task | Estimated Time |
-|------|----------------|
-| Test with real data | 1-2h |
-| Versions list UI | 3-4h |
-| Details panel UI | 2-3h |
-| **Total to Full UI** | **6-9h** |
-
----
-
-## 🎉 What You'll Have After This Session
-
-After completing these priorities:
-- ✅ Verified component works in browser
-- ✅ Users can see all versions in sidebar
-- ✅ Users can click to jump to any version
-- ✅ Operation details displayed
-- ✅ **FULLY INTERACTIVE COMPONENT!** Ready for production
-
-**That's a production-ready text transformation viewer!** 🚀
+1. **Don't forget to pass versionIndex** - Spreading needs to know which version
+2. **Clean up pan/zoom** - Call destroy() in disconnectedCallback
+3. **Account for transforms** - Pan/zoom affects coordinate math
+4. **Test keyboard shortcuts** - Make sure component has focus
+5. **Handle edge cases** - Empty data, single version, etc.
 
 ---
 
@@ -581,36 +724,57 @@ After completing these priorities:
 
 Update these files after session:
 
-1. **SESSION_PROGRESS.md** - Add Session 6 entry
-2. **SESSION_6_SUMMARY.md** - Create summary
-3. **NEXT_SESSION.md** - Update for Session 7
+1. **SESSION_PROGRESS.md** - Add Session 7 entry
+2. **SESSION_7_SUMMARY.md** - Create summary
+3. **NEXT_SESSION.md** - Update for Session 8
 4. **IMPLEMENTATION_STATUS.md** - Update percentages (expect ~90%)
+
+---
+
+## ⏱️ Time Estimates
+
+| Task | Estimated Time |
+|------|----------------|
+| Backward spreading reversal | 1-2h |
+| svg-pan-zoom integration | 2-3h |
+| First/Last/Keyboard nav | 1h |
+| **Total Session 7** | **4-6h** |
+
+---
+
+## 🎉 What You'll Have After This Session
+
+After completing these priorities:
+- ✅ Fully reversible navigation (including spreading)
+- ✅ Pan and zoom capabilities
+- ✅ Complete navigation controls
+- ✅ Keyboard shortcuts
+- ✅ **90% complete component!**
 
 ---
 
 ## 💡 Hints for Success
 
-1. **Test in browser FIRST** - This is critical before adding more UI
-2. **Use Chrome DevTools** - Console, Elements, Network tabs are your friends
-3. **Start simple** - Get basic versions list working before fancy features
-4. **Keep state in sync** - All UI components should reflect current version
-5. **Log navigation events** - Use logger.debug for debugging
-6. **Handle empty data** - Component should degrade gracefully
+1. **Start with spreading reversal** - It's the TODO in code
+2. **Test spreading before reversing** - Make sure forward works first
+3. **svg-pan-zoom is critical** - Affects all coordinate math
+4. **Design decision needed** - Should zoom reset on navigation?
+5. **Test in browser frequently** - Verify each piece works
+6. **Log everything** - Use logger.debug for debugging
 
 ---
 
 ## 🚀 Stretch Goals (If Time Permits)
 
-If you finish early and have extra time:
+If you finish early:
 
-1. **Search in versions list** - Filter versions by tag or type
-2. **Version tooltips** - Show more info on hover
-3. **Keyboard shortcuts** - Numbers to jump to versions
-4. **Collapse versions list** - Toggle button to hide/show
-5. **Export current SVG** - Download button
+1. **Versions list UI** - Sidebar with all versions
+2. **Details panel** - Operation metadata display
+3. **Version text area** - Plain text view
+4. **Download SVG** - Export current state
 
 ---
 
-**Ready to see the component in action! Let's test it! 🧪**
+**Ready to complete the navigation system! Let's go! 🚀**
 
-*Total project: 80% complete, ~6-9 hours to full UI, ~14-18 hours to polish*
+*Total project: 85% complete, ~4-6 hours to 90%, ~10-14 hours to polish*
