@@ -44,6 +44,7 @@ export class GveSnapshotRendition extends HTMLElement {
   private _rootSvg?: SVGElement;
   private _container?: HTMLElement;
   private _toolbar?: Toolbar;
+  private _panZoomInstance?: SvgPanZoomInstance;
 
   // State
   private _baseNodes: CharNode[] = [];
@@ -99,6 +100,12 @@ export class GveSnapshotRendition extends HTMLElement {
     this._logger.info("Component disconnected from DOM");
     if (this._animationEngine) {
       this._animationEngine.killAll();
+    }
+    // Cleanup pan/zoom instance
+    if (this._panZoomInstance) {
+      this._panZoomInstance.destroy();
+      this._panZoomInstance = undefined;
+      this._logger.info("Pan/zoom destroyed");
     }
   }
 
@@ -232,6 +239,29 @@ export class GveSnapshotRendition extends HTMLElement {
           const customEvent = e as CustomEvent;
           this.goToVersionIndex(customEvent.detail.index);
         });
+
+        // Listen for zoom events
+        toolbarContainer.addEventListener("zoom", (e: Event) => {
+          const customEvent = e as CustomEvent;
+          const { action, zoomLevel } = customEvent.detail;
+
+          switch (action) {
+            case "in":
+              this.zoomIn();
+              break;
+            case "out":
+              this.zoomOut();
+              break;
+            case "reset":
+              this.resetZoom();
+              break;
+            case "set":
+              if (zoomLevel !== undefined) {
+                this.setZoom(zoomLevel);
+              }
+              break;
+          }
+        });
       }
     }
 
@@ -306,8 +336,54 @@ export class GveSnapshotRendition extends HTMLElement {
     // Component starts at v0 (base text only)
     // Use toolbar or goToVersionIndex() to navigate to other versions
 
+    // Initialize pan/zoom after SVG is ready
+    this.initializePanZoom();
+
     this._logger.timeEnd("renderContent");
     this._logger.info("Content rendering complete - showing v0 (base text)");
+  }
+
+  /**
+   * Initialize pan/zoom functionality on the SVG element.
+   * Enables mouse wheel zoom, click-and-drag pan, with configurable limits.
+   */
+  private initializePanZoom(): void {
+    if (!this._rootSvg) {
+      this._logger.warn("Cannot initialize pan/zoom - no root SVG");
+      return;
+    }
+
+    // Don't reinitialize if already exists
+    if (this._panZoomInstance) {
+      this._logger.debug("Pan/zoom", "Already initialized, skipping");
+      return;
+    }
+
+    this._panZoomInstance = svgPanZoom(this._rootSvg, {
+      zoomEnabled: true,
+      panEnabled: true,
+      controlIconsEnabled: false, // We use toolbar controls
+      fit: false, // Don't auto-fit (preserve layout)
+      center: false, // Don't auto-center
+      minZoom: this._settings.minZoom,
+      maxZoom: this._settings.maxZoom,
+      zoomScaleSensitivity: this._settings.zoomStep,
+      dblClickZoomEnabled: false, // Disable double-click zoom to avoid conflicts
+      mouseWheelZoomEnabled: true, // Enable mouse wheel zoom
+      preventMouseEventsDefault: true, // Prevent default mouse events
+    });
+
+    this._logger.info("Pan/zoom initialized", {
+      minZoom: this._settings.minZoom,
+      maxZoom: this._settings.maxZoom,
+      zoomStep: this._settings.zoomStep,
+    });
+
+    // Update toolbar with initial zoom level
+    if (this._toolbar) {
+      const zoom = this._panZoomInstance.getZoom();
+      this._toolbar.updateZoomLevel(zoom);
+    }
   }
 
   /**
@@ -681,6 +757,81 @@ export class GveSnapshotRendition extends HTMLElement {
     if (!versionTag) return;
     this._logger.info(`Navigating to version: ${versionTag}`);
     // TODO: Implement version navigation by tag
+  }
+
+  /**
+   * Zoom in by configured step amount.
+   */
+  public zoomIn(): void {
+    if (!this._panZoomInstance) {
+      this._logger.warn("Cannot zoom in - pan/zoom not initialized");
+      return;
+    }
+    this._panZoomInstance.zoomIn();
+    this.updateToolbarZoom();
+    this._logger.debug("Zoom", `Zoomed in to ${this._panZoomInstance.getZoom().toFixed(2)}x`);
+  }
+
+  /**
+   * Zoom out by configured step amount.
+   */
+  public zoomOut(): void {
+    if (!this._panZoomInstance) {
+      this._logger.warn("Cannot zoom out - pan/zoom not initialized");
+      return;
+    }
+    this._panZoomInstance.zoomOut();
+    this.updateToolbarZoom();
+    this._logger.debug("Zoom", `Zoomed out to ${this._panZoomInstance.getZoom().toFixed(2)}x`);
+  }
+
+  /**
+   * Reset zoom to 100% and center pan.
+   */
+  public resetZoom(): void {
+    if (!this._panZoomInstance) {
+      this._logger.warn("Cannot reset zoom - pan/zoom not initialized");
+      return;
+    }
+    this._panZoomInstance.resetZoom();
+    this._panZoomInstance.resetPan();
+    this.updateToolbarZoom();
+    this._logger.info("Zoom reset to 100%");
+  }
+
+  /**
+   * Set zoom to specific level (1.0 = 100%).
+   */
+  public setZoom(zoomLevel: number): void {
+    if (!this._panZoomInstance) {
+      this._logger.warn("Cannot set zoom - pan/zoom not initialized");
+      return;
+    }
+    // Clamp to min/max
+    const clampedZoom = Math.max(
+      this._settings.minZoom,
+      Math.min(this._settings.maxZoom, zoomLevel)
+    );
+    this._panZoomInstance.zoom(clampedZoom);
+    this.updateToolbarZoom();
+    this._logger.debug("Zoom", `Set zoom to ${clampedZoom.toFixed(2)}x`);
+  }
+
+  /**
+   * Get current zoom level.
+   */
+  public getZoom(): number {
+    if (!this._panZoomInstance) return 1.0;
+    return this._panZoomInstance.getZoom();
+  }
+
+  /**
+   * Update toolbar with current zoom level.
+   */
+  private updateToolbarZoom(): void {
+    if (!this._toolbar || !this._panZoomInstance) return;
+    const zoom = this._panZoomInstance.getZoom();
+    this._toolbar.updateZoomLevel(zoom);
   }
 
   /**

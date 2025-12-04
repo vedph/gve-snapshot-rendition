@@ -7,6 +7,11 @@ export class Toolbar {
   private prevBtn!: HTMLButtonElement;
   private nextBtn!: HTMLButtonElement;
   private versionLabel!: HTMLSpanElement;
+  private zoomInBtn!: HTMLButtonElement;
+  private zoomOutBtn!: HTMLButtonElement;
+  private resetZoomBtn!: HTMLButtonElement;
+  private zoomSlider!: HTMLInputElement;
+  private zoomLabel!: HTMLSpanElement;
   private currentIndex: number = 0;
   private totalVersions: number = 0;
 
@@ -21,19 +26,48 @@ export class Toolbar {
   private render(): void {
     this.container.innerHTML = `
       <div class="toolbar">
-        <button id="prev-btn" class="toolbar-btn" title="Previous Version">
-          ← Previous
-        </button>
-        <span id="version-label" class="version-label">v0</span>
-        <button id="next-btn" class="toolbar-btn" title="Next Version">
-          Next →
-        </button>
+        <div class="toolbar-group">
+          <button id="prev-btn" class="toolbar-btn" title="Previous Version">
+            ← Previous
+          </button>
+          <span id="version-label" class="version-label">v0</span>
+          <button id="next-btn" class="toolbar-btn" title="Next Version">
+            Next →
+          </button>
+        </div>
+        <div class="toolbar-group zoom-controls">
+          <button id="zoom-out-btn" class="toolbar-btn zoom-btn" title="Zoom Out">
+            −
+          </button>
+          <input
+            type="range"
+            id="zoom-slider"
+            class="zoom-slider"
+            min="10"
+            max="400"
+            value="100"
+            step="10"
+            title="Zoom Level"
+          />
+          <span id="zoom-label" class="zoom-label">100%</span>
+          <button id="zoom-in-btn" class="toolbar-btn zoom-btn" title="Zoom In">
+            +
+          </button>
+          <button id="reset-zoom-btn" class="toolbar-btn" title="Reset Zoom (100%)">
+            ⊙
+          </button>
+        </div>
       </div>
     `;
 
     this.prevBtn = this.container.querySelector("#prev-btn")!;
     this.nextBtn = this.container.querySelector("#next-btn")!;
     this.versionLabel = this.container.querySelector("#version-label")!;
+    this.zoomInBtn = this.container.querySelector("#zoom-in-btn")!;
+    this.zoomOutBtn = this.container.querySelector("#zoom-out-btn")!;
+    this.resetZoomBtn = this.container.querySelector("#reset-zoom-btn")!;
+    this.zoomSlider = this.container.querySelector("#zoom-slider")!;
+    this.zoomLabel = this.container.querySelector("#zoom-label")!;
 
     this.attachEventListeners();
     this.updateButtons();
@@ -45,6 +79,20 @@ export class Toolbar {
   private attachEventListeners(): void {
     this.prevBtn.addEventListener("click", () => this.goPrevious());
     this.nextBtn.addEventListener("click", () => this.goNext());
+
+    // Zoom button events
+    this.zoomInBtn.addEventListener("click", () => this.dispatchZoomEvent("in"));
+    this.zoomOutBtn.addEventListener("click", () => this.dispatchZoomEvent("out"));
+    this.resetZoomBtn.addEventListener("click", () =>
+      this.dispatchZoomEvent("reset")
+    );
+
+    // Zoom slider event
+    this.zoomSlider.addEventListener("input", () => {
+      const zoomPercent = parseInt(this.zoomSlider.value);
+      const zoomLevel = zoomPercent / 100;
+      this.dispatchZoomEvent("set", zoomLevel);
+    });
   }
 
   /**
@@ -111,5 +159,26 @@ export class Toolbar {
    */
   getCurrentIndex(): number {
     return this.currentIndex;
+  }
+
+  /**
+   * Dispatch zoom event for parent component to handle.
+   */
+  private dispatchZoomEvent(action: "in" | "out" | "reset" | "set", zoomLevel?: number): void {
+    this.container.dispatchEvent(
+      new CustomEvent("zoom", {
+        detail: { action, zoomLevel },
+        bubbles: true,
+      })
+    );
+  }
+
+  /**
+   * Update zoom level display (called externally when zoom changes).
+   */
+  updateZoomLevel(zoom: number): void {
+    const zoomPercent = Math.round(zoom * 100);
+    this.zoomLabel.textContent = `${zoomPercent}%`;
+    this.zoomSlider.value = zoomPercent.toString();
   }
 }
