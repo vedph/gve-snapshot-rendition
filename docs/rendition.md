@@ -425,30 +425,9 @@ The general drawing logic for the entities rendered by this component is outline
 1. **default**: the default behavior is to just draw the element as its position and size dictates, initially hidden (opacity=0) if it has an animation, which immediately after reveals it, with no preliminary adjustments.
 2. **solid**: the "solid" behavior adds a preliminary adjustment before following the default one, to make room for the element to be rendered. When this element is "solid" (i.e. when it's a hint and has `solid`=`true`, or when it's an added `text` element, which is always solid), we must ensure there is enough room for it to be rendered without overlapping any surrounding elements. This means shifting the surrounding elements on overlap; and in turn, this implies moving all the elements in the rendered text so that we approximately preserve the previous layout. The process of making room for the new element while preserving the general layout is here named **spreading**.
 
-The **spreading logic** is as follows; here "E" means the bounding rectangle of the element to be drawn, E.L its top-left corner X, E.R its top-right corner X, E.T its top-left corner Y, and E.B its bottom-left corner Y:
+Essentially, spreading avoids that the newly added solid element overlaps with any of the existing elements, making room for it in such a way that it best preserves the relative positions of all the elements. It is like throwing a stone in a pond: thestone is the new solid element, and the waves originating from the stone move all the existing objects around it, like floating leaves, by making more room at the center.
 
-TODO: update spreading logic description from code, this had flaws!
-
-- if E does not overlap with any other element's bounding rectangle, no spreading is required. ⚠️ Note: as calculating the bounding rectangles for all the elements in the text rendition area would be costly, it is suggested to store them in an internal private map in the renderer component; whenever a new element is added, the map is updated with its bounding rectangle. Elements once added are never removed, so this cache is effective.
-- else, spreading is computed for the X and Y axes separately, before applying it:
-  - on the X (=horizontal) axis:
-    - let `rShift` = the maximum extent of horizontal overlap between E and any other element to its right.
-    - let `lShift` = the maximum extent of horizontal overlap between E and any other element to its left.
-    - all the elements whose L is < E.L and whose R is < E.R must be shifted leftwards by `xShift`.
-    - all the elements whose L is > E.L and whose R is > E.R must be shifted rightwards by `xShift`.
-  - on the Y (=vertical) axis, we proceed in the same way, using T and B (top and bottom) for up and down shift rather than L and R for left and right shift.
-
-The logic can be visually illustrated as follows (for the horizontal axis, and the same applies for the vertical one, by just changing horizontal with vertical; see the image below, where each rectangle is labelled with a Latin or Greek letter):
-
-![spreading](img/spreading.png)
-
-- consider E, the bounding rectangle of the element to be drawn;
-- draw an infinite vertical line overlapping with its left edge (let's call it "left ruler"), and another one overlapping with its right edge (let's call it "right ruler"); these are the big vertical lines labelled "L" and "R" in the image.
-- all the elements, whatever their vertical position, which are either to the left of the left ruler, or are cut by it (which happens to the b-element in the image), must be shifted leftwards by the max amount of left-overlap (which is the maximum value from the modulus of the difference of the R X-coordinates of E with any of the overlapping elements; in the image, this is the portion of the b-rectangle filled with horizontal dashes).
-- all the elements, whatever their vertical position, which are either to the right of the right ruler, or are cut by it, must be shifted rightwards by the max amount of right-overlap (which is the maximum value from the modulus of the difference of the L X-coordinates of E with any of the overlapping elements; in the image, this is the portion of the γ-rectangle filled with horizontal dashes).
-- the elements which are fully inside the two rulers (like the e-rectangle in the image) remain untouched where they are.
-
-🎥 The spreading dramatically changes the whole text layout, so the component here must shift all the affected elements using a transition effect **animation**, where elements smoothly move to their new position, both on the X and Y axis, rather than "jumping" abruptly to it. The timing for this transition, which like all animations should be based on GSAP, is defined by setting `spreadTime`.
+🎥 This spreading dramatically changes the whole text layout, so the component here must shift all the affected elements using a transition effect **animation**, where elements smoothly move to their new position, both on the X and Y axis, rather than "jumping" abruptly to it. The timing for this transition, which like all animations should be based on GSAP, is defined by setting `spreadTime`. Also, this implies that when navigating back (and thus removing the added solid object), this spreading must be reverted so that all the elements restore their previous position (always via another animation).
 
 So, the **rendition logic** is:
 
@@ -655,6 +634,8 @@ The versions list is a collapsible area which contains the list of all the versi
 3. `v2`: `alpha`
 4. `v3`
 5. `v4`: `beta`
+
+Also, add an option to toggle the visibility of intermediate versions and just show the staged ones. This option will not be available if no staged versions are present.
 
 Each item is **colored** according to an automatically generated colors palette, which must be created once whenever the component data changes. This palette must be created as follows:
 
