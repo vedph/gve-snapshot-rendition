@@ -37,7 +37,7 @@
       "features": [
         {
           "isShortLived": true,
-          "name": "r_text_position",
+          "name": "r_text-position",
           "value": "n"
         },
         {

@@ -752,7 +752,7 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
   - `r_hints`=`diagonal-stroke`. The ID of a hint representing a diagonal stroke (essentially it will be a diagonal line).
   - `r_fore-color`=`red` (hand A writes with red ink; the hint is assumed to have a placeholder for the color, drawing its value from this property; this way we can reuse the same hint SVG code with a different color).
 - `v3`: **replace** `t` with `T` (whose ID will be equal to 95, the next available ID in the snapshot) in `this`, to make it uppercase, as this has become the first word of the sentence. Features:
-  - `r_text_position`=`n` (north = top of `t`).
+  - `r_text-position`=`n` (north = top of `t`).
   - `r_fore-color`=`red`.
   - `r_font-size`=`14` (the default being `24`, this is smaller).
 - `v4`: **delete** `I` and its following space. Features:
@@ -836,7 +836,7 @@ The same operations in their parsable format are listed here:
 35: [r_char-offsets^="35:x=100 70:x=100"]
 
 1x3- [r_hints^=diagonal-stroke r_fore-color^=red]
-4=T [r_text_position^=n r_fore-color^=red r_font-size^=14]
+4=T [r_text-position^=n r_fore-color^=red r_font-size^=14]
 14x2- [r_hints^=diagonal-stroke r_fore-color^=red]
 19+]s [r_fore-color^=red r_font-size^=14]
 64x4: @swap-complex-long [note^=1 r_hints^=note r_fore-color^=red]

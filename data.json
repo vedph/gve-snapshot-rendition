@@ -223,7 +223,7 @@
       },
       {
         "operation": {
-          "dsl": "4×1=\"T\" [r_text_position^=n r_fore-color^=red r_font-size^=14]",
+          "dsl": "4×1=\"T\" [r_text-position^=n r_fore-color^=red r_font-size^=14]",
           "toAsIndex": false,
           "to": 0,
           "toRun": 0,
@@ -241,7 +241,7 @@
               "isGlobal": false,
               "isShortLived": true,
               "setPolicy": 0,
-              "name": "r_text_position",
+              "name": "r_text-position",
               "value": "n"
             },
             {
@@ -351,7 +351,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text_position",
+                "name": "r_text-position",
                 "value": "n"
               },
               {
