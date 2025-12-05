@@ -196,15 +196,16 @@ export class VersionTextArea {
    */
   private toggleCollapse(): void {
     this._isCollapsed = !this._isCollapsed;
-    const content = this.container.querySelector(".version-text-content")!;
 
     if (this._isCollapsed) {
-      content.classList.add("collapsed");
+      // Add collapsed class to container
+      this.container.classList.add("collapsed");
       this.collapseBtn.textContent = "▲";
       this.collapseBtn.title = "Expand";
       this._logger.debug("VersionTextArea", "Collapsed");
     } else {
-      content.classList.remove("collapsed");
+      // Remove collapsed class from container
+      this.container.classList.remove("collapsed");
       this.collapseBtn.textContent = "▼";
       this.collapseBtn.title = "Collapse";
       this._logger.debug("VersionTextArea", "Expanded");

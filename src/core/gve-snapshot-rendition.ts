@@ -1170,6 +1170,20 @@ export class GveSnapshotRendition extends HTMLElement {
         position: relative;
       }
 
+      .version-text-area.collapsed {
+        height: auto !important;
+        max-height: none !important;
+      }
+
+      .version-text-area.collapsed .version-text-content {
+        max-height: 0;
+        overflow: hidden;
+      }
+
+      .version-text-area.collapsed .version-text-resize-handle {
+        display: none;
+      }
+
       .version-text-header {
         display: flex;
         justify-content: space-between;
@@ -1195,11 +1209,6 @@ export class GveSnapshotRendition extends HTMLElement {
         overflow: auto;
         transition: max-height 0.3s ease;
         min-height: 0;
-      }
-
-      .version-text-content.collapsed {
-        max-height: 0;
-        overflow: hidden;
       }
 
       .version-text {
