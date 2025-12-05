@@ -12,6 +12,7 @@ import { TextRenderer } from "../rendering/text-renderer";
 import { HintRenderer } from "../rendering/hint-renderer";
 import { FeatureResolver } from "../rendering/feature-resolver";
 import { Toolbar } from "../ui/toolbar";
+import { VersionTextArea } from "../ui/version-text-area";
 import { stringToNodes } from "../utils/node-utils";
 import { generateVersionPalette } from "../utils/color-palette";
 
@@ -44,6 +45,7 @@ export class GveSnapshotRendition extends HTMLElement {
   private _rootSvg?: SVGElement;
   private _container?: HTMLElement;
   private _toolbar?: Toolbar;
+  private _versionTextArea?: VersionTextArea;
   private _panZoomInstance?: SvgPanZoomInstance;
   private _keyboardHandler?: (e: KeyboardEvent) => void;
 
@@ -309,6 +311,13 @@ export class GveSnapshotRendition extends HTMLElement {
     this._rootSvg.setAttribute("height", "600px");
 
     this._container.appendChild(this._rootSvg);
+
+    // Create version text area
+    this._versionTextArea = new VersionTextArea(this._settings, this._logger);
+    const versionTextContainer = this._versionTextArea.create();
+    versionTextContainer.id = "version-text-container";
+    this._container.appendChild(versionTextContainer);
+
     this._shadow.appendChild(this._container);
 
     this._logger.debug("Component", "UI structure rendered");
@@ -346,6 +355,9 @@ export class GveSnapshotRendition extends HTMLElement {
 
     // Initialize pan/zoom after SVG is ready
     this.initializePanZoom();
+
+    // Update version text area with base text
+    this.updateVersionText(0);
 
     this._logger.timeEnd("renderContent");
     this._logger.info("Content rendering complete - showing v0 (base text)");
@@ -658,6 +670,38 @@ export class GveSnapshotRendition extends HTMLElement {
     if (this._toolbar) {
       this._toolbar.setCurrentIndex(targetIndex);
     }
+
+    // Update version text area
+    this.updateVersionText(targetIndex);
+  }
+
+  /**
+   * Update the version text area with the current version's text.
+   * @param versionIndex - The version index (0 = base text)
+   */
+  private updateVersionText(versionIndex: number): void {
+    if (!this._versionTextArea || !this._data) return;
+
+    let text = "";
+
+    if (versionIndex === 0) {
+      // For v0, use the base text
+      text = this._baseNodes.map((node) => node.data).join("");
+    } else if (
+      this._data.steps &&
+      versionIndex > 0 &&
+      versionIndex <= this._data.steps.length
+    ) {
+      // For other versions, use the result from the corresponding step
+      const step = this._data.steps[versionIndex - 1];
+      text = step.result || "";
+    }
+
+    this._versionTextArea.updateText(text);
+    this._logger.debug(
+      "Component",
+      `Updated version text for v${versionIndex} (${text.length} chars)`
+    );
   }
 
   /**
@@ -1111,6 +1155,70 @@ export class GveSnapshotRendition extends HTMLElement {
 
       .node:hover {
         opacity: 0.7;
+      }
+
+      /* Version Text Area */
+      .version-text-area {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--gve-text-pane-bg, #fff);
+        border-top: 1px solid var(--gve-border-color, #ddd);
+        max-height: 300px;
+      }
+
+      .version-text-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        background: var(--gve-text-pane-header-bg, #f9f9f9);
+        border-bottom: 1px solid var(--gve-border-color, #ddd);
+      }
+
+      .version-text-title {
+        font-weight: bold;
+        font-size: 14px;
+        color: var(--gve-text-color, #333);
+      }
+
+      .version-text-toolbar {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .version-text-content {
+        flex: 1;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+
+      .version-text-content.collapsed {
+        max-height: 0;
+      }
+
+      .version-text {
+        width: 100%;
+        height: 100%;
+        padding: 1rem;
+        border: none;
+        resize: none;
+        font-family: var(--gve-text-pane-font-family, monospace);
+        font-size: var(--gve-text-pane-font-size, 14px);
+        line-height: 1.5;
+        color: var(--gve-text-color, #333);
+        background: transparent;
+        white-space: pre-wrap;
+        overflow: auto;
+      }
+
+      .version-text:focus {
+        outline: none;
+      }
+
+      .version-text::placeholder {
+        color: var(--gve-placeholder-color, #999);
+        font-style: italic;
       }
     `;
   }

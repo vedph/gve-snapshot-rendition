@@ -501,75 +501,7 @@ So, on forward movement we add more elements; on backward movements we undo our 
 
 Component settings are modeled in a `GveRenditionSettings` class; a `DEFAULT_SETTINGS` constant then provides defaults for the component. Settings are passed via binding to the web component's `settings` property.
 
-```ts
-/**
- * Settings for a custom button added to the toolbar.
- * A custom button provides an easy way to add more logic
- * to the web component.
- */
-export interface CustomButtonSettings {
-  id: string; // the ID of the custom button; a string which must be unique among all the custom buttons
-  icon: string; // the icon to use for the button
-  label: string; // the text label for the button
-  tooltip: string; // a tooltip for the button, appears on hovering
-  callback: (id: string, svg: SVGElement) => void; // callback invoked when button is pressed; the svg parameter is the root svg element of text rendition area
-}
-
-export interface GveRenditionSettings {
-  // display settings
-  fontSize: number; // default=24
-  fontFamily: string; // default=monospace
-  foreColor: string; // default=#000000
-  backColor: string; // default=transparent
-  italic: boolean; // default=false
-  bold: boolean; // default=false
-  underline: number | undefined; // default=undefined, else the px thickness of underline
-  overline: number | undefined; // default=undefined, else the px thickness of overline
-  strike: boolean; // default=false
-
-  // spacing settings
-  spaceWidthFraction: number; // the fraction of reference char width used to calculate the space width
-  charSpacing: number; // the spacing between each character rendered as a SVG text (default=2)
-  lineHeight: number; // the line height (default=1.5)
-  lineSpacing: number; // the spacing between lines (default=4)
-  marginTop: number; // top margin of the text rendition area (default=20)
-  marginLeft: number; // left margin of the text rendition area (default=20)
-  marginRight: number; // right margin of the text rendition area (default=20)
-  marginBottom: number; // bottom margin of the text rendition area (default=20)
-
-  // viewport settings
-  initialZoom: number; // initial zoom factor (default=1)
-  minZoom: number; // minimum zoom factor (default=0.5)
-  maxZoom: number; // maximum zoom factor (default=3)
-  zoomStep: number; // zoom factor step (default=0.1)
-
-  // behavior settings
-  slideshowInterval: number; // the ms interval between each frame in slideshow mode (default=1000)
-  slideshowLoop: boolean; // true to loop the slideshow (when it ends, it restarts from start)
-  slideshowDelay: number; // the ms interval between each restart of the slideshow (when looping; default=3000)
-  debug?: boolean; // true to add detailed logging (used for diagnostic purposes)
-
-  // custom buttons
-  customButtons?: CustomButtonSettings[];
-  disabledButtonIds?: string[]; // array of custom button IDs which should be disabled
-
-  // animation
-  animations: Record<string, string>; // catalog of animation JS code fragments, keyed under their ID
-  charAnimationId?: string; // the ID of the JS code for animating each single character from base/additional text
-  spreadTime: number; // the number of ms for the spreading animation (default=1500)
-
-  // hints
-  hints: Record<string, OperationHint>; // dictionary of hints, key=hint ID and value=hint
-  hintMargin: number; // the margin around each rendered hint (px, default=0)
-  hintDesignWidth: number; // the design-time width of hints
-  hintDesignHeight: number; // the design-time height of hints
-  showHintHandles: boolean; // true to show the handle element from SVG hint (default=false, can be true for diagnostic purposes)
-
-  // hilites
-  hilitePadding: number; // padding to increase hilite size (default=0)
-  hiliteFadeTime: number; // the number of ms for the fade in/out animation of hilites (default=1000)
-}
-```
+For the settings, see [settings.ts](../src/settings/settings.ts).
 
 > Display settings have corresponding [text rendition features](#text-rendition-features) which may override them locally for single portions of text.
 

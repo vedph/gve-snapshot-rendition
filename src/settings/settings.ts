@@ -153,6 +153,14 @@ export interface GveRenditionSettings {
 
   /** Duration in milliseconds for hilite fade in/out animation */
   hiliteFadeTime: number;
+
+  // ==================== Version Text Pane ====================
+
+  /** Font family for the version text pane */
+  textPaneFontFamily: string;
+
+  /** Font size for the version text pane in pixels */
+  textPaneFontSize: number;
 }
 
 /**
@@ -245,4 +253,8 @@ export const DEFAULT_SETTINGS: GveRenditionSettings = {
   // Hilites
   hilitePadding: 2,
   hiliteFadeTime: 300,
+
+  // Version text pane
+  textPaneFontFamily: "monospace",
+  textPaneFontSize: 14,
 };
