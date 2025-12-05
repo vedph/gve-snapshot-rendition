@@ -1164,7 +1164,10 @@ export class GveSnapshotRendition extends HTMLElement {
         flex-direction: column;
         background: var(--gve-text-pane-bg, #fff);
         border-top: 1px solid var(--gve-border-color, #ddd);
-        max-height: 300px;
+        border-bottom: 1px solid var(--gve-border-color, #ddd);
+        max-height: 500px;
+        height: 500px;
+        position: relative;
       }
 
       .version-text-header {
@@ -1189,17 +1192,19 @@ export class GveSnapshotRendition extends HTMLElement {
 
       .version-text-content {
         flex: 1;
-        overflow: hidden;
+        overflow: auto;
         transition: max-height 0.3s ease;
+        min-height: 0;
       }
 
       .version-text-content.collapsed {
         max-height: 0;
+        overflow: hidden;
       }
 
       .version-text {
         width: 100%;
-        height: 100%;
+        min-height: 100%;
         padding: 1rem;
         border: none;
         resize: none;
@@ -1209,7 +1214,7 @@ export class GveSnapshotRendition extends HTMLElement {
         color: var(--gve-text-color, #333);
         background: transparent;
         white-space: pre-wrap;
-        overflow: auto;
+        box-sizing: border-box;
       }
 
       .version-text:focus {
@@ -1219,6 +1224,21 @@ export class GveSnapshotRendition extends HTMLElement {
       .version-text::placeholder {
         color: var(--gve-placeholder-color, #999);
         font-style: italic;
+      }
+
+      .version-text-resize-handle {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        cursor: ns-resize;
+        background: transparent;
+        transition: background-color 0.2s ease;
+      }
+
+      .version-text-resize-handle:hover {
+        background-color: var(--gve-border-color, #ddd);
       }
     `;
   }

@@ -13,12 +13,16 @@ export class VersionTextArea {
   private increaseFontBtn!: HTMLButtonElement;
   private decreaseFontBtn!: HTMLButtonElement;
   private collapseBtn!: HTMLButtonElement;
+  private resizeHandle!: HTMLElement;
 
   private _settings: GveRenditionSettings;
   private _logger: Logger;
   private _isCollapsed = false;
   private _wordWrap = true;
   private _currentFontSize: number;
+  private _isDragging = false;
+  private _startY = 0;
+  private _startHeight = 0;
 
   constructor(settings: GveRenditionSettings, logger: Logger) {
     this._settings = settings;
@@ -61,6 +65,7 @@ export class VersionTextArea {
           placeholder="Version text will appear here..."
         ></textarea>
       </div>
+      <div class="version-text-resize-handle" title="Drag to resize"></div>
     `;
 
     // Get element references
@@ -70,6 +75,7 @@ export class VersionTextArea {
     this.increaseFontBtn = this.container.querySelector("#increase-font-btn")!;
     this.decreaseFontBtn = this.container.querySelector("#decrease-font-btn")!;
     this.collapseBtn = this.container.querySelector("#collapse-text-btn")!;
+    this.resizeHandle = this.container.querySelector(".version-text-resize-handle")!;
 
     // Apply initial styles
     this.applyTextStyles();
@@ -116,6 +122,11 @@ export class VersionTextArea {
     // Collapse/expand button
     this.collapseBtn.addEventListener("click", () => {
       this.toggleCollapse();
+    });
+
+    // Resize handle
+    this.resizeHandle.addEventListener("mousedown", (e) => {
+      this.startResize(e);
     });
   }
 
@@ -223,5 +234,64 @@ export class VersionTextArea {
     this._settings = settings;
     this._currentFontSize = settings.textPaneFontSize;
     this.applyTextStyles();
+  }
+
+  /**
+   * Start resize operation.
+   */
+  private startResize(e: MouseEvent): void {
+    if (this._isCollapsed) return;
+
+    this._isDragging = true;
+    this._startY = e.clientY;
+    this._startHeight = this.container.offsetHeight;
+
+    // Add document-level event listeners for smooth dragging
+    const handleMouseMove = (e: MouseEvent) => this.handleResize(e);
+    const handleMouseUp = () => this.endResize(handleMouseMove, handleMouseUp);
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    // Prevent text selection during drag
+    e.preventDefault();
+    document.body.style.userSelect = "none";
+
+    this._logger.debug("VersionTextArea", "Started resize");
+  }
+
+  /**
+   * Handle resize during drag.
+   */
+  private handleResize(e: MouseEvent): void {
+    if (!this._isDragging) return;
+
+    const deltaY = e.clientY - this._startY;
+    const newHeight = Math.max(100, Math.min(800, this._startHeight + deltaY));
+
+    this.container.style.maxHeight = `${newHeight}px`;
+    this.container.style.height = `${newHeight}px`;
+  }
+
+  /**
+   * End resize operation.
+   */
+  private endResize(
+    moveHandler: (e: MouseEvent) => void,
+    upHandler: () => void
+  ): void {
+    this._isDragging = false;
+
+    // Remove document-level event listeners
+    document.removeEventListener("mousemove", moveHandler);
+    document.removeEventListener("mouseup", upHandler);
+
+    // Restore text selection
+    document.body.style.userSelect = "";
+
+    this._logger.debug(
+      "VersionTextArea",
+      `Resize ended at height ${this.container.offsetHeight}px`
+    );
   }
 }
