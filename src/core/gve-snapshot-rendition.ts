@@ -412,6 +412,23 @@ export class GveSnapshotRendition extends HTMLElement {
   private async processOperation(
     step: ChainOperationContextStep
   ): Promise<void> {
+    // Disable pan/zoom during rendering to ensure correct coordinate space
+    this.disablePanZoom();
+
+    try {
+      await this.processOperationInternal(step);
+    } finally {
+      // Always re-enable pan/zoom, even if rendering fails
+      this.enablePanZoom();
+    }
+  }
+
+  /**
+   * Internal operation processing (called with pan/zoom disabled).
+   */
+  private async processOperationInternal(
+    step: ChainOperationContextStep
+  ): Promise<void> {
     const operation = step.operation;
     this._logger.debug(
       "GveSnapshotRendition",
@@ -475,7 +492,7 @@ export class GveSnapshotRendition extends HTMLElement {
     if (addedNodes.length > 0 && this._textRenderer && this._rootSvg) {
       await this._textRenderer.renderAdditionalText(
         addedNodes,
-        this._rootSvg,
+        this.getSvgContainer(), // Use viewport container, not root SVG
         config,
         versionTag,
         refNodes,
@@ -566,7 +583,7 @@ export class GveSnapshotRendition extends HTMLElement {
         hintId,
         hint,
         refNodes,
-        this._rootSvg,
+        this.getSvgContainer(), // Use viewport container, not root SVG
         hintVars,
         operationId,
         i + 1, // ordinal (1-based)
@@ -652,8 +669,9 @@ export class GveSnapshotRendition extends HTMLElement {
     if (!this._rootSvg || !this._animationEngine) return;
 
     const versionClass = `version-v${versionIndex}`;
+    const container = this.getSvgContainer();
     const elements = Array.from(
-      this._rootSvg.querySelectorAll(`.${versionClass}`)
+      container.querySelectorAll(`.${versionClass}`)
     );
 
     if (elements.length === 0) {
@@ -695,13 +713,13 @@ export class GveSnapshotRendition extends HTMLElement {
         await this._animationEngine.animateSpreading(
           reverseShifts,
           this._settings.spreadTime,
-          this._rootSvg
+          container // Use container for animation context
         );
 
         // Update cached bounds for shifted elements
         if (this._boundsCache) {
           for (const elementId of reverseShifts.keys()) {
-            const element = this._rootSvg.querySelector(`#${elementId}`);
+            const element = container.querySelector(`#${elementId}`);
             if (element) {
               this._boundsCache.updateFromElement(element as SVGElement);
             }
@@ -832,6 +850,58 @@ export class GveSnapshotRendition extends HTMLElement {
     if (!this._toolbar || !this._panZoomInstance) return;
     const zoom = this._panZoomInstance.getZoom();
     this._toolbar.updateZoomLevel(zoom);
+  }
+
+  /**
+   * Get the SVG element where content should be appended.
+   * When pan/zoom is active, returns the transformed viewport group.
+   * When pan/zoom is inactive, returns the root SVG.
+   *
+   * CRITICAL: svg-pan-zoom wraps content in a <g> element. New elements
+   * must be added to this group, not the root SVG, or they won't transform.
+   */
+  private getSvgContainer(): SVGElement {
+    if (!this._rootSvg) {
+      throw new Error("Root SVG not initialized");
+    }
+
+    // If pan/zoom is active, get the viewport element (the transformed <g>)
+    if (this._panZoomInstance) {
+      // svg-pan-zoom creates a <g> with id containing 'viewport'
+      // Try to find it, fall back to rootSvg if not found
+      const viewport = this._rootSvg.querySelector('g[id*="viewport"]') as SVGGElement;
+      if (viewport) {
+        return viewport;
+      }
+
+      // Alternative: get first <g> child (svg-pan-zoom's wrapper)
+      const firstG = this._rootSvg.querySelector('g') as SVGGElement;
+      if (firstG) {
+        return firstG;
+      }
+    }
+
+    // No pan/zoom or viewport not found - use root SVG
+    return this._rootSvg;
+  }
+
+  /**
+   * Temporarily disable pan/zoom for rendering operations.
+   * CRITICAL: Disables user input but preserves viewport transform.
+   */
+  private disablePanZoom(): void {
+    if (!this._panZoomInstance) return;
+    this._panZoomInstance.disablePan();
+    this._panZoomInstance.disableZoom();
+  }
+
+  /**
+   * Re-enable pan/zoom after rendering operations complete.
+   */
+  private enablePanZoom(): void {
+    if (!this._panZoomInstance) return;
+    this._panZoomInstance.enablePan();
+    this._panZoomInstance.enableZoom();
   }
 
   /**
