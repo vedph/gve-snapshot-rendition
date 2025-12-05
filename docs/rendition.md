@@ -771,7 +771,7 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
   - `r_fore-color`=`red` (hand A writes with red ink; the hint is assumed to have a placeholder for the color, drawing its value from this property; this way we can reuse the same hint SVG code with a different color).
 
 - `v3`: **replace** `t` with `T` (whose ID will be equal to 95, the next available ID in the snapshot) in `this`, to make it uppercase, as this has become the first word of the sentence. Features:
-  - `r_text-position`=`n` (north = top of `t`).
+  - `r_t-position`=`n` (north = top of `t`).
   - `r_fore-color`=`red`.
   - `r_font-size`=`14` (the default being `24`, this is smaller).
 
@@ -780,7 +780,7 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
   - `r_hints`=`diagonal-stroke`.
 
 - `v5`: **add** `s` (ID=96) after `show` (whence `shows`). Features:
-  - `r_text-position`=`ne`.
+  - `r_t-position`=`ne`.
   - `r_fore-color`=`red`.
   - `r_font-size`=`14`.
 
@@ -808,22 +808,22 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
   - `r_fore-color`=`green`.
 
 - `v11`: **add** space + `AND SOME STUFF.` (IDs=97-113) after `types` (this operation belongs to group `add-stuff`). Note that we could just have inserted this text before the dot after `types` if our purpose was only to get the corresponding output text; but our purpose here is to represent the sheet in its nearly-diplomatic form. In the sheet we have a deletion on this dot, and then a new text with its own dot is added. Here we do the same, with a deletion first, and then an addition. Features:
-  - `r_text-position`=`e`.
+  - `r_t-position`=`e`.
   - `r_fore-color`=`green`.
 
 - `v12`: **replace** `STUFF.` with `HINTS.` (IDs=114-119). Features:
   - `r_fore-color`=`green`.
-  - `r_text-position`=`n`.
-  - `r_text-displaced-span`=`21x7`. This is a displacement for the text being added by this replace operation (`HINTS`): instead of positioning the text with reference to its reference text (`STUFF`), we position it above an area approximately corresponding to `all ope` of `all operations` in the first line.
-  - `r_text-offset-y`=`20`: this shifts the `HINTS` boxed text upper.
+  - `r_t-position`=`n`.
+  - `r_t-displaced-span`=`21x7`. This is a displacement for the text being added by this replace operation (`HINTS`): instead of positioning the text with reference to its reference text (`STUFF`), we position it above an area approximately corresponding to `all ope` of `all operations` in the first line.
+  - `r_t-offset-y`=`20`: this shifts the `HINTS` boxed text upper.
   - `r_hints`=`box` (border around `STUFF`).
   - `r_border`=`tlbr 1 solid green` (1-pixel border around `HINTS`).
 
 - `v13`: **delete** `too,` + space (this operation belongs to group `mov-too`, because on a more abstract --non-diplomatic-- ground this would be considered a movement). Note that there is no hint for this operation; it is implicit in the next addition.
 
 - `v14`: **add** `TOO.` (IDs=120-123) after `line` (this operation belongs to group `mov-too`) . Features:
-  - `r_text-position`=`e`.
-  - `r_text-offset-x`=`10` (leave more space to the right before the added text).
+  - `r_t-position`=`e`.
+  - `r_t-offset-x`=`10` (leave more space to the right before the added text).
   - 🚩 `version`=`beta` marks `v14` as staged version `beta`.
 
 - `v15`: **annotate** the initial `I` with features (we target the initial `I` as it's the nearest character):
@@ -867,21 +867,18 @@ The same operations in their parsable format (DSL) are listed here:
 
 ```txt
 35: [r_char-offsets^="35:x=100 70:x=100"]
-
 1x3- [r_hints^=diagonal-stroke r_fore-color^=red]
-4=T [r_text-position^=n r_fore-color^=red r_font-size^=14]
+4=T [r_t-position^=n r_fore-color^=red r_font-size^=14]
 14x2- [r_hints^=diagonal-stroke r_fore-color^=red]
-19+]s [r_text-position^=ne r_fore-color^=red r_font-size^=14]
+19+]s [r_t-position^=ne r_fore-color^=red r_font-size^=14]
 64x4: @swap-complex-long [note^=1 r_hints^=note r_fore-color^=red]
 60x3: @swap-complex-long [note^=2 r_hints^=note r_fore-color^=red]
 52x7: @swap-complex-long [note^=3 r_hints^=note r_fore-color^=red]
 52x7<>64x4 [r_fore-color^=red *version^=alpha]
-
 40- @add-stuff [r_hints^=diagonal-stroke r_fore-color^=green]
-39+]" AND SOME STUFF." @add-stuff [r_text-position^=e r_fore-color^=green]
-112x6=HINTS. [r_text-position^=n r_fore-color^=green r_position^=n r_text-displaced-span^=21x7 r_text-offset-y=20 r_hints=box r_border^="tlbr 1 solid green"]
+39+]" AND SOME STUFF." @add-stuff [r_t-position^=e r_fore-color^=green]
+112x6=HINTS. [r_t-position^=n r_fore-color^=green r_position^=n r_t-displaced-span^=21x7 r_t-offset-y=20 r_hints=box r_border^="tlbr 1 solid green"]
 75x5- @mov-too
-94+]" TOO."@mov-too [r_text-position^=e r_fore-color^=red *version^=beta]
-
+94+]" TOO."@mov-too [r_t-position^=e r_fore-color^=red *version^=beta]
 1: [note=12 r_color^=blue r_hint-vars^="rotation=-45" r_hints="note-underline"]
 ```
