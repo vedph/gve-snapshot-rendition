@@ -473,10 +473,16 @@ export class GveSnapshotRendition extends HTMLElement {
     }
 
     // Resolve features to config
+    // Pass node feature context so all node features (including "note", etc.) are available for placeholder resolution
     const config = this._featureResolver.resolve(
       this._settings,
       operation.features,
-      undefined // textBounds - calculate if needed
+      undefined, // textBounds - calculate if needed
+      {
+        nodeFeatures: step.featureSet.nodeFeatures,
+        outputTag: step.outputTag,
+        refNodeIds: step.refNodeIds,
+      }
     );
 
     // Render hints if specified

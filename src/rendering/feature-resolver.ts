@@ -1,4 +1,4 @@
-import { Feature, OperationFeature, CharNode } from "../models";
+import { Feature, OperationFeature } from "../models";
 import { GveRenditionSettings } from "../settings/settings";
 import { Logger } from "../core/logger";
 import {
@@ -60,12 +60,18 @@ export class FeatureResolver {
    * @param baseSettings - The base settings from component
    * @param features - Array of features to apply
    * @param textBounds - Optional text bounds for offset calculations
+   * @param nodeFeatureContext - Optional context for extracting node features for placeholder resolution
    * @returns Resolved rendition configuration
    */
   resolve(
     baseSettings: GveRenditionSettings,
     features: Feature[] | undefined,
-    textBounds?: { width: number; height: number }
+    textBounds?: { width: number; height: number },
+    nodeFeatureContext?: {
+      nodeFeatures: Record<string, OperationFeature[]>;
+      outputTag: string;
+      refNodeIds: number[];
+    }
   ): RenditionConfig {
     const config: RenditionConfig = {
       fontSize: baseSettings.fontSize,
@@ -85,10 +91,41 @@ export class FeatureResolver {
       return config;
     }
 
-    // Initialize hintVars map - will contain ALL r_* feature values for placeholder replacement
+    // Initialize hintVars map - will contain ALL feature values for placeholder
+    // replacement
     config.hintVars = new Map<string, string>();
 
-    // Process each rendition feature
+    // First, extract ALL features from reference nodes for placeholder resolution
+    // This includes features like "note", "group", etc. that don't have r_ prefix
+    // Features are stored in featureSet.nodeFeatures with keys like "v6_64" (outputTag_nodeId)
+    if (nodeFeatureContext) {
+      const { nodeFeatures, outputTag, refNodeIds } = nodeFeatureContext;
+
+      for (const nodeId of refNodeIds) {
+        // Construct the key: outputTag + "_" + nodeId (e.g., "v6_64")
+        const key = `${outputTag}_${nodeId}`;
+        const nodeFeaturesArray = nodeFeatures[key];
+
+        if (!nodeFeaturesArray) continue;
+
+        for (const nodeFeature of nodeFeaturesArray) {
+          // Skip internal features (starting with $)
+          if (nodeFeature.name.startsWith("$")) continue;
+
+          // Add feature to hintVars if not already present
+          // Note: we take the first occurrence if multiple nodes have the same feature
+          if (!config.hintVars.has(nodeFeature.name)) {
+            config.hintVars.set(nodeFeature.name, nodeFeature.value);
+            this._logger.debug(
+              "FeatureResolver",
+              `Added node feature to hintVars from ${key}: ${nodeFeature.name}=${nodeFeature.value}`
+            );
+          }
+        }
+      }
+    }
+
+    // Process each rendition feature from operation
     for (const feature of features) {
       if (!feature.name.startsWith("r_")) continue;
 
@@ -96,6 +133,7 @@ export class FeatureResolver {
 
       // Add ALL r_* features to hintVars for placeholder replacement
       // This allows {{r_fore-color}}, {{r_font-size}}, etc. in hint SVG templates
+      // These override any node features with the same name
       config.hintVars.set(feature.name, value);
 
       switch (feature.name) {
