@@ -229,7 +229,7 @@
       },
       {
         "operation": {
-          "dsl": "4×1=\"T\" [r_text-position^=n r_fore-color^=red r_font-size^=14]",
+          "dsl": "4×1=\"T\" [r_t-position^=n r_fore-color^=red r_font-size^=14]",
           "toAsIndex": false,
           "to": 0,
           "toRun": 0,
@@ -247,7 +247,7 @@
               "isGlobal": false,
               "isShortLived": true,
               "setPolicy": 0,
-              "name": "r_text-position",
+              "name": "r_t-position",
               "value": "n"
             },
             {
@@ -357,7 +357,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "n"
               },
               {
@@ -761,7 +761,7 @@
       },
       {
         "operation": {
-          "dsl": "19×0+]\"s\" [r_text-position^=ne r_fore-color^=red r_font-size^=14]",
+          "dsl": "19×0+]\"s\" [r_t-position^=ne r_fore-color^=red r_font-size^=14]",
           "toAsIndex": false,
           "to": 0,
           "toRun": 0,
@@ -779,7 +779,7 @@
               "isGlobal": false,
               "isShortLived": true,
               "setPolicy": 0,
-              "name": "r_text-position",
+              "name": "r_t-position",
               "value": "ne"
             },
             {
@@ -1077,7 +1077,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "ne"
               },
               {
@@ -6116,7 +6116,7 @@
       },
       {
         "operation": {
-          "dsl": "39×0+]\" AND SOME STUFF.\"@add-stuff [r_text-position^=e r_fore-color^=green]",
+          "dsl": "39×0+]\" AND SOME STUFF.\"@add-stuff [r_t-position^=e r_fore-color^=green]",
           "toAsIndex": false,
           "to": 0,
           "toRun": 0,
@@ -6135,7 +6135,7 @@
               "isGlobal": false,
               "isShortLived": true,
               "setPolicy": 0,
-              "name": "r_text-position",
+              "name": "r_t-position",
               "value": "e"
             },
             {
@@ -7317,7 +7317,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -7351,7 +7351,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -7445,7 +7445,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -7479,7 +7479,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -7513,7 +7513,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -7547,7 +7547,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -7581,7 +7581,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -7615,7 +7615,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -7649,7 +7649,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -7683,7 +7683,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -7717,7 +7717,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -7761,7 +7761,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -7795,7 +7795,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -7829,7 +7829,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -7863,7 +7863,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -7897,7 +7897,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -8005,7 +8005,7 @@
       },
       {
         "operation": {
-          "dsl": "112×6=\"HINTS.\" [r_text-position^=n r_fore-color^=green r_position^=n r_text-displaced-span^=21x7 r_text-offset-y=20 r_hints=box r_border^=\"tlbr 1 solid green\"]",
+          "dsl": "112×6=\"HINTS.\" [r_t-position^=n r_fore-color^=green r_position^=n r_t-displaced-span^=21x7 r_t-offset-y=20 r_hints=box r_border^=\"tlbr 1 solid green\"]",
           "toAsIndex": false,
           "to": 0,
           "toRun": 0,
@@ -8023,7 +8023,7 @@
               "isGlobal": false,
               "isShortLived": true,
               "setPolicy": 0,
-              "name": "r_text-position",
+              "name": "r_t-position",
               "value": "n"
             },
             {
@@ -8047,7 +8047,7 @@
               "isGlobal": false,
               "isShortLived": true,
               "setPolicy": 0,
-              "name": "r_text-displaced-span",
+              "name": "r_t-displaced-span",
               "value": "21x7"
             },
             {
@@ -8055,7 +8055,7 @@
               "isGlobal": false,
               "isShortLived": false,
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -9741,7 +9741,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "n"
               },
               {
@@ -9765,7 +9765,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-displaced-span",
+                "name": "r_t-displaced-span",
                 "value": "21x7"
               },
               {
@@ -9773,7 +9773,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -9815,7 +9815,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "n"
               },
               {
@@ -9839,7 +9839,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-displaced-span",
+                "name": "r_t-displaced-span",
                 "value": "21x7"
               },
               {
@@ -9847,7 +9847,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -9889,7 +9889,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "n"
               },
               {
@@ -9913,7 +9913,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-displaced-span",
+                "name": "r_t-displaced-span",
                 "value": "21x7"
               },
               {
@@ -9921,7 +9921,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -9963,7 +9963,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "n"
               },
               {
@@ -9987,7 +9987,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-displaced-span",
+                "name": "r_t-displaced-span",
                 "value": "21x7"
               },
               {
@@ -9995,7 +9995,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -10037,7 +10037,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "n"
               },
               {
@@ -10061,7 +10061,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-displaced-span",
+                "name": "r_t-displaced-span",
                 "value": "21x7"
               },
               {
@@ -10069,7 +10069,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -10111,7 +10111,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "n"
               },
               {
@@ -10135,7 +10135,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-displaced-span",
+                "name": "r_t-displaced-span",
                 "value": "21x7"
               },
               {
@@ -10143,7 +10143,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -12103,7 +12103,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -12137,7 +12137,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -12171,7 +12171,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -12205,7 +12205,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -12239,7 +12239,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -12273,7 +12273,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -12617,7 +12617,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -12643,7 +12643,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -12669,7 +12669,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -12695,7 +12695,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -12721,7 +12721,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -12747,7 +12747,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -13011,7 +13011,7 @@
       },
       {
         "operation": {
-          "dsl": "94×0+]\" TOO.\"@mov-too [r_text-position^=e r_fore-color^=red *version^=beta]",
+          "dsl": "94×0+]\" TOO.\"@mov-too [r_t-position^=e r_fore-color^=red *version^=beta]",
           "toAsIndex": false,
           "to": 0,
           "toRun": 0,
@@ -13030,7 +13030,7 @@
               "isGlobal": false,
               "isShortLived": true,
               "setPolicy": 0,
-              "name": "r_text-position",
+              "name": "r_t-position",
               "value": "e"
             },
             {
@@ -14725,7 +14725,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -14759,7 +14759,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -14793,7 +14793,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -14827,7 +14827,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -14861,7 +14861,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -14895,7 +14895,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -15239,7 +15239,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -15265,7 +15265,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -15291,7 +15291,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -15317,7 +15317,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -15343,7 +15343,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -15369,7 +15369,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -15695,7 +15695,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -15729,7 +15729,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -15763,7 +15763,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -15797,7 +15797,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -15831,7 +15831,7 @@
                 "isGlobal": false,
                 "isShortLived": true,
                 "setPolicy": 0,
-                "name": "r_text-position",
+                "name": "r_t-position",
                 "value": "e"
               },
               {
@@ -15865,7 +15865,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -15891,7 +15891,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -15917,7 +15917,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -15943,7 +15943,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -15969,7 +15969,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -15995,7 +15995,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -18016,7 +18016,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -18050,7 +18050,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -18084,7 +18084,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -18118,7 +18118,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -18152,7 +18152,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -18186,7 +18186,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -18530,7 +18530,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -18556,7 +18556,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -18582,7 +18582,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -18608,7 +18608,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -18634,7 +18634,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -18660,7 +18660,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -19096,7 +19096,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -19122,7 +19122,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -19148,7 +19148,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -19174,7 +19174,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -19200,7 +19200,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -19226,7 +19226,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -19580,7 +19580,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -19606,7 +19606,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -19632,7 +19632,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -19658,7 +19658,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -19684,7 +19684,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -19710,7 +19710,7 @@
                 "isGlobal": false,
                 "isShortLived": false,
                 "setPolicy": 0,
-                "name": "r_text-offset-y",
+                "name": "r_t-offset-y",
                 "value": "20"
               },
               {
@@ -28439,7 +28439,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -28468,7 +28468,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -28497,7 +28497,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -28526,7 +28526,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -28555,7 +28555,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -28584,7 +28584,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -29462,7 +29462,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -29486,7 +29486,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -29510,7 +29510,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -29534,7 +29534,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -29558,7 +29558,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -29582,7 +29582,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -30406,7 +30406,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -30430,7 +30430,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -30454,7 +30454,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -30478,7 +30478,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -30502,7 +30502,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -30526,7 +30526,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -31424,7 +31424,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -31448,7 +31448,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -31472,7 +31472,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -31496,7 +31496,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -31520,7 +31520,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {
@@ -31544,7 +31544,7 @@
             },
             {
               "setPolicy": 0,
-              "name": "r_text-offset-y",
+              "name": "r_t-offset-y",
               "value": "20"
             },
             {

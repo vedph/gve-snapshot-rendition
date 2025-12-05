@@ -11,6 +11,20 @@ import {
 import { parseOffset } from "../utils/text-utils";
 
 /**
+ * Hint property overrides from r_h-* features.
+ */
+export interface HintOverrides {
+  position?: string;
+  offsetX?: string;
+  offsetY?: string;
+  scaleX?: string;
+  scaleY?: string;
+  rotation?: string;
+  solid?: boolean;
+  displacedSpan?: { nodeId: number; count: number };
+}
+
+/**
  * Resolved rendition configuration for text rendering.
  */
 export interface RenditionConfig {
@@ -26,10 +40,19 @@ export interface RenditionConfig {
   textLineStyle?: string;
   textLineColor?: string;
   rotate?: number;
-  textPosition?: string;
-  textOffsetX: number;
-  textOffsetY: number;
-  hints?: string[]; // Array of hint IDs
+
+  // r_t-* features for added text
+  textPosition?: string;    // r_t-position
+  textOffsetX: number;      // r_t-offset-x
+  textOffsetY: number;      // r_t-offset-y
+  textSolid?: boolean;      // r_t-solid
+  textDisplacedSpan?: { nodeId: number; count: number }; // r_t-displaced-span
+
+  hints?: string[]; // Array of hint IDs from r_hints
+
+  // r_h-* hint overrides (applies to hints in operation)
+  hintOverrides?: Map<string, HintOverrides>; // key=hint ID, value=overrides
+
   border?: {
     edges: { top: boolean; left: boolean; bottom: boolean; right: boolean };
     thickness: number;
@@ -37,7 +60,6 @@ export interface RenditionConfig {
     type: string;
     color: string;
   };
-  textDisplacedSpan?: { nodeId: number; count: number };
   hintVars?: Map<string, string>;
 }
 
@@ -94,6 +116,9 @@ export class FeatureResolver {
     // Initialize hintVars map - will contain ALL feature values for placeholder
     // replacement
     config.hintVars = new Map<string, string>();
+
+    // Initialize hintOverrides map for r_h-* features
+    config.hintOverrides = new Map<string, HintOverrides>();
 
     // First, extract ALL features from reference nodes for placeholder resolution
     // This includes features like "note", "group", etc. that don't have r_ prefix
@@ -185,11 +210,12 @@ export class FeatureResolver {
           config.rotate = parseFloat(value);
           break;
 
-        case "r_text-position":
+        // r_t-* features for added text
+        case "r_t-position":
           config.textPosition = value;
           break;
 
-        case "r_text-offset-x":
+        case "r_t-offset-x":
           if (textBounds) {
             config.textOffsetX = parseOffset(
               value,
@@ -202,7 +228,7 @@ export class FeatureResolver {
           }
           break;
 
-        case "r_text-offset-y":
+        case "r_t-offset-y":
           if (textBounds) {
             config.textOffsetY = parseOffset(
               value,
@@ -212,6 +238,17 @@ export class FeatureResolver {
           } else {
             config.textOffsetY =
               typeof value === "number" ? value : parseFloat(value);
+          }
+          break;
+
+        case "r_t-solid":
+          config.textSolid = value === "1" || value === "true";
+          break;
+
+        case "r_t-displaced-span":
+          config.textDisplacedSpan = parseDisplacedSpan(value);
+          if (!config.textDisplacedSpan) {
+            this._logger.warn(`Invalid r_t-displaced-span value: ${value}`);
           }
           break;
 
@@ -226,19 +263,19 @@ export class FeatureResolver {
           }
           break;
 
-        case "r_text-displaced-span":
-          config.textDisplacedSpan = parseDisplacedSpan(value);
-          if (!config.textDisplacedSpan) {
-            this._logger.warn(`Invalid r_text-displaced-span value: ${value}`);
-          }
-          break;
-
         case "r_hint-vars":
           // Parse custom variables and merge with existing hintVars
           const customVars = parseHintVars(value);
           customVars.forEach((val, key) => {
             config.hintVars!.set(key, val);
           });
+          break;
+
+        // r_h-* features for hint property overrides
+        default:
+          if (feature.name.startsWith("r_h-")) {
+            this.parseHintOverride(feature.name, value, config);
+          }
           break;
       }
     }
@@ -283,5 +320,95 @@ export class FeatureResolver {
     featureName: string
   ): string | undefined {
     return getFeatureValue(features, featureName);
+  }
+
+  /**
+   * Parse r_h-* hint override features.
+   * Format: "value" applies to all hints, or "@hintId1 hintId2:value" applies to specific hints.
+   *
+   * @param featureName - The feature name (e.g., "r_h-position")
+   * @param value - The feature value
+   * @param config - The rendition config to update
+   */
+  private parseHintOverride(
+    featureName: string,
+    value: string,
+    config: RenditionConfig
+  ): void {
+    // Extract property name from feature name (r_h-position -> position)
+    const propertyName = featureName.substring(4); // Remove "r_h-"
+
+    // Parse value to check if it targets specific hints
+    let targetHints: string[] | null = null; // null = all hints
+    let actualValue = value;
+
+    if (value.startsWith("@")) {
+      // Format: "@hintId1 hintId2:value"
+      const colonIndex = value.indexOf(":");
+      if (colonIndex > 0) {
+        const hintIdsStr = value.substring(1, colonIndex); // Remove "@" and get up to ":"
+        targetHints = hintIdsStr.trim().split(/\s+/);
+        actualValue = value.substring(colonIndex + 1);
+      } else {
+        this._logger.warn(
+          `Invalid r_h-* format (missing colon): ${featureName}=${value}`
+        );
+        return;
+      }
+    }
+
+    // If no hints defined yet in config, we'll still store the override
+    // It will be applied when hints are processed
+    const hints = targetHints || (config.hints ? config.hints : ["*"]);
+
+    for (const hintId of hints) {
+      // Get or create override object for this hint
+      let override = config.hintOverrides!.get(hintId);
+      if (!override) {
+        override = {};
+        config.hintOverrides!.set(hintId, override);
+      }
+
+      // Set the property value
+      switch (propertyName) {
+        case "position":
+          override.position = actualValue;
+          break;
+        case "offset-x":
+          override.offsetX = actualValue;
+          break;
+        case "offset-y":
+          override.offsetY = actualValue;
+          break;
+        case "scale-x":
+          override.scaleX = actualValue;
+          break;
+        case "scale-y":
+          override.scaleY = actualValue;
+          break;
+        case "rotation":
+          override.rotation = actualValue;
+          break;
+        case "solid":
+          override.solid = actualValue === "1" || actualValue === "true";
+          break;
+        case "displaced-span":
+          override.displacedSpan = parseDisplacedSpan(actualValue);
+          if (!override.displacedSpan) {
+            this._logger.warn(
+              `Invalid r_h-displaced-span value: ${actualValue}`
+            );
+          }
+          break;
+        default:
+          this._logger.warn(`Unknown hint override property: ${propertyName}`);
+          break;
+      }
+
+      this._logger.debug(
+        "FeatureResolver",
+        `Added hint override for ${hintId}: ${propertyName}=${actualValue}`
+      );
+    }
   }
 }

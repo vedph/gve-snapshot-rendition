@@ -14,6 +14,7 @@ import {
 import { resolvePlaceholders, parseOffset } from "../utils/text-utils";
 import { parseDisplacedSpan } from "../utils/feature-utils";
 import { getNodeSpan } from "../utils/node-utils";
+import { HintOverrides } from "./feature-resolver";
 
 /**
  * Hint renderer handles rendering of operation hints.
@@ -52,6 +53,7 @@ export class HintRenderer {
    * @param hintOrdinal - Ordinal number of this hint for the operation (1, 2, 3...)
    * @param allBaseNodes - All base text nodes (for displaced span)
    * @param versionTag - Version tag to add as CSS class
+   * @param hintOverrides - Optional overrides from r_h-* features
    * @returns Promise that resolves when rendering completes
    */
   async renderHint(
@@ -63,20 +65,30 @@ export class HintRenderer {
     operationId: string,
     hintOrdinal: number,
     allBaseNodes: CharNode[],
-    versionTag: string
+    versionTag: string,
+    hintOverrides?: Map<string, HintOverrides>
   ): Promise<void> {
     this._logger.time(`renderHint-${hintId}`);
     this._logger.info(`Rendering hint: ${hintId} for operation ${operationId}`);
 
     try {
-      // 1. Resolve placeholders in SVG
-      const resolvedSvg = resolvePlaceholders(hint.svg, variables);
+      // 1. Apply r_h-* overrides to hint properties
+      // Overrides can target this specific hint or all hints ("*")
+      const effectiveHint = this.applyHintOverrides(
+        hint,
+        hintId,
+        hintOverrides,
+        allBaseNodes
+      );
+
+      // 2. Resolve placeholders in SVG
+      const resolvedSvg = resolvePlaceholders(effectiveHint.svg, variables);
       this._logger.debug("HintRenderer", `Placeholders resolved`, {
-        original: hint.svg,
+        original: effectiveHint.svg,
         resolved: resolvedSvg,
       });
 
-      // 2. Parse SVG to get root <g> element
+      // 3. Parse SVG to get root <g> element
       const hintGroup = parseSVGContent(resolvedSvg);
       if (!hintGroup) {
         this._logger.error(`Failed to parse SVG for hint ${hintId}`);
@@ -90,9 +102,9 @@ export class HintRenderer {
 
       // 4. Calculate RBR(s) - may be multiple if text split across lines
       let rbrs: BoundingRect[];
-      if (hint.displacedRefSpan) {
+      if (effectiveHint.displacedRefSpan) {
         // Use displaced span instead of reference nodes
-        rbrs = this.calculateDisplacedRBRs(hint.displacedRefSpan, allBaseNodes);
+        rbrs = this.calculateDisplacedRBRs(effectiveHint.displacedRefSpan, allBaseNodes);
       } else {
         rbrs = this.calculateRBRs(referenceNodes);
       }
@@ -144,27 +156,27 @@ export class HintRenderer {
         // 9. Get the scale factors needed to fit RBR
         const scalingInfo = this.calculateScalingInfo(
           currentHintGroup,
-          hint,
+          effectiveHint,
           rbr
         );
 
         // 10. Apply combined transform (scale + position) in one operation
         await this.applyHintTransform(
           currentHintGroup,
-          hint,
+          effectiveHint,
           rbr,
           handlePos,
           scalingInfo
         );
 
         // 10. Handle spreading if solid
-        if (hint.solid) {
+        if (effectiveHint.solid) {
           await this.handleSpreading(currentHintGroup, rootSvg, versionTag);
         }
 
         // 11. Make visible (set initial opacity to 0 if animation present)
         currentHintGroup.removeAttribute("visibility");
-        if (hint.animation) {
+        if (effectiveHint.animation) {
           currentHintGroup.style.opacity = "0";
         }
 
@@ -173,11 +185,11 @@ export class HintRenderer {
         this._boundsCache.set(currentHintGroup.getAttribute("id")!, bbox);
 
         // 12. Animate entrance
-        if (hint.animation) {
+        if (effectiveHint.animation) {
           const animation = this._animationEngine
             .getFactory()
             .resolveAnimation(
-              hint.animation,
+              effectiveHint.animation,
               this._settings.animations,
               `hint-${hintId}`
             );
@@ -490,6 +502,109 @@ export class HintRenderer {
         );
       }
     }
+  }
+
+  /**
+   * Apply r_h-* overrides to hint properties.
+   * Overrides can target specific hints or all hints ("*").
+   *
+   * @param hint - Original hint design
+   * @param hintId - ID of the hint being rendered
+   * @param hintOverrides - Map of overrides from r_h-* features
+   * @param allBaseNodes - All base nodes for displaced span resolution
+   * @returns Modified hint with overrides applied
+   */
+  private applyHintOverrides(
+    hint: OperationHint,
+    hintId: string,
+    hintOverrides: Map<string, HintOverrides> | undefined,
+    allBaseNodes: CharNode[]
+  ): OperationHint {
+    if (!hintOverrides || hintOverrides.size === 0) {
+      return hint;
+    }
+
+    // Clone hint to avoid modifying original
+    const effectiveHint = { ...hint };
+
+    // Check for overrides targeting this specific hint or all hints
+    const specificOverride = hintOverrides.get(hintId);
+    const wildcardOverride = hintOverrides.get("*");
+
+    // Apply wildcard overrides first, then specific overrides (so specific wins)
+    const override = {
+      ...wildcardOverride,
+      ...specificOverride,
+    };
+
+    // Apply each override property
+    if (override.position !== undefined) {
+      effectiveHint.position = override.position as HintPosition;
+      this._logger.debug(
+        "HintRenderer",
+        `Override position for ${hintId}: ${override.position}`
+      );
+    }
+
+    if (override.offsetX !== undefined) {
+      effectiveHint.offsetX = override.offsetX;
+      this._logger.debug(
+        "HintRenderer",
+        `Override offsetX for ${hintId}: ${override.offsetX}`
+      );
+    }
+
+    if (override.offsetY !== undefined) {
+      effectiveHint.offsetY = override.offsetY;
+      this._logger.debug(
+        "HintRenderer",
+        `Override offsetY for ${hintId}: ${override.offsetY}`
+      );
+    }
+
+    if (override.scaleX !== undefined) {
+      effectiveHint.scaleX = parseFloat(override.scaleX);
+      this._logger.debug(
+        "HintRenderer",
+        `Override scaleX for ${hintId}: ${override.scaleX}`
+      );
+    }
+
+    if (override.scaleY !== undefined) {
+      effectiveHint.scaleY = parseFloat(override.scaleY);
+      this._logger.debug(
+        "HintRenderer",
+        `Override scaleY for ${hintId}: ${override.scaleY}`
+      );
+    }
+
+    if (override.rotation !== undefined) {
+      effectiveHint.rotation = parseFloat(override.rotation);
+      this._logger.debug(
+        "HintRenderer",
+        `Override rotation for ${hintId}: ${override.rotation}`
+      );
+    }
+
+    if (override.solid !== undefined) {
+      effectiveHint.solid = override.solid;
+      this._logger.debug(
+        "HintRenderer",
+        `Override solid for ${hintId}: ${override.solid}`
+      );
+    }
+
+    if (override.displacedSpan !== undefined) {
+      // Convert to displacedRefSpan format (e.g., "64x3")
+      const { nodeId, count } = override.displacedSpan;
+      effectiveHint.displacedRefSpan = `${nodeId}x${count}`;
+      this._logger.debug(
+        "HintRenderer",
+        `Override displacedSpan for ${hintId}: ${effectiveHint.displacedRefSpan}`
+      );
+    }
+
+    return effectiveHint;
   }
 
   /**

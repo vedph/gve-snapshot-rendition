@@ -222,7 +222,7 @@ export class TextRenderer {
 
     this._logger.debug("TextRenderer", `Using RBR for positioning`, rbr);
 
-    // 2. Calculate text position based on r_text-position + offsets
+    // 2. Calculate text position based on r_t-position + offsets
     const position = config.textPosition || "o"; // Default to origin if not specified
     const targetPos = this.calculateTargetPosition(position, rbr);
 
@@ -246,54 +246,62 @@ export class TextRenderer {
       baseY
     );
 
-    // 4. Apply spreading (additional text is always solid)
-    // We need to calculate the bounding rectangle for all the text first
+    // 4. Calculate bounding rectangle for the text (needed for spreading and borders)
     const textBounds = this.calculateTextBounds(nodes, positions);
 
-    if (textBounds) {
-      this._logger.debug(
-        "TextRenderer",
-        `Applying spreading for additional text`,
-        textBounds
-      );
-
-      const spreading = this._spreadingEngine.calculateSpreading(textBounds, [
-        `text-group-${versionTag}`,
-      ]);
-
-      if (spreading.hasShifts) {
-        // Combine horizontal and vertical shifts
-        const combinedShifts = new Map<string, { x: number; y: number }>();
-        const allIds = new Set([
-          ...spreading.horizontalShifts.keys(),
-          ...spreading.verticalShifts.keys(),
-        ]);
-
-        for (const id of allIds) {
-          combinedShifts.set(id, {
-            x: spreading.horizontalShifts.get(id) || 0,
-            y: spreading.verticalShifts.get(id) || 0,
-          });
-        }
-
-        // Animate spreading
-        await this._animationEngine.animateSpreading(
-          combinedShifts,
-          this._settings.spreadTime,
-          rootSvg
+    // 5. Apply spreading if r_t-solid=1
+    // Check config.textSolid to determine if spreading should be applied
+    if (config.textSolid) {
+      if (textBounds) {
+        this._logger.debug(
+          "TextRenderer",
+          `Applying spreading for solid additional text`,
+          textBounds
         );
 
-        // Update cached bounds for shifted elements
-        for (const id of allIds) {
-          const element = rootSvg.querySelector(`#${id}`);
-          if (element) {
-            this._boundsCache.updateFromElement(element as SVGElement);
+        const spreading = this._spreadingEngine.calculateSpreading(textBounds, [
+          `text-group-${versionTag}`,
+        ]);
+
+        if (spreading.hasShifts) {
+          // Combine horizontal and vertical shifts
+          const combinedShifts = new Map<string, { x: number; y: number }>();
+          const allIds = new Set([
+            ...spreading.horizontalShifts.keys(),
+            ...spreading.verticalShifts.keys(),
+          ]);
+
+          for (const id of allIds) {
+            combinedShifts.set(id, {
+              x: spreading.horizontalShifts.get(id) || 0,
+              y: spreading.verticalShifts.get(id) || 0,
+            });
+          }
+
+          // Animate spreading
+          await this._animationEngine.animateSpreading(
+            combinedShifts,
+            this._settings.spreadTime,
+            rootSvg
+          );
+
+          // Update cached bounds for shifted elements
+          for (const id of allIds) {
+            const element = rootSvg.querySelector(`#${id}`);
+            if (element) {
+              this._boundsCache.updateFromElement(element as SVGElement);
+            }
           }
         }
       }
+    } else {
+      this._logger.debug(
+        "TextRenderer",
+        `Skipping spreading - additional text is not solid (r_t-solid not set)`
+      );
     }
 
-    // 5. Get animation function if specified
+    // 6. Get animation function if specified
     const animationFn = this._settings.charAnimationId
       ? this._animationEngine
           .getFactory()
@@ -304,7 +312,7 @@ export class TextRenderer {
           )
       : undefined;
 
-    // 6. Render each character with features
+    // 7. Render each character with features
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
       const pos = positions[i];
@@ -317,7 +325,7 @@ export class TextRenderer {
       await this.renderCharacter(node, pos, rootSvg, versionTag, animationFn);
     }
 
-    // 7. Draw borders if r_border specified
+    // 8. Draw borders if r_border specified
     if (config.border && textBounds) {
       await this.drawBorder(
         config.border.edges,

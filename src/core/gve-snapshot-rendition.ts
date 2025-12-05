@@ -497,7 +497,8 @@ export class GveSnapshotRendition extends HTMLElement {
         refNodes,
         config.hintVars || new Map(),
         operation.id || `op${operation.run}`,
-        versionTag
+        versionTag,
+        config.hintOverrides
       );
     }
 
@@ -592,7 +593,8 @@ export class GveSnapshotRendition extends HTMLElement {
     refNodes: CharNode[],
     hintVars: Map<string, string>,
     operationId: string,
-    versionTag: string
+    versionTag: string,
+    hintOverrides?: Map<string, import("../rendering/feature-resolver").HintOverrides>
   ): Promise<void> {
     if (!this._hintRenderer || !this._rootSvg) return;
 
@@ -614,7 +616,8 @@ export class GveSnapshotRendition extends HTMLElement {
         operationId,
         i + 1, // ordinal (1-based)
         this._baseNodes,
-        versionTag
+        versionTag,
+        hintOverrides
       );
     }
   }
