@@ -4,8 +4,10 @@
  */
 export class Toolbar {
   private container: HTMLElement;
+  private firstBtn!: HTMLButtonElement;
   private prevBtn!: HTMLButtonElement;
   private nextBtn!: HTMLButtonElement;
+  private lastBtn!: HTMLButtonElement;
   private versionLabel!: HTMLSpanElement;
   private zoomInBtn!: HTMLButtonElement;
   private zoomOutBtn!: HTMLButtonElement;
@@ -27,12 +29,18 @@ export class Toolbar {
     this.container.innerHTML = `
       <div class="toolbar">
         <div class="toolbar-group">
-          <button id="prev-btn" class="toolbar-btn" title="Previous Version">
+          <button id="first-btn" class="toolbar-btn" title="First Version (Home)">
+            ⏮ First
+          </button>
+          <button id="prev-btn" class="toolbar-btn" title="Previous Version (←)">
             ← Previous
           </button>
           <span id="version-label" class="version-label">v0</span>
-          <button id="next-btn" class="toolbar-btn" title="Next Version">
+          <button id="next-btn" class="toolbar-btn" title="Next Version (→)">
             Next →
+          </button>
+          <button id="last-btn" class="toolbar-btn" title="Last Version (End)">
+            Last ⏭
           </button>
         </div>
         <div class="toolbar-group zoom-controls">
@@ -60,8 +68,10 @@ export class Toolbar {
       </div>
     `;
 
+    this.firstBtn = this.container.querySelector("#first-btn")!;
     this.prevBtn = this.container.querySelector("#prev-btn")!;
     this.nextBtn = this.container.querySelector("#next-btn")!;
+    this.lastBtn = this.container.querySelector("#last-btn")!;
     this.versionLabel = this.container.querySelector("#version-label")!;
     this.zoomInBtn = this.container.querySelector("#zoom-in-btn")!;
     this.zoomOutBtn = this.container.querySelector("#zoom-out-btn")!;
@@ -77,8 +87,10 @@ export class Toolbar {
    * Attach event listeners to buttons.
    */
   private attachEventListeners(): void {
+    this.firstBtn.addEventListener("click", () => this.goFirst());
     this.prevBtn.addEventListener("click", () => this.goPrevious());
     this.nextBtn.addEventListener("click", () => this.goNext());
+    this.lastBtn.addEventListener("click", () => this.goLast());
 
     // Zoom button events
     this.zoomInBtn.addEventListener("click", () => this.dispatchZoomEvent("in"));
@@ -93,6 +105,17 @@ export class Toolbar {
       const zoomLevel = zoomPercent / 100;
       this.dispatchZoomEvent("set", zoomLevel);
     });
+  }
+
+  /**
+   * Navigate to first version.
+   */
+  private goFirst(): void {
+    if (this.currentIndex !== 0) {
+      this.currentIndex = 0;
+      this.updateButtons();
+      this.dispatchNavigationEvent();
+    }
   }
 
   /**
@@ -118,11 +141,24 @@ export class Toolbar {
   }
 
   /**
+   * Navigate to last version.
+   */
+  private goLast(): void {
+    if (this.currentIndex !== this.totalVersions) {
+      this.currentIndex = this.totalVersions;
+      this.updateButtons();
+      this.dispatchNavigationEvent();
+    }
+  }
+
+  /**
    * Update button states and version label.
    */
   private updateButtons(): void {
+    this.firstBtn.disabled = this.currentIndex === 0;
     this.prevBtn.disabled = this.currentIndex === 0;
     this.nextBtn.disabled = this.currentIndex === this.totalVersions;
+    this.lastBtn.disabled = this.currentIndex === this.totalVersions;
     this.versionLabel.textContent = `v${this.currentIndex}`;
   }
 

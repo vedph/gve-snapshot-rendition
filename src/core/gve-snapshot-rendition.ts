@@ -45,6 +45,7 @@ export class GveSnapshotRendition extends HTMLElement {
   private _container?: HTMLElement;
   private _toolbar?: Toolbar;
   private _panZoomInstance?: SvgPanZoomInstance;
+  private _keyboardHandler?: (e: KeyboardEvent) => void;
 
   // State
   private _baseNodes: CharNode[] = [];
@@ -91,6 +92,7 @@ export class GveSnapshotRendition extends HTMLElement {
     this._logger.info("Component connected to DOM");
     this.render();
     this.initializeGsap();
+    this.setupKeyboardShortcuts();
   }
 
   /**
@@ -106,6 +108,12 @@ export class GveSnapshotRendition extends HTMLElement {
       this._panZoomInstance.destroy();
       this._panZoomInstance = undefined;
       this._logger.info("Pan/zoom destroyed");
+    }
+    // Cleanup keyboard shortcuts
+    if (this._keyboardHandler) {
+      document.removeEventListener("keydown", this._keyboardHandler);
+      this._keyboardHandler = undefined;
+      this._logger.info("Keyboard shortcuts removed");
     }
   }
 
@@ -850,6 +858,97 @@ export class GveSnapshotRendition extends HTMLElement {
     if (!this._toolbar || !this._panZoomInstance) return;
     const zoom = this._panZoomInstance.getZoom();
     this._toolbar.updateZoomLevel(zoom);
+  }
+
+  /**
+   * Setup keyboard shortcuts for navigation and zoom.
+   * Shortcuts:
+   * - ArrowLeft/ArrowRight: Previous/Next version
+   * - Home/End: First/Last version
+   * - 0-9: Jump to version 0-9
+   * - +/-: Zoom in/out
+   */
+  private setupKeyboardShortcuts(): void {
+    this._keyboardHandler = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input field
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      switch (e.key) {
+        case "ArrowLeft":
+          e.preventDefault();
+          if (this._currentVersionIndex > 0) {
+            this.goToVersionIndex(this._currentVersionIndex - 1);
+          }
+          break;
+
+        case "ArrowRight":
+          e.preventDefault();
+          if (
+            this._data &&
+            this._currentVersionIndex < this._data.steps.length
+          ) {
+            this.goToVersionIndex(this._currentVersionIndex + 1);
+          }
+          break;
+
+        case "Home":
+          e.preventDefault();
+          this.goToVersionIndex(0);
+          break;
+
+        case "End":
+          e.preventDefault();
+          if (this._data) {
+            this.goToVersionIndex(this._data.steps.length);
+          }
+          break;
+
+        case "+":
+        case "=":
+          e.preventDefault();
+          this.zoomIn();
+          break;
+
+        case "-":
+        case "_":
+          e.preventDefault();
+          this.zoomOut();
+          break;
+
+        case "0":
+          // Handle Ctrl+0 or Cmd+0 for reset zoom
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            this.resetZoom();
+          } else {
+            // Navigate to version 0
+            e.preventDefault();
+            this.goToVersionIndex(0);
+          }
+          break;
+
+        default:
+          // Handle number keys 1-9 for quick version navigation
+          if (e.key >= "1" && e.key <= "9" && !e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+            const versionIndex = parseInt(e.key);
+            if (this._data && versionIndex <= this._data.steps.length) {
+              this.goToVersionIndex(versionIndex);
+            }
+          }
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", this._keyboardHandler);
+    this._logger.info("Keyboard shortcuts enabled");
   }
 
   /**
