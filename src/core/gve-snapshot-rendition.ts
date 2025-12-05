@@ -502,7 +502,10 @@ export class GveSnapshotRendition extends HTMLElement {
     }
 
     // Render additional text if this operation added nodes
-    const addedNodes = this.getAddedNodes(operation.id || `op${operation.run}`);
+    const addedNodes = this.getAddedNodes(
+      operation.id || `op${operation.run}`,
+      step.outputTag
+    );
     if (addedNodes.length > 0 && this._textRenderer && this._rootSvg) {
       await this._textRenderer.renderAdditionalText(
         addedNodes,
@@ -562,11 +565,20 @@ export class GveSnapshotRendition extends HTMLElement {
   /**
    * Get nodes added by a specific operation.
    * These are nodes with opid feature matching the operation ID.
+   *
+   * @param operationId - The operation ID to match
+   * @param outputTag - The output version tag (e.g., "v3") where the nodes were added
+   * @returns Array of nodes added by this operation
    */
-  private getAddedNodes(operationId: string): CharNode[] {
-    if (!this._baseNodes) return [];
+  private getAddedNodes(operationId: string, outputTag: string): CharNode[] {
+    if (!this._data || !this._data.taggedNodes) return [];
 
-    return this._baseNodes.filter((node) => {
+    // Get nodes from the output version
+    const versionNodes = this._data.taggedNodes[outputTag];
+    if (!versionNodes) return [];
+
+    // Filter nodes that have opid feature matching this operation
+    return versionNodes.filter((node) => {
       const opidFeature = node.features?.find((f) => f.name === "opid");
       return opidFeature && opidFeature.value === operationId;
     });

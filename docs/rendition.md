@@ -163,9 +163,6 @@ All rendering features have their name starting with `r_`. These are the only fe
 - `r_overline`: the overline value (as for underline).
 - `r_strike`: the strikethrough value (as for underline).
 - `r_rotate`: the rotation amount to be applied to each single character.
-- `r_text-position`: the position of added text relative to the RBR. This works exactly like hint's `position` property: see [hint positioning properties](#hint-positioning-properties).
-- `r_text-offset-x`: the X offset for the added text, relative to the computed `r_text-position`. This works exactly like hint's `offsetX` property: see [hint positioning properties](#hint-positioning-properties).
-- `r_text-offset-y`: the Y offset for the added text, relative to the computed `r_text-position`. This works exactly like hint's `offsetY` property: see [hint positioning properties](#hint-positioning-properties).
 - `r_hints`: this feature is used to link the operation to any number of hints. The value is a space-delimited list of hint IDs, in the order they should be rendered for that operation.
 - `r_border`: the border to draw around the text. This is different from other rendition features which directly map to SVG text decorations. This is rather a a shortcut to draw one or more edges as an imaginary rectangle wrapping the text. In reality, the component just draws lines along the edges of this imaginary rectangle, one line per edge (top, left, right, bottom), as requested. Its value pattern is `EDGES THICKNESS PADDING TYPE COLOR`, where:
   - `EDGES` is any combination of characters `tlbr` where `t`=top, `l`=left, `b`=bottom, `r`=right.
@@ -174,8 +171,26 @@ All rendering features have their name starting with `r_`. These are the only fe
   - `COLOR` is a color.
     So for `r_border`, for instance `tl 1 4 solid silver` means that the text will have two edges, one at top and one at left, each with 1px thickness and silver color, both offset by 4px (padding) from the bounding rectangle of the text.
     Note that `r_border` SVG line elements are just drawn after the text has been drawn character by character (with their animations when set), with no animation. They just appear at once and variously "box" the text drawn.
-- `r_text-displaced-span`: a span of base text with format `IDxN` where `ID`=node ID and `N`=count of chars to include, to be used as the RBR instead of the default RBR. This works exactly like a [displaced hint](#displaced-hints), but is applied to added text.
 - `r_hint_vars`: this has no effect on text; it is just a rendition feature used only to define a set of variables to be used by [hints placeholders](#hint-svg-placeholders). Each variable has name=value, and is separated with space. For instance, `color=red bold=1` to pass variables `color`=`red` and `bold`=`1` to the hints being rendered for the operation being processed.
+
+The following text rendition features are applicable ONLY to _added text_ (=text nodes added by insert/replace operations):
+
+- `r_t-position`: the position of added text relative to the RBR; or an override for the . This works exactly like a hint's `position` property: see [hint positioning properties](#hint-positioning-properties).
+- `r_t-offset-x`: the X offset for the added text, relative to the computed `r_t-position`. This works exactly like hint's `offsetX` property: see [hint positioning properties](#hint-positioning-properties).
+- `r_t-offset-y`: the Y offset for the added text, relative to the computed `r_t-position`. This works exactly like hint's `offsetY` property: see [hint positioning properties](#hint-positioning-properties).
+- `r_t-solid`: a boolean value (`1` or `0`), telling whether the added text behaves as "solid" (thus triggering [spreading](#drawing-logic)) or not (which is the default).
+- `r_t-displaced-span`: a span of base text with format `IDxN` where `ID`=node ID and `N`=count of chars to include, to be used as the RBR instead of the default RBR. This works exactly like a [displaced hint](#displaced-hints), but is applied to added text.
+
+The following text rendition features are applicable ONLY to _hints_, and are used to override their corresponding property in the hint's design. By default, they apply to ALL the hints in the operation (those listed by `r_hints`), unless the property value starts with `@` followed by a space delimited list of hint IDs, ended by `:`; in this case, it applies ONLY to those hints matching the list. For instance, `r_h-position`=`e` applies to ALL hints overriding their `position` property to `e`; while `@alpha beta:e` applies ONLY to hints with IDs `alpha` and `beta`, overriding their `position` property to `e`. These hint property override features are:
+
+- `r_h-position`: override hint's `position` property: see [hints](#hints).
+- `r_h-offset-x`: override hint's `offsetX` property.
+- `r_h-offset-y`: override hint's `offsetY` property.
+- `r_h-scale-x`: override hint's `scaleX` property.
+- `r_h-scale-y`: override hint's `scaleY` property.
+- `r_h-rotation`: override hint's `rotation` property.
+- `r_h-solid`: override hint's `solid` property.
+- `r_h-displaced-span`: override hint's `desplacedRefSpan` property (for [displaced hints](#displaced-hints)).
 
 > All these features can be combined, so characters are displayed only after evaluating all of them, and their size and text layout changes accordingly to fit all the characters with their size, which may depend on one or more of these features. Also, in backend all rendition features have their lifespan limited to the version generated by their operation. This avoids accumulating them in the output context, ensuring that they are valid only for the immediate output of the operation containing them.
 
@@ -422,8 +437,11 @@ Users would just open a new CodePen, copy-paste the template code for HTML, CSS,
 
 The general drawing logic for the entities rendered by this component is outlined below. An additional feature must be first introduced: the "solid" feature. When drawing hints or added text characters, there are two possible behaviors:
 
-1. **default**: the default behavior is to just draw the element as its position and size dictates, initially hidden (opacity=0) if it has an animation, which immediately after reveals it, with no preliminary adjustments.
-2. **solid**: the "solid" behavior adds a preliminary adjustment before following the default one, to make room for the element to be rendered. When this element is "solid" (i.e. when it's a hint and has `solid`=`true`, or when it's an added `text` element, which is always solid), we must ensure there is enough room for it to be rendered without overlapping any surrounding elements. This means shifting the surrounding elements on overlap; and in turn, this implies moving all the elements in the rendered text so that we approximately preserve the previous layout. The process of making room for the new element while preserving the general layout is here named **spreading**.
+1. **default**: the default behavior is to just draw the element as its position and size dictates, initially hidden (opacity=0) if it has an animation, which immediately after reveals it, with _no_ preliminary adjustments.
+2. **solid**: the "solid" behavior, which must be opted in, adds a preliminary adjustment before following the default one, to make room for the element to be rendered. When this element is "solid", we must ensure there is enough room for it to be rendered without overlapping any surrounding elements. This means shifting the surrounding elements on overlap; and in turn, this implies moving all the elements in the rendered text so that we approximately preserve the previous layout. The process of making room for the new element while preserving the general layout is here named **spreading**. An added element is solid when:
+   - it's a hint (=an added `g` element) and has property `solid`=`1`, not overridden by feature `r_h-solid`=`0`.
+   - it's an added `text` element having a feature `r_t-solid`=`1`.
+   - in all other cases, it is NOT solid. This is consistent with the "ink and paper" analogy, where moving the existing signs on paper would be materially impossible.
 
 Essentially, spreading avoids that the newly added solid element overlaps with any of the existing elements, making room for it in such a way that it best preserves the relative positions of all the elements. It is like throwing a stone in a pond: thestone is the new solid element, and the waves originating from the stone move all the existing objects around it, like floating leaves, by making more room at the center.
 
@@ -751,47 +769,62 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
 - `v2`: **delete** `In` and its space. Features:
   - `r_hints`=`diagonal-stroke`. The ID of a hint representing a diagonal stroke (essentially it will be a diagonal line).
   - `r_fore-color`=`red` (hand A writes with red ink; the hint is assumed to have a placeholder for the color, drawing its value from this property; this way we can reuse the same hint SVG code with a different color).
+
 - `v3`: **replace** `t` with `T` (whose ID will be equal to 95, the next available ID in the snapshot) in `this`, to make it uppercase, as this has become the first word of the sentence. Features:
   - `r_text-position`=`n` (north = top of `t`).
   - `r_fore-color`=`red`.
   - `r_font-size`=`14` (the default being `24`, this is smaller).
+
 - `v4`: **delete** `I` and its following space. Features:
   - `r_fore-color`=`red`.
   - `r_hints`=`diagonal-stroke`.
+
 - `v5`: **add** `s` (ID=96) after `show` (whence `shows`). Features:
+  - `r_text-position`=`ne`.
   - `r_fore-color`=`red`.
   - `r_font-size`=`14`.
+
 - `v6`: **annotate** to add features (this operation belongs to group `swap-complex-long` -- belonging to a group has no practical effect, but it is a metadatum which logically groups operations together):
   - `note`=`1` (the `1` above `long` indicating a change in word order).
   - `r_fore-color`=`red`.
   - `r_hints`=`note` (a hint assumed to display text whose content is defined by a placeholder named `note`).
+
 - `v7`: **annotate** to add features (this operation belongs to group `swap-complex-long`):
   - `note`=`2` (the `2` above `nor`).
   - `r_fore-color`=`red`.
   - `r_hints`=`note`.
+
 - `v8`: **annotate** to add features (this operation belongs to group `swap-complex-long`):
   - `note`=`3` (the `3` above `complex`).
   - `r_fore-color`=`red`.
   - `r_hints`=`note`.
+
 - `v9`: **swap** `complex` with `long` (this is represented by the small numbers "3 2 1" above these words and the word between them, which have been added as annotation hints before). Features:
   - `r_fore-color`=`red`.
-  - `version`=`alpha` marks this version (`v9`) as staged version `alpha`.
+  - 🚩 `version`=`alpha` marks this version (`v9`) as staged version `alpha`.
 
 - `v10`: **delete** `.` after `types` (this operation belongs to group `add-stuff`). Features:
   - `r_hints`=`diagonal-stroke`.
   - `r_fore-color`=`green`.
+
 - `v11`: **add** space + `AND SOME STUFF.` (IDs=97-113) after `types` (this operation belongs to group `add-stuff`). Note that we could just have inserted this text before the dot after `types` if our purpose was only to get the corresponding output text; but our purpose here is to represent the sheet in its nearly-diplomatic form. In the sheet we have a deletion on this dot, and then a new text with its own dot is added. Here we do the same, with a deletion first, and then an addition. Features:
+  - `r_text-position`=`e`.
   - `r_fore-color`=`green`.
+
 - `v12`: **replace** `STUFF.` with `HINTS.` (IDs=114-119). Features:
   - `r_fore-color`=`green`.
-  - `r_position`=`n`.
+  - `r_text-position`=`n`.
   - `r_text-displaced-span`=`21x7`. This is a displacement for the text being added by this replace operation (`HINTS`): instead of positioning the text with reference to its reference text (`STUFF`), we position it above an area approximately corresponding to `all ope` of `all operations` in the first line.
   - `r_text-offset-y`=`20`: this shifts the `HINTS` boxed text upper.
   - `r_hints`=`box` (border around `STUFF`).
   - `r_border`=`tlbr 1 solid green` (1-pixel border around `HINTS`).
+
 - `v13`: **delete** `too,` + space (this operation belongs to group `mov-too`, because on a more abstract --non-diplomatic-- ground this would be considered a movement). Note that there is no hint for this operation; it is implicit in the next addition.
+
 - `v14`: **add** `TOO.` (IDs=120-123) after `line` (this operation belongs to group `mov-too`) . Features:
-  - `version`=`beta` marks `v14` as staged version `beta`.
+  - `r_text-position`=`e`.
+  - `r_text-offset-x`=`10` (leave more space to the right before the added text).
+  - 🚩 `version`=`beta` marks `v14` as staged version `beta`.
 
 - `v15`: **annotate** the initial `I` with features (we target the initial `I` as it's the nearest character):
   - `note`=`12`.
@@ -830,7 +863,7 @@ This is another line TOO.
   - `r_fore-color`: the text color.
 - `note-underline`: equal to `note`, but with added underline text decoration to the note's text.
 
-The same operations in their parsable format are listed here:
+The same operations in their parsable format (DSL) are listed here:
 
 ```txt
 35: [r_char-offsets^="35:x=100 70:x=100"]
@@ -838,17 +871,17 @@ The same operations in their parsable format are listed here:
 1x3- [r_hints^=diagonal-stroke r_fore-color^=red]
 4=T [r_text-position^=n r_fore-color^=red r_font-size^=14]
 14x2- [r_hints^=diagonal-stroke r_fore-color^=red]
-19+]s [r_fore-color^=red r_font-size^=14]
+19+]s [r_text-position^=ne r_fore-color^=red r_font-size^=14]
 64x4: @swap-complex-long [note^=1 r_hints^=note r_fore-color^=red]
 60x3: @swap-complex-long [note^=2 r_hints^=note r_fore-color^=red]
 52x7: @swap-complex-long [note^=3 r_hints^=note r_fore-color^=red]
-52x7<>64x4 [r_fore-color^=red]
-75x5- @mov-too
-94+]" TOO."@mov-too [r_fore-color^=red *version^=alpha]
+52x7<>64x4 [r_fore-color^=red *version^=alpha]
 
 40- @add-stuff [r_hints^=diagonal-stroke r_fore-color^=green]
-39+]" AND SOME STUFF." @add-stuff [r_fore-color^=green]
-112x6=HINTS. [r_fore-color^=green r_position^=n r_text-displaced-span^=21x7 r_text-offset-y=20 r_hints=box r_border^="tlbr 1 solid green" *version^=beta]
+39+]" AND SOME STUFF." @add-stuff [r_text-position^=e r_fore-color^=green]
+112x6=HINTS. [r_text-position^=n r_fore-color^=green r_position^=n r_text-displaced-span^=21x7 r_text-offset-y=20 r_hints=box r_border^="tlbr 1 solid green"]
+75x5- @mov-too
+94+]" TOO."@mov-too [r_text-position^=e r_fore-color^=red *version^=beta]
 
 1: [note=12 r_color^=blue r_hint-vars^="rotation=-45" r_hints="note-underline"]
 ```

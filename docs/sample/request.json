@@ -9,7 +9,7 @@
         }
       ],
       "sources": [],
-      "id": "8a02695f5c",
+      "id": "da6b355969",
       "type": 7,
       "at": 35,
       "run": 1
@@ -28,7 +28,7 @@
         }
       ],
       "sources": [],
-      "id": "3101d4c839",
+      "id": "fe2fd88fa9",
       "type": 1,
       "at": 1,
       "run": 3
@@ -52,7 +52,7 @@
         }
       ],
       "sources": [],
-      "id": "c00a4b5a2e",
+      "id": "a92af545a7",
       "at": 4,
       "run": 1,
       "value": "T"
@@ -71,13 +71,18 @@
         }
       ],
       "sources": [],
-      "id": "095d952af4",
+      "id": "29168609e4",
       "type": 1,
       "at": 14,
       "run": 2
     },
     {
       "features": [
+        {
+          "isShortLived": true,
+          "name": "r_text-position",
+          "value": "ne"
+        },
         {
           "isShortLived": true,
           "name": "r_fore-color",
@@ -90,7 +95,7 @@
         }
       ],
       "sources": [],
-      "id": "449175dc9c",
+      "id": "a8dc0fa6df",
       "type": 3,
       "at": 19,
       "value": "s"
@@ -115,7 +120,7 @@
         }
       ],
       "sources": [],
-      "id": "a72875e877",
+      "id": "0c6db934fb",
       "type": 7,
       "at": 64,
       "run": 4
@@ -140,7 +145,7 @@
         }
       ],
       "sources": [],
-      "id": "06546468f7",
+      "id": "4d6618c7ac",
       "type": 7,
       "at": 60,
       "run": 3
@@ -165,38 +170,12 @@
         }
       ],
       "sources": [],
-      "id": "f5b6536303",
+      "id": "539082ad15",
       "type": 7,
       "at": 52,
       "run": 7
     },
     {
-      "features": [
-        {
-          "isShortLived": true,
-          "name": "r_fore-color",
-          "value": "red"
-        }
-      ],
-      "sources": [],
-      "id": "ae90aafa06",
-      "type": 6,
-      "at": 52,
-      "run": 7,
-      "to": 64,
-      "toRun": 4
-    },
-    {
-      "groupId": "mov-too",
-      "features": [],
-      "sources": [],
-      "id": "2de6f6ba35",
-      "type": 1,
-      "at": 75,
-      "run": 5
-    },
-    {
-      "groupId": "mov-too",
       "features": [
         {
           "isShortLived": true,
@@ -211,10 +190,12 @@
         }
       ],
       "sources": [],
-      "id": "32f419b549",
-      "type": 3,
-      "at": 94,
-      "value": " TOO."
+      "id": "29fba2ace5",
+      "type": 6,
+      "at": 52,
+      "run": 7,
+      "to": 64,
+      "toRun": 4
     },
     {
       "groupId": "add-stuff",
@@ -231,7 +212,7 @@
         }
       ],
       "sources": [],
-      "id": "ee04a2e30e",
+      "id": "1bb7b34cbc",
       "type": 1,
       "at": 40,
       "run": 1
@@ -241,18 +222,28 @@
       "features": [
         {
           "isShortLived": true,
+          "name": "r_text-position",
+          "value": "e"
+        },
+        {
+          "isShortLived": true,
           "name": "r_fore-color",
           "value": "green"
         }
       ],
       "sources": [],
-      "id": "6f1cf12173",
+      "id": "72e54c56ea",
       "type": 3,
       "at": 39,
       "value": " AND SOME STUFF."
     },
     {
       "features": [
+        {
+          "isShortLived": true,
+          "name": "r_text-position",
+          "value": "n"
+        },
         {
           "isShortLived": true,
           "name": "r_fore-color",
@@ -280,6 +271,35 @@
           "isShortLived": true,
           "name": "r_border",
           "value": "tlbr 1 solid green"
+        }
+      ],
+      "sources": [],
+      "id": "2ac6dbf3e2",
+      "at": 112,
+      "run": 6,
+      "value": "HINTS."
+    },
+    {
+      "groupId": "mov-too",
+      "features": [],
+      "sources": [],
+      "id": "e1474c73a7",
+      "type": 1,
+      "at": 75,
+      "run": 5
+    },
+    {
+      "groupId": "mov-too",
+      "features": [
+        {
+          "isShortLived": true,
+          "name": "r_text-position",
+          "value": "e"
+        },
+        {
+          "isShortLived": true,
+          "name": "r_fore-color",
+          "value": "red"
         },
         {
           "isGlobal": true,
@@ -289,10 +309,10 @@
         }
       ],
       "sources": [],
-      "id": "7c5ad9d6f2",
-      "at": 112,
-      "run": 6,
-      "value": "HINTS."
+      "id": "21176187d5",
+      "type": 3,
+      "at": 94,
+      "value": " TOO."
     },
     {
       "features": [
@@ -316,7 +336,7 @@
         }
       ],
       "sources": [],
-      "id": "2d3135f875",
+      "id": "a6509ac7a0",
       "type": 7,
       "at": 1,
       "run": 1
