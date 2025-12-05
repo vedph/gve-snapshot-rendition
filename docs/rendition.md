@@ -685,20 +685,21 @@ A **clear selection** button is used to deselect a selected tag and remove hilit
 
 This area can be collapsed.
 
-The version text area contains the multiline **plain text** corresponding to the currently displayed text version. Lines are ended by LF characters. The generated text of each version is got from the `result` property in result data.
+The version text area contains the multiline **plain text** corresponding to the _currently displayed text version_ (as already remarked, lines are ended by LF characters, which have their corresponding text node in the output data, just like any other character). So, this area is updated whenever we move to another version. The generated text of each version is got from the `result` property in result data.
 
 A small **toolbar** here contains buttons for the following actions:
 
-- **copy all text**.
-- **toggle word-wrap**.
+- **copy all text**: copy the currently displayed text to the clipboard.
+- **toggle word-wrap**: toggle word wrap for text.
 - **increase font size**.
 - **decrease font size**.
 
-The reason for this area is to help users read the rendered text. This rendition is focused on a diplomatic representation ("ink and paper"), which might not always immediately readable to end users. For instance, when two words are moved or swapped by means of arrows or numbers annotated above them (e.g. "2" and "1" on two words meaning that the second one should be swapped with the first one), the text stays the same, but it should be read in a different way, as suggested by hints.
+When the text is too long, scrollbars will appear (horizontal scrollbars can appear only when word wrap is off).
 
-In the same way, a deleted text may (or sometimes may even not) be annotated by some hint, but nonetheless it stays there: whatever the component adds to the text rendition surface, it stays there forever, for all the successive versions. If I write "In this test" on paper, and then add a stroke on "In" because I want to mean that is must be deleted, all what I do visually is _adding_ a sign hinting at its deletion: yet, the text for "In" stays there, for all the successive versions.
+The reason for this area is to help users read the rendered text. This rendition is focused on a diplomatic representation ("ink and paper"), which might not always immediately readable to end users. For instance:
 
-This implies that elements on text rendition area and the corresponding nodes in the current version often are not perfectly aligned. So, having a plain text with the current state helps in interpreting the rendition. For instance, when text is deleted, it no longer appears among the nodes of the corresponding version in backend data. Yet, the visualization logic of this component is acting like a real sheet of paper with ink on it: once you write something on it, like the initial "In", it is there forever. We can draw a stroke on it to mean we want it deleted; but it stays there.
+- a deleted text may (or sometimes may even not) be annotated by some hint, but nonetheless it stays there: whatever the component adds to the text rendition surface, it stays there forever, for all the successive versions. If I write "In this test" on paper, and then add a stroke on "In" because I want to mean that it must be deleted, all what I do visually is _adding_ a sign, hinting at its deletion: yet, the text for "In" stays there. Having a text pane which shows the plain text corresponding to the outcome of the corresponding operation provides the text to be read, and thus the key to interpret what is displayed on the text rendition area.
+- when two words are moved or swapped by means of arrows or numbers annotated above them (e.g. "2" and "1" on two words meaning that the second one should be swapped with the first one), the text stays the same, but it should be _read_ in a different order, as suggested by its visual hints. Here too, having a text pane clearly shows the way text is meant to be read.
 
 This implies that the text elements on the component will accumulate, and will not be necessarily in synch with the node elements of each version; there will surely be in synch with all the nodes from that version, but there will be also all the nodes added before it. This is why we are also adding the version text area: its task is to show the resulting text, which corresponds to the nodes in the targeted version, but in many cases will not correspond to the text elements on the component text rendition surface.
 
