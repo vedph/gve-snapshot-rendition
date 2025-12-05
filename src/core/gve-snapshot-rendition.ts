@@ -379,6 +379,13 @@ export class GveSnapshotRendition extends HTMLElement {
       dblClickZoomEnabled: false, // Disable double-click zoom to avoid conflicts
       mouseWheelZoomEnabled: true, // Enable mouse wheel zoom
       preventMouseEventsDefault: true, // Prevent default mouse events
+      onZoom: (newZoom: number) => {
+        // Update toolbar slider when zoom changes (e.g., via mouse wheel)
+        if (this._toolbar) {
+          this._toolbar.updateZoomLevel(newZoom);
+        }
+        this._logger.debug("Zoom", `Zoom changed to ${newZoom.toFixed(2)}x`);
+      },
     });
 
     this._logger.info("Pan/zoom initialized", {
