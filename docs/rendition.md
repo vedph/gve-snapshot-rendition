@@ -660,6 +660,7 @@ As for features, wherever they are:
 
 - features are sorted in alphabetical order of their name.
 - if the "hidden features" option in this area is checked, all the features are shown; else, all the features whose name starts with regex `^[^_]+_` (i.e. any prefix followed by `_`) are not displayed. This is because by convention all rendition features have a name starting with this prefix (e.g. `r_hints`) and usually we do not want rendition features displayed to end users.
+- additionally, when "hidden features" option is not checked, hide all the features listed in the component's `hiddenFeatures` setting (an optional array of strings).
 
 ## Example
 

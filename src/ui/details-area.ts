@@ -282,8 +282,22 @@ export class DetailsArea {
       return features;
     }
 
-    // Hide features whose name matches ^[^_]+_ (prefix followed by underscore)
-    return features.filter((f) => !/^[^_]+_/.test(f.name));
+    // Get the list of hidden feature names from settings
+    const hiddenFeatureNames = this._settings.hiddenFeatures || [];
+
+    return features.filter((f) => {
+      // Hide features whose name matches ^[^_]+_ (prefix followed by underscore)
+      if (/^[^_]+_/.test(f.name)) {
+        return false;
+      }
+
+      // Hide features whose name is in the hiddenFeatures list
+      if (hiddenFeatureNames.includes(f.name)) {
+        return false;
+      }
+
+      return true;
+    });
   }
 
   /**

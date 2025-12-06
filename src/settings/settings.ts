@@ -172,6 +172,9 @@ export interface GveRenditionSettings {
 
   /** Reference glyph height in pixels for scaling hovered text elements */
   refGlyphHeight: number;
+
+  /** Array of feature names to hide when "hidden features" option is not checked */
+  hiddenFeatures?: string[];
 }
 
 /**
@@ -273,4 +276,5 @@ export const DEFAULT_SETTINGS: GveRenditionSettings = {
   opSummaryFn: undefined,
   refGlyphWidth: 50,
   refGlyphHeight: 50,
+  hiddenFeatures: [],
 };
