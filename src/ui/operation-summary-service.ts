@@ -1,4 +1,9 @@
-import { CharChainResult, CharNode, ChainOperationContextStep, OperationType } from "../models";
+import {
+  CharChainResult,
+  CharNode,
+  ChainOperationContextStep,
+  OperationType,
+} from "../models";
 import { Logger } from "../core/logger";
 
 /**
@@ -45,7 +50,9 @@ export class OperationSummaryService {
   getStepByOperationId(operationId: string): ChainOperationContextStep | null {
     if (!this._data || !this._data.steps) return null;
 
-    return this._data.steps.find((step) => step.operation.id === operationId) || null;
+    return (
+      this._data.steps.find((step) => step.operation.id === operationId) || null
+    );
   }
 
   /**
@@ -95,14 +102,21 @@ export class OperationSummaryService {
 
   /**
    * Get context text around a node or span, including the affected text.
-   * Uses node positions (at index) rather than searching by ID to handle deleted nodes.
-   * @param nodeIds - Node IDs of the target span
+   * Extends context to word boundaries (space or LF) after collecting minimum characters.
+   * @param nodeIds - Node IDs of the target span (used when atAsIndex is false)
    * @param versionTag - Version tag
-   * @param atPosition - The 'at' position from the operation (node index)
-   * @param contextSize - Number of characters before/after (default: 20)
+   * @param atValue - The 'at' value from the operation (node ID or index depending on atAsIndex)
+   * @param atAsIndex - Whether 'at' is an index (true) or node ID (false)
+   * @param contextSize - Minimum number of characters before/after (default: 20)
    * @returns Context text including the affected span
    */
-  getContext(nodeIds: number[], versionTag: string, atPosition?: number, contextSize: number = 20): string {
+  getContext(
+    nodeIds: number[],
+    versionTag: string,
+    atValue?: number,
+    atAsIndex: boolean = false,
+    contextSize: number = 20
+  ): string {
     if (!this._data || !this._data.taggedNodes || nodeIds.length === 0) {
       return "";
     }
@@ -110,13 +124,18 @@ export class OperationSummaryService {
     const versionNodes = this._data.taggedNodes[versionTag];
     if (!versionNodes) return "";
 
-    // If atPosition is provided, use it; otherwise find the first node
+    // Find the index of the first node in the span
     let firstNodeIndex = -1;
-    if (atPosition !== undefined) {
-      // For operations that work with positions (delete, replace, etc.)
-      firstNodeIndex = atPosition;
+    if (atValue !== undefined) {
+      if (atAsIndex) {
+        // atValue is already an index
+        firstNodeIndex = atValue;
+      } else {
+        // atValue is a node ID, find its index
+        firstNodeIndex = versionNodes.findIndex((n) => n.id === atValue);
+      }
     } else {
-      // For operations where nodes exist in the version (move, swap, annotate)
+      // No atValue provided, search for the first node ID
       const firstNodeId = nodeIds[0];
       firstNodeIndex = versionNodes.findIndex((n) => n.id === firstNodeId);
     }
@@ -125,51 +144,60 @@ export class OperationSummaryService {
       return "";
     }
 
-    // Get text before
-    let beforeText = "";
-    let beforeCount = 0;
-    for (let i = firstNodeIndex - 1; i >= 0 && beforeCount < contextSize; i--) {
-      const text = versionNodes[i].data;
-      beforeText = text + beforeText;
-      beforeCount += text.length;
+    // Get the affected text (the span itself)
+    let spanText = "";
+    const lastNodeIndex = firstNodeIndex + nodeIds.length - 1;
+    for (let i = firstNodeIndex; i <= lastNodeIndex && i < versionNodes.length; i++) {
+      spanText += versionNodes[i].data;
     }
 
-    // Trim at word boundary if too long
-    if (beforeText.length > contextSize) {
-      let trimmed = beforeText.substring(beforeText.length - contextSize);
-      // Find first space or newline to avoid cutting words
+    // Get text before: collect at least contextSize chars, then extend to word boundary
+    let beforeText = "";
+    let charCount = 0;
+    for (let i = firstNodeIndex - 1; i >= 0; i--) {
+      const text = versionNodes[i].data;
+      beforeText = text + beforeText;
+      charCount += text.length;
+
+      // After collecting minimum chars, stop at first space/LF
+      if (charCount >= contextSize && /[\s\n]/.test(text)) {
+        break;
+      }
+    }
+
+    // Trim leading text if too long, keeping word boundary
+    if (beforeText.length > contextSize * 2) {
+      const startPos = beforeText.length - contextSize * 2;
+      let trimmed = beforeText.substring(startPos);
+      // Find first space/LF to avoid cutting words
       const firstSpace = trimmed.search(/[\s\n]/);
-      if (firstSpace > 0 && firstSpace < trimmed.length / 2) {
+      if (firstSpace !== -1) {
         trimmed = trimmed.substring(firstSpace + 1);
       }
       beforeText = "..." + trimmed;
     }
 
-    // Get the affected text (the span itself)
-    let spanText = "";
-    const lastNodeIndex = firstNodeIndex + nodeIds.length - 1;
-    if (firstNodeIndex < versionNodes.length) {
-      for (let i = firstNodeIndex; i <= lastNodeIndex && i < versionNodes.length; i++) {
-        spanText += versionNodes[i].data;
+    // Get text after: collect at least contextSize chars, then extend to word boundary
+    let afterText = "";
+    charCount = 0;
+    for (let i = lastNodeIndex + 1; i < versionNodes.length; i++) {
+      const text = versionNodes[i].data;
+      afterText += text;
+      charCount += text.length;
+
+      // After collecting minimum chars, stop at first space/LF
+      if (charCount >= contextSize && /[\s\n]/.test(text)) {
+        break;
       }
     }
 
-    // Get text after (start from the position after the span)
-    let afterText = "";
-    let afterCount = 0;
-    for (let i = lastNodeIndex + 1; i < versionNodes.length && afterCount < contextSize; i++) {
-      const text = versionNodes[i].data;
-      afterText += text;
-      afterCount += text.length;
-    }
-
-    // Trim at word boundary if too long
-    if (afterText.length > contextSize) {
-      let trimmed = afterText.substring(0, contextSize);
-      // Find last space or newline to avoid cutting words
-      const lastSpace = trimmed.search(/[\s\n][^\s\n]*$/);
-      if (lastSpace > trimmed.length / 2) {
-        trimmed = trimmed.substring(0, lastSpace);
+    // Trim trailing text if too long, keeping word boundary
+    if (afterText.length > contextSize * 2) {
+      let trimmed = afterText.substring(0, contextSize * 2);
+      // Find last space/LF to avoid cutting words
+      const lastSpaceMatch = trimmed.match(/[\s\n](?=[^\s\n]*$)/);
+      if (lastSpaceMatch && lastSpaceMatch.index !== undefined) {
+        trimmed = trimmed.substring(0, lastSpaceMatch.index);
       }
       afterText = trimmed + "...";
     }

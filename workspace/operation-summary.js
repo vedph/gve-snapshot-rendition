@@ -57,8 +57,8 @@ function renderOperationSummary(data, versionTag, summaryService) {
         // Get added text (from operation value)
         const addedText = op.value || "";
 
-        // Get context (pass atPosition for deleted nodes)
-        const context = summaryService.getContext(deletedIds, inputTag, op.at);
+        // Get context (pass at value and atAsIndex flag)
+        const context = summaryService.getContext(deletedIds, inputTag, op.at, op.atAsIndex || false);
 
         description = `<div class="op-desc">Replace ` +
           `<span class="op-text-old">"${summaryService.escapeHtml(deletedText)}"</span> with ` +
@@ -75,7 +75,7 @@ function renderOperationSummary(data, versionTag, summaryService) {
           deletedIds.push(op.at + i);
         }
         const deletedText = summaryService.getSpanText(deletedIds, inputTag);
-        const context = summaryService.getContext(deletedIds, inputTag, op.at);
+        const context = summaryService.getContext(deletedIds, inputTag, op.at, op.atAsIndex || false);
 
         description = `<div class="op-desc">Delete ` +
           `<span class="op-text-old">"${summaryService.escapeHtml(deletedText)}"</span> ` +
@@ -89,7 +89,7 @@ function renderOperationSummary(data, versionTag, summaryService) {
         const addedText = op.value || "";
         const anchorId = op.at;
         const anchorText = summaryService.getNodeText(anchorId, outputTag);
-        const context = summaryService.getContext([anchorId], outputTag, op.at);
+        const context = summaryService.getContext([anchorId], outputTag, op.at, op.atAsIndex || false);
 
         description = `<div class="op-desc">Add ` +
           `<span class="op-text-new">"${summaryService.escapeHtml(addedText)}"</span> before ` +
@@ -104,7 +104,7 @@ function renderOperationSummary(data, versionTag, summaryService) {
         const addedText = op.value || "";
         const anchorId = op.at;
         const anchorText = summaryService.getNodeText(anchorId, outputTag);
-        const context = summaryService.getContext([anchorId], outputTag, op.at);
+        const context = summaryService.getContext([anchorId], outputTag, op.at, op.atAsIndex || false);
 
         description = `<div class="op-desc">Add ` +
           `<span class="op-text-new">"${summaryService.escapeHtml(addedText)}"</span> after ` +
@@ -123,7 +123,7 @@ function renderOperationSummary(data, versionTag, summaryService) {
         const movedText = summaryService.getSpanText(movedIds, outputTag);
         const anchorId = op.to || 0;
         const anchorText = summaryService.getNodeText(anchorId, outputTag);
-        const context = summaryService.getContext([anchorId], outputTag, op.to);
+        const context = summaryService.getContext([anchorId], outputTag, op.to, op.toAsIndex || false);
 
         description = `<div class="op-desc">Move ` +
           `<span class="op-text-moved">"${summaryService.escapeHtml(movedText)}"</span> before ` +
@@ -142,7 +142,7 @@ function renderOperationSummary(data, versionTag, summaryService) {
         const movedText = summaryService.getSpanText(movedIds, outputTag);
         const anchorId = op.to || 0;
         const anchorText = summaryService.getNodeText(anchorId, outputTag);
-        const context = summaryService.getContext([anchorId], outputTag, op.to);
+        const context = summaryService.getContext([anchorId], outputTag, op.to, op.toAsIndex || false);
 
         description = `<div class="op-desc">Move ` +
           `<span class="op-text-moved">"${summaryService.escapeHtml(movedText)}"</span> after ` +
@@ -166,7 +166,7 @@ function renderOperationSummary(data, versionTag, summaryService) {
         }
         const span2Text = summaryService.getSpanText(span2Ids, outputTag);
 
-        const context = summaryService.getContext(span1Ids, outputTag, op.at);
+        const context = summaryService.getContext(span1Ids, outputTag, op.at, op.atAsIndex || false);
 
         description = `<div class="op-desc">Swap ` +
           `<span class="op-text-moved">"${summaryService.escapeHtml(span1Text)}"</span> with ` +
@@ -183,7 +183,7 @@ function renderOperationSummary(data, versionTag, summaryService) {
           annotatedIds.push(op.at + i);
         }
         const annotatedText = summaryService.getSpanText(annotatedIds, outputTag);
-        const context = summaryService.getContext(annotatedIds, outputTag, op.at);
+        const context = summaryService.getContext(annotatedIds, outputTag, op.at, op.atAsIndex || false);
 
         description = `<div class="op-desc">Annotate ` +
           `<span class="op-text-annotated">"${summaryService.escapeHtml(annotatedText)}"</span> ` +
