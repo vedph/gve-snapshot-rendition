@@ -1317,8 +1317,31 @@ export class GveSnapshotRendition extends HTMLElement {
         width: 100%;
         height: 100%;
         overflow: hidden;
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto 1fr auto;
+        grid-template-areas:
+          "toolbar toolbar"
+          "versions-list text-rendition"
+          "version-text details";
+      }
+
+      /* Responsive layout: stack vertically on small screens */
+      @media (max-width: 1024px) {
+        .gve-container {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto auto auto auto auto;
+          grid-template-areas:
+            "toolbar"
+            "text-rendition"
+            "versions-list"
+            "version-text"
+            "details";
+        }
+      }
+
+      #toolbar-container {
+        grid-area: toolbar;
       }
 
       .toolbar {
@@ -1371,9 +1394,10 @@ export class GveSnapshotRendition extends HTMLElement {
       }
 
       .gve-text-rendition {
-        flex: 1;
+        grid-area: text-rendition;
         background: var(--gve-bg-color, #fafafa);
         border: 1px solid var(--gve-border-color, #ddd);
+        overflow: hidden;
       }
 
       .node {
@@ -1385,6 +1409,10 @@ export class GveSnapshotRendition extends HTMLElement {
       }
 
       /* Version Text Area */
+      #version-text-container {
+        grid-area: version-text;
+      }
+
       .version-text-area {
         flex-shrink: 0;
         display: flex;
@@ -1478,6 +1506,10 @@ export class GveSnapshotRendition extends HTMLElement {
       }
 
       /* Versions List Area */
+      #versions-list-container {
+        grid-area: versions-list;
+      }
+
       .versions-list-area {
         flex-shrink: 0;
         display: flex;
@@ -1618,6 +1650,10 @@ export class GveSnapshotRendition extends HTMLElement {
       }
 
       /* Details Area */
+      #details-container {
+        grid-area: details;
+      }
+
       .details-area {
         flex-shrink: 0;
         display: flex;
