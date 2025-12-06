@@ -579,39 +579,51 @@ This area can be collapsed.
 
 The versions list is a collapsible area which contains the list of all the versions in the snapshot, in their order of generation (as defined by the component's `data`). The list contains 1 item per version, with its tag and (when specified) staged version tag (from the `version` feature). For instance, it might look like (assuming that `v2` corresponds to staged version `alpha` and `v4` to staged version `beta`):
 
-1. `v0`
-2. `v1`
-3. `v2`: `alpha`
-4. `v3`
-5. `v4`: `beta`
+```txt
+1. v0
+  2. v1
+3. v2 `alpha`
+  4. v3
+5. v4 `beta`
+```
 
-Also, add an option to toggle the visibility of intermediate versions and just show the staged ones. This option will not be available if no staged versions are present.
+Non-staged version different from `v0` are indented in this list. Also, for all the versions which were output by an operation belonging to a group (an operation with a `groupId` property), a suffix equal to that group ID is appended to the tag, with a different style. This makes it clear that a set of versions belong to a consistent set of operations which logically belong to a single action. For instance, if I have 2 annotate operations which add a number on top of two words, followed by a swap operation which swaps these two words, all these 3 operations may belong to the same group, meaning that they are all part of a macro-action representing a swap.
 
-Each item is **colored** according to an automatically generated colors palette, which must be created once whenever the component data changes. This palette must be created as follows:
+A **staged versions only** option is available here to toggle the visibility of intermediate versions: when on, the area will just show the staged versions, without the intermediate ones. This option is not available if no staged versions are present.
 
-- colors must be pastel, light colors which do not stand out nor risk to interfere with other colored SVG elements. Yet, they must be clearly visible.
-- colors must be picked with an algorithm which maximizes their visual differencies, so that it's not possible to confuse them. Think about what we do when generating a palette for drawing a chart, where each series gets a pastel color which must be clearly distinguished from all the others.
-- linking color with version tag must be idempotent: given a version number (`v0`, `v1`, etc.), the same color should be generated for it.
+As for its **logic**, the list always shows all the versions (including or excluding the intermediate ones according to the "staged versions only" option), with this behavior:
 
-This allows reusing the palette generator for other purposes connected to colorizing version tags. Consider that at most a snapshot will include some tens of versions, so we are not going to have hundreds of different colors.
+- **hilite on click**: all the versions from v0 to the currently displayed version are hyperlinks. When clicking on them, [hilites](#text-hilites) will be toggled on for the clicked version. When clicking it again, these hilites will be toggled off. Also, hilites are always toggled off before moving to another version.
+- **navigate on button click**: a button with a horizontal arrow before each version tag can be clicked to navigate to that version. So, this button is disabled when equal to the currently displayed version.
+
+Each item is **colored** according to this logic:
+
+- if the component's `versionColors` setting explicitly specifies a color for any given version tag, just use it. This setting is an optional map whose key is the version tag (e.g. `v1`) and the value is a color value.
+- else, use an automatically generated colors palette, which must be created once whenever the component data changes.
+
+The automatic palette must be created as follows:
+
+- colors must be _pastel, light colors_ which do not stand out nor risk to interfere with other colored SVG elements. Yet, they must be clearly visible.
+- colors must be picked with an algorithm which maximizes their _visual distinction_, so that it's not possible to confuse them. Think about what we do when generating a palette for drawing a chart, where each series gets a pastel color which must be clearly distinguished from all the others.
+- the logic linking a specific color with a specific version tag must be _idempotent_: given a version number (`v0`, `v1`, etc.), the same color should always be generated for it. This allows reusing the palette generator for other purposes connected to colorizing version tags. Consider that at most a snapshot will include some tens of versions, so we are not going to have hundreds of different colors.
 
 ##### Text Hilites
 
-A single item at a time in this list can be selected by clicking on it. When selected, the component should add hilites to all the text elements included in that version. These elements are determined as follows:
+A single version at a time in the versions list can be selected by clicking on it. When selected, the component should add hilites to all the text elements included in that version. These elements are determined as follows:
 
 - the element must be an SVG `text` element with `class` including `node`.
-- the element `id` attribute numeric value must be included in the list of node IDs present in the selected version. Snapshot result in component data provide the list of nodes in each version, with their IDs. For instance, if a version `v4` includes nodes with IDs 1,3,10, then we will match all SVG `text` elements in the rendition text area having `id`=`n_1` or `n_3` or `n_10`.
+- the element `id` attribute numeric value must be included in the list of node IDs present in the selected version. Snapshot result in component data provide the list of nodes in each version, with their IDs. For instance, if a version `v4` includes nodes with IDs 1,3,10, then we will match all SVG `text` elements in the rendition text area having `id`=`n_1` or `n_3` or `n_10`. This means that all and only the text elements present in that version should be hilited: we are hiliting the version's text, which effectively results from combining all the text inherited from previous versions with that added up to the current version.
 
 To make them visible without hiding their content, hilites are rendered as colored **SVG rectangles** at the very back (lowest z-level) of any other elements in the text rendition area. Their characteristcs are:
 
 - the hilite rectangle **fill color** is the same color computed for that version, as specified above.
 - the hilite rectangle **size** is equal to the bounding box of the SVG `text` element corresponding to each hilited node.
 - the `hilitePadding` setting in component's settings increases the hilite rectangle **size** by its amount (expressed in `px`). This makes it a little bigger, which can be useful when content might hide the background hilite rectangle. In this case, recalculate the hilite rectangle position so that it is both vertically and horizontally centered with reference to the bounding box of the SVG `text` element corresponding to each hilited node.
-- the hilite rectangle **position** is equal to that of the bounding box of the SVG `text` element corresponding to each hilited node, adjusted when `hilitePadding` is used.
+- the hilite rectangle **position** is equal to that of the bounding box of the SVG `text` element corresponding to each hilited node, adjusted for centering it when `hilitePadding` is used.
 
 Hilites rectangles are generated all at once, and they should **fade** in with an animation, all at the same time; and fade out when removed, in the same way. The duration of this animation is given by setting `hiliteFadeTime`. As always with animations, we use GSAP.
 
-A **clear selection** button is used to deselect a selected tag and remove hilites. Hilites are removed automatically whenever you move to another version (first they will fade out, then we will proceed with move -- so we must check whether hilites are present before moving).
+Hilites are removed automatically whenever you move to another version (first they will fade out, then we will proceed with move -- so we must check whether hilites are present before moving).
 
 #### Component UI: Version Text Area
 
