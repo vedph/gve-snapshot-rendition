@@ -13,6 +13,7 @@ import { HintRenderer } from "../rendering/hint-renderer";
 import { FeatureResolver } from "../rendering/feature-resolver";
 import { Toolbar } from "../ui/toolbar";
 import { VersionTextArea } from "../ui/version-text-area";
+import { DetailsArea } from "../ui/details-area";
 import { stringToNodes } from "../utils/node-utils";
 import { generateVersionPalette } from "../utils/color-palette";
 
@@ -46,6 +47,7 @@ export class GveSnapshotRendition extends HTMLElement {
   private _container?: HTMLElement;
   private _toolbar?: Toolbar;
   private _versionTextArea?: VersionTextArea;
+  private _detailsArea?: DetailsArea;
   private _panZoomInstance?: SvgPanZoomInstance;
   private _keyboardHandler?: (e: KeyboardEvent) => void;
 
@@ -318,6 +320,12 @@ export class GveSnapshotRendition extends HTMLElement {
     versionTextContainer.id = "version-text-container";
     this._container.appendChild(versionTextContainer);
 
+    // Create details area
+    this._detailsArea = new DetailsArea(this._settings, this._logger);
+    const detailsContainer = this._detailsArea.create();
+    detailsContainer.id = "details-container";
+    this._container.appendChild(detailsContainer);
+
     this._shadow.appendChild(this._container);
 
     this._logger.debug("Component", "UI structure rendered");
@@ -358,6 +366,12 @@ export class GveSnapshotRendition extends HTMLElement {
 
     // Update version text area with base text
     this.updateVersionText(0);
+
+    // Update details area with base version
+    this.updateDetailsArea(0);
+
+    // Set up hover listeners on text elements
+    this.setupTextElementHoverListeners();
 
     this._logger.timeEnd("renderContent");
     this._logger.info("Content rendering complete - showing v0 (base text)");
@@ -673,6 +687,12 @@ export class GveSnapshotRendition extends HTMLElement {
 
     // Update version text area
     this.updateVersionText(targetIndex);
+
+    // Update details area
+    this.updateDetailsArea(targetIndex);
+
+    // Re-setup hover listeners (new text elements may have been added)
+    this.setupTextElementHoverListeners();
   }
 
   /**
@@ -702,6 +722,135 @@ export class GveSnapshotRendition extends HTMLElement {
       "Component",
       `Updated version text for v${versionIndex} (${text.length} chars)`
     );
+  }
+
+  /**
+   * Update the details area with the current version's information.
+   * @param versionIndex - The version index (0 = base text)
+   */
+  private updateDetailsArea(versionIndex: number): void {
+    if (!this._detailsArea || !this._data) return;
+
+    const versionTag = `v${versionIndex}`;
+    this._detailsArea.updateVersion(this._data, versionTag);
+
+    this._logger.debug(
+      "Component",
+      `Updated details area for ${versionTag}`
+    );
+  }
+
+  /**
+   * Set up hover listeners on all text elements to update details area.
+   */
+  private setupTextElementHoverListeners(): void {
+    if (!this._rootSvg || !this._detailsArea) return;
+
+    // Remove existing hover listeners first by cloning and replacing elements
+    // This prevents duplicate listeners from accumulating
+    const textElements = this._rootSvg.querySelectorAll("text.node");
+
+    textElements.forEach((textEl) => {
+      const svgTextEl = textEl as SVGTextElement;
+
+      // Clone the element to remove all event listeners
+      const clonedEl = svgTextEl.cloneNode(true) as SVGTextElement;
+      svgTextEl.parentNode?.replaceChild(clonedEl, svgTextEl);
+    });
+
+    // Now add fresh listeners to all text elements
+    const freshTextElements = this._rootSvg.querySelectorAll("text.node");
+
+    freshTextElements.forEach((textEl) => {
+      const svgTextEl = textEl as SVGTextElement;
+
+      // Add mouseenter event
+      svgTextEl.addEventListener("mouseenter", () => {
+        this.handleTextElementHover(svgTextEl);
+      });
+
+      // Add mouseleave event
+      svgTextEl.addEventListener("mouseleave", () => {
+        this.handleTextElementLeave();
+      });
+    });
+
+    this._logger.debug(
+      "Component",
+      `Set up hover listeners on ${freshTextElements.length} text elements`
+    );
+  }
+
+  /**
+   * Handle hover over a text element.
+   */
+  private handleTextElementHover(textEl: SVGTextElement): void {
+    if (!this._detailsArea || !this._rootSvg) return;
+
+    // Extract node ID from the hovered element (format: "n_{nodeId}")
+    const elementId = textEl.id;
+    const match = elementId.match(/^n_(\d+)$/);
+    if (!match) {
+      this._logger.warn(`Cannot extract node ID from element ID: ${elementId}`);
+      return;
+    }
+
+    const hoveredNodeId = parseInt(match[1], 10);
+
+    // Search from current version backwards to find this specific node
+    let foundElement: SVGTextElement | null = null;
+    let foundNode: CharNode | null = null;
+
+    for (let versionIdx = this._currentVersionIndex; versionIdx >= 0; versionIdx--) {
+      const versionTag = `v${versionIdx}`;
+      const versionClass = `version-${versionTag}`;
+
+      // Look for this specific node in this version
+      const elementInVersion = this._rootSvg.querySelector(
+        `text.${versionClass}#n_${hoveredNodeId}`
+      ) as SVGTextElement;
+
+      if (elementInVersion) {
+        // Found the element in this version, now get the node data
+        // First try baseNodes (for original nodes)
+        let node = this._baseNodes.find((n) => n.id === hoveredNodeId);
+
+        // If not found in baseNodes, look in taggedNodes for this version (for added nodes)
+        if (!node && this._data?.taggedNodes) {
+          const versionNodes = this._data.taggedNodes[versionTag];
+          if (versionNodes) {
+            node = versionNodes.find((n) => n.id === hoveredNodeId);
+          }
+        }
+
+        if (node) {
+          foundElement = elementInVersion;
+          foundNode = node;
+          break; // Stop at first match (most recent version)
+        }
+      }
+    }
+
+    // Update details area with the found element
+    if (foundElement && foundNode) {
+      this._detailsArea.updateHoveredElements([{ element: foundElement, node: foundNode }]);
+      this._logger.debug(
+        "Component",
+        `Hovered over node ${hoveredNodeId} in ${this._currentVersion}`
+      );
+    } else {
+      this._logger.warn(`Node ${hoveredNodeId} not found in any version`);
+    }
+  }
+
+  /**
+   * Handle leaving a text element.
+   */
+  private handleTextElementLeave(): void {
+    if (!this._detailsArea) return;
+
+    // Clear hovered elements
+    this._detailsArea.updateHoveredElements([]);
   }
 
   /**
@@ -1248,6 +1397,164 @@ export class GveSnapshotRendition extends HTMLElement {
 
       .version-text-resize-handle:hover {
         background-color: var(--gve-border-color, #ddd);
+      }
+
+      /* Details Area */
+      .details-area {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--gve-details-bg, #fff);
+        border-top: 1px solid var(--gve-border-color, #ddd);
+        border-bottom: 1px solid var(--gve-border-color, #ddd);
+        max-height: 400px;
+        height: 400px;
+        position: relative;
+      }
+
+      .details-area.collapsed {
+        height: auto !important;
+        max-height: none !important;
+      }
+
+      .details-area.collapsed .details-content {
+        max-height: 0;
+        overflow: hidden;
+      }
+
+      .details-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        background: var(--gve-details-header-bg, #f5f5f5);
+        border-bottom: 1px solid var(--gve-border-color, #ddd);
+      }
+
+      .details-title {
+        font-weight: bold;
+        font-size: 14px;
+        color: var(--gve-text-color, #333);
+      }
+
+      .details-toolbar {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .details-checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 12px;
+        color: var(--gve-text-color, #333);
+        cursor: pointer;
+      }
+
+      .details-checkbox-label input[type="checkbox"] {
+        cursor: pointer;
+      }
+
+      .details-content {
+        flex: 1;
+        overflow: auto;
+        padding: 0.5rem;
+        transition: max-height 0.3s ease;
+        min-height: 0;
+      }
+
+      .details-fieldset {
+        margin: 0.5rem 0;
+        padding: 0.5rem;
+        border: 1px solid var(--gve-border-color, #ddd);
+        border-radius: 4px;
+        background: var(--gve-details-section-bg, #fafafa);
+      }
+
+      .details-fieldset legend {
+        font-weight: bold;
+        font-size: 12px;
+        color: var(--gve-text-color, #333);
+        padding: 0 0.3rem;
+      }
+
+      .operation-fieldset {
+        background: var(--gve-operation-section-bg, #fff9e6);
+      }
+
+      .version-fieldset {
+        background: var(--gve-version-section-bg, #e6f7ff);
+      }
+
+      .operation-summary {
+        padding: 0.3rem 0;
+        font-size: 13px;
+        color: var(--gve-text-color, #333);
+        font-family: monospace;
+        word-wrap: break-word;
+      }
+
+      .operation-features,
+      .version-features {
+        margin-top: 0.5rem;
+      }
+
+      .feature-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+
+      .feature-item {
+        font-size: 11px;
+        padding: 0.2rem 0.3rem;
+        background: var(--gve-feature-bg, #fff);
+        border-radius: 2px;
+        border: 1px solid var(--gve-feature-border, #e0e0e0);
+      }
+
+      .feature-name {
+        font-weight: bold;
+        color: var(--gve-feature-name-color, #0066cc);
+      }
+
+      .feature-value {
+        color: var(--gve-feature-value-color, #333);
+        font-family: monospace;
+      }
+
+      .no-features {
+        font-size: 11px;
+        color: var(--gve-placeholder-color, #999);
+        font-style: italic;
+        padding: 0.3rem;
+      }
+
+      .details-hovered-section {
+        margin-top: 0.5rem;
+      }
+
+      .hovered-element-container {
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-start;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+        background: var(--gve-hovered-element-bg, #f0f0f0);
+        border: 1px solid var(--gve-border-color, #ddd);
+        border-radius: 4px;
+      }
+
+      .hovered-glyph-svg {
+        flex-shrink: 0;
+        border: 1px solid var(--gve-border-color, #ddd);
+        background: var(--gve-glyph-bg, #fff);
+      }
+
+      .hovered-features {
+        flex: 1;
+        min-width: 0;
       }
     `;
   }

@@ -46,6 +46,17 @@ This way, we can represent in a highly compact model all the versions of a text,
 
 Note that here we deal with plain text only. Eventual styles can be represented by node features. So each character node contains its character, and an optional set of features received from operations which manipulated it. Anyway, the **LF character** is part of the text, because we need to represent the original lines of the text and how they possibly change during edits. Also, LF being a character like any other, it might be edited during transforms; for instance, an operation could delete it and thus merge two lines.
 
+There are 8 types of operations (encoded by the `OperationType` enum in [models](../src/models.ts)):
+
+- replace: replaces a span of text with a new one.
+- delete: deletes a span of text.
+- add before: adds a new span of text before the specified anchor character.
+- add after: adds a new span of text after the specified anchor character.
+- move before: moves a span of text before the specified anchor character.
+- move after: moves a span of text after the specified anchor character.
+- swap: swaps two spans of text.
+- annotate: this is a do-nothing operation which affects only metadata by updating features.
+
 #### Visual Counterparts
 
 So far for text. Additionally, we might also want to represent the **visual** counterpart of each operation; for instance, if a cross represents a deletion, the visual part of that operation, hinting at a deletion, is that cross. The model can represent the visual parts in two ways, which are not mutually exclusive:

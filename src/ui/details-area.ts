@@ -1,0 +1,346 @@
+import { GveRenditionSettings } from "../settings/settings";
+import { Logger } from "../core/logger";
+import { CharChainResult, OperationFeature, CharNode } from "../models";
+
+/**
+ * Details area component - displays operation metadata and hovered element details.
+ */
+export class DetailsArea {
+  private container!: HTMLElement;
+  private operationSection!: HTMLElement;
+  private versionFeaturesSection!: HTMLElement;
+  private hoveredElementsSection!: HTMLElement;
+  private hiddenFeaturesCheckbox!: HTMLInputElement;
+  private collapseBtn!: HTMLButtonElement;
+
+  private _settings: GveRenditionSettings;
+  private _logger: Logger;
+  private _isCollapsed = false;
+  private _showHiddenFeatures = false;
+  private _data: CharChainResult | null = null;
+  private _currentVersionTag = "v0";
+
+  constructor(settings: GveRenditionSettings, logger: Logger) {
+    this._settings = settings;
+    this._logger = logger;
+  }
+
+  create(): HTMLElement {
+    this.container = document.createElement("div");
+    this.container.className = "details-area";
+    this.container.innerHTML = `
+      <div class="details-header">
+        <span class="details-title">Details</span>
+        <div class="details-toolbar">
+          <label class="details-checkbox-label">
+            <input type="checkbox" id="hidden-features-checkbox" />
+            <span>Hidden features</span>
+          </label>
+          <button id="collapse-details-btn" class="toolbar-btn" title="Collapse">▼</button>
+        </div>
+      </div>
+      <div class="details-content">
+        <div id="operation-section" class="details-operation-section"></div>
+        <div id="version-features-section" class="details-version-section"></div>
+        <div id="hovered-elements-section" class="details-hovered-section"></div>
+      </div>
+    `;
+
+    // Get element references
+    this.operationSection = this.container.querySelector("#operation-section")!;
+    this.versionFeaturesSection = this.container.querySelector("#version-features-section")!;
+    this.hoveredElementsSection = this.container.querySelector("#hovered-elements-section")!;
+    this.hiddenFeaturesCheckbox = this.container.querySelector("#hidden-features-checkbox")!;
+    this.collapseBtn = this.container.querySelector("#collapse-details-btn")!;
+
+    this.attachEventListeners();
+
+    return this.container;
+  }
+
+  /**
+   * Attach event listeners.
+   */
+  private attachEventListeners(): void {
+    // Hidden features checkbox
+    this.hiddenFeaturesCheckbox.addEventListener("change", () => {
+      this._showHiddenFeatures = this.hiddenFeaturesCheckbox.checked;
+      this._logger.debug(
+        "DetailsArea",
+        `Hidden features ${this._showHiddenFeatures ? "shown" : "hidden"}`
+      );
+      // Re-render with current data
+      this.updateVersion(this._data, this._currentVersionTag);
+    });
+
+    // Collapse/expand button
+    this.collapseBtn.addEventListener("click", () => {
+      this.toggleCollapse();
+    });
+  }
+
+  /**
+   * Toggle collapse/expand state.
+   */
+  private toggleCollapse(): void {
+    this._isCollapsed = !this._isCollapsed;
+
+    if (this._isCollapsed) {
+      this.container.classList.add("collapsed");
+      this.collapseBtn.textContent = "▲";
+      this.collapseBtn.title = "Expand";
+      this._logger.debug("DetailsArea", "Collapsed");
+    } else {
+      this.container.classList.remove("collapsed");
+      this.collapseBtn.textContent = "▼";
+      this.collapseBtn.title = "Collapse";
+      this._logger.debug("DetailsArea", "Expanded");
+    }
+  }
+
+  /**
+   * Update the details area with version information.
+   * @param data - The CharChainResult data
+   * @param versionTag - The version tag (e.g., "v0", "v1")
+   */
+  updateVersion(data: CharChainResult | null, versionTag: string): void {
+    this._data = data;
+    this._currentVersionTag = versionTag;
+
+    if (!data) {
+      this.clear();
+      return;
+    }
+
+    // Clear hovered elements section when version changes
+    this.hoveredElementsSection.innerHTML = "";
+
+    // Update operation section
+    this.updateOperationSection(data, versionTag);
+
+    // Update version features section
+    this.updateVersionFeaturesSection(data, versionTag);
+
+    this._logger.debug("DetailsArea", `Updated for version ${versionTag}`);
+  }
+
+  /**
+   * Update the operation section with operation summary and features.
+   */
+  private updateOperationSection(data: CharChainResult, versionTag: string): void {
+    const versionIndex = this.getVersionIndex(versionTag);
+
+    // v0 has no operation
+    if (versionIndex === 0) {
+      this.operationSection.innerHTML = "";
+      return;
+    }
+
+    const step = data.steps[versionIndex - 1];
+    if (!step || !step.operation) {
+      this.operationSection.innerHTML = "";
+      return;
+    }
+
+    const operation = step.operation;
+
+    // Generate operation summary
+    let summary = "";
+    if (this._settings.opSummaryFn) {
+      summary = this._settings.opSummaryFn(data, versionTag);
+    } else if (operation.dsl) {
+      summary = operation.dsl;
+    } else {
+      summary = `Operation ${operation.id}`;
+    }
+
+    // Get operation features
+    const opFeatures = operation.features || [];
+    const filteredFeatures = this.filterFeatures(opFeatures);
+
+    // Build HTML
+    let html = `
+      <fieldset class="details-fieldset operation-fieldset">
+        <legend>Operation</legend>
+        <div class="operation-summary">${summary}</div>
+    `;
+
+    if (filteredFeatures.length > 0) {
+      html += `<div class="operation-features">`;
+      html += this.renderFeatureList(filteredFeatures);
+      html += `</div>`;
+    }
+
+    html += `</fieldset>`;
+
+    this.operationSection.innerHTML = html;
+  }
+
+  /**
+   * Update the version features section with global features.
+   */
+  private updateVersionFeaturesSection(data: CharChainResult, versionTag: string): void {
+    const versionIndex = this.getVersionIndex(versionTag);
+
+    // Get global features for this version
+    const globalFeatures: OperationFeature[] = [];
+
+    // Collect global features from all steps up to this version
+    for (let i = 0; i < versionIndex && i < data.steps.length; i++) {
+      const step = data.steps[i];
+      if (step.operation?.features) {
+        const stepGlobalFeatures = step.operation.features.filter((f: OperationFeature) => f.isGlobal);
+        globalFeatures.push(...stepGlobalFeatures);
+      }
+    }
+
+    const filteredFeatures = this.filterFeatures(globalFeatures);
+
+    // Build HTML
+    let html = `
+      <fieldset class="details-fieldset version-fieldset">
+        <legend>${versionTag}</legend>
+    `;
+
+    if (filteredFeatures.length > 0) {
+      html += `<div class="version-features">`;
+      html += this.renderFeatureList(filteredFeatures);
+      html += `</div>`;
+    } else {
+      html += `<div class="no-features">No global features</div>`;
+    }
+
+    html += `</fieldset>`;
+
+    this.versionFeaturesSection.innerHTML = html;
+  }
+
+  /**
+   * Update the hovered elements section.
+   * @param hoveredElements - Array of hovered text SVG elements with their node data
+   */
+  updateHoveredElements(hoveredElements: Array<{ element: SVGTextElement; node: CharNode }>): void {
+    if (hoveredElements.length === 0) {
+      this.hoveredElementsSection.innerHTML = "";
+      return;
+    }
+
+    let html = "";
+
+    for (const { element, node } of hoveredElements) {
+      // Clone the SVG text element
+      const clonedElement = element.cloneNode(true) as SVGTextElement;
+
+      // Create a container for this hovered element
+      const elementContainer = document.createElement("div");
+      elementContainer.className = "hovered-element-container";
+
+      // Create SVG wrapper for scaled glyph
+      const svgWrapper = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svgWrapper.setAttribute("class", "hovered-glyph-svg");
+      svgWrapper.setAttribute("width", this._settings.refGlyphWidth.toString());
+      svgWrapper.setAttribute("height", this._settings.refGlyphHeight.toString());
+
+      // Get the bounding box of the original element to calculate scale
+      const bbox = element.getBBox();
+      const scaleX = this._settings.refGlyphWidth / (bbox.width || 1);
+      const scaleY = this._settings.refGlyphHeight / (bbox.height || 1);
+      const scale = Math.min(scaleX, scaleY) * 0.8; // Use 80% to add padding
+
+      // Center the glyph
+      const translateX = (this._settings.refGlyphWidth - bbox.width * scale) / 2 - bbox.x * scale;
+      const translateY = (this._settings.refGlyphHeight - bbox.height * scale) / 2 - bbox.y * scale;
+
+      clonedElement.setAttribute("transform", `translate(${translateX}, ${translateY}) scale(${scale})`);
+
+      svgWrapper.appendChild(clonedElement);
+
+      // Get node features
+      const nodeFeatures = node.features || [];
+      const filteredFeatures = this.filterFeatures(nodeFeatures);
+
+      // Build features HTML
+      const featuresContainer = document.createElement("div");
+      featuresContainer.className = "hovered-features";
+      featuresContainer.innerHTML = this.renderFeatureList(filteredFeatures);
+
+      // Assemble the element container
+      elementContainer.appendChild(svgWrapper);
+      elementContainer.appendChild(featuresContainer);
+
+      this.hoveredElementsSection.appendChild(elementContainer);
+    }
+
+    this._logger.debug("DetailsArea", `Updated with ${hoveredElements.length} hovered element(s)`);
+  }
+
+  /**
+   * Filter features based on hidden features setting.
+   */
+  private filterFeatures(features: OperationFeature[]): OperationFeature[] {
+    if (this._showHiddenFeatures) {
+      return features;
+    }
+
+    // Hide features whose name matches ^[^_]+_ (prefix followed by underscore)
+    return features.filter((f) => !/^[^_]+_/.test(f.name));
+  }
+
+  /**
+   * Render a list of features as HTML.
+   */
+  private renderFeatureList(features: OperationFeature[]): string {
+    if (features.length === 0) {
+      return '<div class="no-features">No features</div>';
+    }
+
+    // Sort features alphabetically by name
+    const sortedFeatures = [...features].sort((a, b) => a.name.localeCompare(b.name));
+
+    let html = '<div class="feature-list">';
+    for (const feature of sortedFeatures) {
+      html += `
+        <div class="feature-item">
+          <span class="feature-name">${this.escapeHtml(feature.name)}</span>:
+          <span class="feature-value">${this.escapeHtml(feature.value)}</span>
+        </div>
+      `;
+    }
+    html += "</div>";
+
+    return html;
+  }
+
+  /**
+   * Get version index from version tag.
+   */
+  private getVersionIndex(versionTag: string): number {
+    const match = versionTag.match(/^v(\d+)$/);
+    return match ? parseInt(match[1], 10) : 0;
+  }
+
+  /**
+   * Escape HTML special characters.
+   */
+  private escapeHtml(text: string): string {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  /**
+   * Clear all sections.
+   */
+  clear(): void {
+    this.operationSection.innerHTML = "";
+    this.versionFeaturesSection.innerHTML = "";
+    this.hoveredElementsSection.innerHTML = "";
+  }
+
+  /**
+   * Update settings.
+   */
+  updateSettings(settings: GveRenditionSettings): void {
+    this._settings = settings;
+  }
+}

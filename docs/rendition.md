@@ -140,7 +140,7 @@ Like for base text, each SVG `text` element representing one character of the ad
 
 ### Text Rendition Features
 
-Text rendition features are used to override the default rendering settings for text, whether it is the base text (when used as [init-features](#init-features)), or the text progressively added by an insert/replace operation.
+Text rendition features are used to override the default rendering settings for text (and sometimes also for hints), whether it is the base text (when used as [init-features](#init-features)), or the text progressively added by an insert/replace operation.
 
 All rendering features have their name starting with `r_`. These are the only features taken into account by the renderer component for rendition purposes. Their list follows.
 
@@ -173,7 +173,7 @@ All rendering features have their name starting with `r_`. These are the only fe
     Note that `r_border` SVG line elements are just drawn after the text has been drawn character by character (with their animations when set), with no animation. They just appear at once and variously "box" the text drawn.
 - `r_hint_vars`: this has no effect on text; it is just a rendition feature used only to define a set of variables to be used by [hints placeholders](#hint-svg-placeholders). Each variable has name=value, and is separated with space. For instance, `color=red bold=1` to pass variables `color`=`red` and `bold`=`1` to the hints being rendered for the operation being processed.
 
-The following text rendition features are applicable ONLY to _added text_ (=text nodes added by insert/replace operations):
+The following text rendition features are applicable ONLY to **added text** (=text nodes added by insert/replace operations):
 
 - `r_t-position`: the position of added text relative to the RBR; or an override for the . This works exactly like a hint's `position` property: see [hint positioning properties](#hint-positioning-properties).
 - `r_t-offset-x`: the X offset for the added text, relative to the computed `r_t-position`. This works exactly like hint's `offsetX` property: see [hint positioning properties](#hint-positioning-properties).
@@ -181,7 +181,7 @@ The following text rendition features are applicable ONLY to _added text_ (=text
 - `r_t-solid`: a boolean value (`1` or `0`), telling whether the added text behaves as "solid" (thus triggering [spreading](#drawing-logic)) or not (which is the default).
 - `r_t-displaced-span`: a span of base text with format `IDxN` where `ID`=node ID and `N`=count of chars to include, to be used as the RBR instead of the default RBR. This works exactly like a [displaced hint](#displaced-hints), but is applied to added text.
 
-The following text rendition features are applicable ONLY to _hints_, and are used to override their corresponding property in the hint's design. By default, they apply to ALL the hints in the operation (those listed by `r_hints`), unless the property value starts with `@` followed by a space delimited list of hint IDs, ended by `:`; in this case, it applies ONLY to those hints matching the list. For instance, `r_h-position`=`e` applies to ALL hints overriding their `position` property to `e`; while `@alpha beta:e` applies ONLY to hints with IDs `alpha` and `beta`, overriding their `position` property to `e`. These hint property override features are:
+The following rendition features are applicable ONLY to **hints**, and are used to override their corresponding property in the hint's design. By default, they apply to ALL the hints in the operation (those listed by `r_hints`), unless the property value starts with `@` followed by a space delimited list of hint IDs, ended by `:`; in this case, it applies ONLY to those hints matching the list. For instance, `r_h-position`=`e` applies to ALL hints overriding their `position` property to `e`; while `@alpha beta:e` applies ONLY to hints with IDs `alpha` and `beta`, overriding their `position` property to `e`. These hint property override features are:
 
 - `r_h-position`: override hint's `position` property: see [hints](#hints).
 - `r_h-offset-x`: override hint's `offsetX` property.
@@ -641,21 +641,25 @@ This area can be collapsed.
 
 The area contains metadata interactively displayed when navigating across versions, and when hovering elements in the rendered text area.
 
-This includes (all features are in alphabetical order of their name):
+The area has these sections:
 
-- the details about the operation which generated that version:
-  - `inputTag` and `outputTag`;
-  - `id`;
-  - `type`;
-  - `rank`
-  - `groupId`
-  - `sources`: list of sources, each with its `id`, `type`, `rank`, `note`.
-  - `dsl`.
-- the list of global features for the current version, i.e. those features linked to the text as a whole.
-- the list of node-dependent features for the element(s) being hovered, grouped by element, when hovering any SVG `text` element with class containing `node` (i.e. a `text` element corresponding to a text node in data).
-- this list has at its side the enlarged rendition for the hovered element (a copy of its `text` element).
+(1) depending on the **current version**:
 
-> ⚠️ Note that unless the `debug` setting is true, all the rendition features (=all the features whose name starts with `r_`) are not listed here, as they are just rendition instructions which are rendered visually.
+- inside a box for the operation (like a fieldset):
+  - operation: the summary of the operation which generated the current version. This is generated by a function passed to the component `opSummaryFn` setting. If not set, the summary is just equal to the operation's `dsl` property, when set. The `opSummaryFn` setting receives a JS function which gets the component's data (of type `CharChainResult`) and current version tag, and returns an HTML string. This HTML is used as the inner HTML of the summary element in this area.
+  - operation features: the list of features linked to that operation.
+- inside a box for the version features, labelled with the current version's tag:
+  - global features: the list of global features of the current version.
+
+(2) for **each hovered text element** (usually there will be just one, unless text elements overlap; when the same node is present in multiple versions before the current one, we just pick it from the latest version):
+
+- a clone of that `text` SVG element, scaled up to fit a box with size equal to settings `refGlyphWidth` and `refGlyphHeight`.
+- to its right, the list of the features attached to the corresponding text node.
+
+As for features, wherever they are:
+
+- features are sorted in alphabetical order of their name.
+- if the "hidden features" option in this area is checked, all the features are shown; else, all the features whose name starts with regex `^[^_]+_` (i.e. any prefix followed by `_`) are not displayed. This is because by convention all rendition features have a name starting with this prefix (e.g. `r_hints`) and usually we do not want rendition features displayed to end users.
 
 ## Example
 

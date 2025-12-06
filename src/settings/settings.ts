@@ -161,6 +161,17 @@ export interface GveRenditionSettings {
 
   /** Font size for the version text pane in pixels */
   textPaneFontSize: number;
+
+  // ==================== Details Area ====================
+
+  /** Function to generate operation summary HTML from data and version tag */
+  opSummaryFn?: (data: any, versionTag: string) => string;
+
+  /** Reference glyph width in pixels for scaling hovered text elements */
+  refGlyphWidth: number;
+
+  /** Reference glyph height in pixels for scaling hovered text elements */
+  refGlyphHeight: number;
 }
 
 /**
@@ -257,4 +268,9 @@ export const DEFAULT_SETTINGS: GveRenditionSettings = {
   // Version text pane
   textPaneFontFamily: "monospace",
   textPaneFontSize: 14,
+
+  // Details area
+  opSummaryFn: undefined,
+  refGlyphWidth: 50,
+  refGlyphHeight: 50,
 };
