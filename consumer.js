@@ -116,6 +116,9 @@ This too, is another line`;
       },
 
       charAnimationId: "text-fade-in", // Animate each character
+
+      // Add operation summary function
+      opSummaryFn: renderOperationSummary,
     };
 
     // Apply settings and data to component

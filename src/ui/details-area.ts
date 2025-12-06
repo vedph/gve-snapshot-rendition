@@ -1,6 +1,7 @@
 import { GveRenditionSettings } from "../settings/settings";
 import { Logger } from "../core/logger";
 import { CharChainResult, OperationFeature, CharNode } from "../models";
+import { OperationSummaryService } from "./operation-summary-service";
 
 /**
  * Details area component - displays operation metadata and hovered element details.
@@ -15,6 +16,7 @@ export class DetailsArea {
 
   private _settings: GveRenditionSettings;
   private _logger: Logger;
+  private _summaryService: OperationSummaryService;
   private _isCollapsed = false;
   private _showHiddenFeatures = false;
   private _data: CharChainResult | null = null;
@@ -23,6 +25,7 @@ export class DetailsArea {
   constructor(settings: GveRenditionSettings, logger: Logger) {
     this._settings = settings;
     this._logger = logger;
+    this._summaryService = new OperationSummaryService(logger);
   }
 
   create(): HTMLElement {
@@ -107,6 +110,9 @@ export class DetailsArea {
     this._data = data;
     this._currentVersionTag = versionTag;
 
+    // Update summary service with new data
+    this._summaryService.setData(data);
+
     if (!data) {
       this.clear();
       return;
@@ -147,7 +153,7 @@ export class DetailsArea {
     // Generate operation summary
     let summary = "";
     if (this._settings.opSummaryFn) {
-      summary = this._settings.opSummaryFn(data, versionTag);
+      summary = this._settings.opSummaryFn(data, versionTag, this._summaryService);
     } else if (operation.dsl) {
       summary = operation.dsl;
     } else {

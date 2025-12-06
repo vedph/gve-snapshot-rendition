@@ -48,14 +48,16 @@ Note that here we deal with plain text only. Eventual styles can be represented 
 
 There are 8 types of operations (encoded by the `OperationType` enum in [models](../src/models.ts)):
 
-- replace: replaces a span of text with a new one.
-- delete: deletes a span of text.
-- add before: adds a new span of text before the specified anchor character.
-- add after: adds a new span of text after the specified anchor character.
-- move before: moves a span of text before the specified anchor character.
-- move after: moves a span of text after the specified anchor character.
-- swap: swaps two spans of text.
-- annotate: this is a do-nothing operation which affects only metadata by updating features.
+- **replace**: replaces a span of text with a new one.
+- **delete**: deletes a span of text.
+- **add before**: adds a new span of text before the specified anchor character.
+- **add after**: adds a new span of text after the specified anchor character.
+- **move before**: moves a span of text before the specified anchor character.
+- **move after**: moves a span of text after the specified anchor character.
+- **swap**: swaps two spans of text.
+- **annotate**: this is a do-nothing operation which affects only metadata by updating features.
+
+Among these, the replace and add operations are the only ones which add new text.
 
 #### Visual Counterparts
 

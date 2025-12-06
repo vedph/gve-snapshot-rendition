@@ -164,8 +164,8 @@ export interface GveRenditionSettings {
 
   // ==================== Details Area ====================
 
-  /** Function to generate operation summary HTML from data and version tag */
-  opSummaryFn?: (data: any, versionTag: string) => string;
+  /** Function to generate operation summary HTML from data, version tag, and summary service */
+  opSummaryFn?: (data: any, versionTag: string, summaryService: any) => string;
 
   /** Reference glyph width in pixels for scaling hovered text elements */
   refGlyphWidth: number;
