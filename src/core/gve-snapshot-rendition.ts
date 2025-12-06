@@ -14,6 +14,8 @@ import { FeatureResolver } from "../rendering/feature-resolver";
 import { Toolbar } from "../ui/toolbar";
 import { VersionTextArea } from "../ui/version-text-area";
 import { DetailsArea } from "../ui/details-area";
+import { VersionsListArea } from "../ui/versions-list-area";
+import { Hilites } from "../ui/hilites";
 import { stringToNodes } from "../utils/node-utils";
 import { generateVersionPalette } from "../utils/color-palette";
 
@@ -48,6 +50,8 @@ export class GveSnapshotRendition extends HTMLElement {
   private _toolbar?: Toolbar;
   private _versionTextArea?: VersionTextArea;
   private _detailsArea?: DetailsArea;
+  private _versionsListArea?: VersionsListArea;
+  private _hilites?: Hilites;
   private _panZoomInstance?: SvgPanZoomInstance;
   private _keyboardHandler?: (e: KeyboardEvent) => void;
 
@@ -187,7 +191,9 @@ export class GveSnapshotRendition extends HTMLElement {
 
   public set versionTag(value: string | undefined) {
     this._versionTag = value;
-    this.navigateToVersion(value);
+    if (value) {
+      this.navigateToVersion(value);
+    }
   }
 
   /**
@@ -314,6 +320,20 @@ export class GveSnapshotRendition extends HTMLElement {
 
     this._container.appendChild(this._rootSvg);
 
+    // Create versions list area
+    this._versionsListArea = new VersionsListArea(this._settings, this._logger);
+    const versionsListContainer = this._versionsListArea.create();
+    versionsListContainer.id = "versions-list-container";
+    this._container.appendChild(versionsListContainer);
+
+    // Set up versions list callbacks
+    this._versionsListArea.setNavigateCallback((versionTag: string) => {
+      this.navigateToVersion(versionTag);
+    });
+    this._versionsListArea.setHiliteToggleCallback((versionTag: string | null) => {
+      this.toggleHilites(versionTag);
+    });
+
     // Create version text area
     this._versionTextArea = new VersionTextArea(this._settings, this._logger);
     const versionTextContainer = this._versionTextArea.create();
@@ -325,6 +345,13 @@ export class GveSnapshotRendition extends HTMLElement {
     const detailsContainer = this._detailsArea.create();
     detailsContainer.id = "details-container";
     this._container.appendChild(detailsContainer);
+
+    // Create hilites manager
+    this._hilites = new Hilites(
+      this._logger,
+      this._settings.hilitePadding,
+      this._settings.hiliteFadeTime
+    );
 
     this._shadow.appendChild(this._container);
 
@@ -363,6 +390,17 @@ export class GveSnapshotRendition extends HTMLElement {
 
     // Initialize pan/zoom after SVG is ready
     this.initializePanZoom();
+
+    // Initialize hilites with root SVG
+    if (this._hilites) {
+      this._hilites.setRootSvg(this._rootSvg as SVGSVGElement);
+    }
+
+    // Update versions list area with data
+    if (this._versionsListArea && this._data) {
+      this._versionsListArea.updateData(this._data);
+      this._versionsListArea.updateCurrentVersion("v0");
+    }
 
     // Update version text area with base text
     this.updateVersionText(0);
@@ -672,12 +710,26 @@ export class GveSnapshotRendition extends HTMLElement {
       return;
     }
 
+    // Clear hilites before navigating
+    if (this._hilites && this._hilites.hasActiveHilites()) {
+      await this._hilites.clearHilites();
+    }
+    if (this._versionsListArea) {
+      this._versionsListArea.clearHilites();
+    }
+
     if (targetIndex > this._currentVersionIndex) {
       // FORWARD navigation: add elements
       await this.navigateForward(targetIndex);
     } else {
       // BACKWARD navigation: remove elements
       await this.navigateBackward(targetIndex);
+    }
+
+    // Update versions list area
+    const versionTag = `v${targetIndex}`;
+    if (this._versionsListArea) {
+      this._versionsListArea.updateCurrentVersion(versionTag);
     }
 
     // Update toolbar
@@ -996,17 +1048,6 @@ export class GveSnapshotRendition extends HTMLElement {
   }
 
   /**
-   * Navigate to a specific version.
-   */
-  private async navigateToVersion(
-    versionTag: string | undefined
-  ): Promise<void> {
-    if (!versionTag) return;
-    this._logger.info(`Navigating to version: ${versionTag}`);
-    // TODO: Implement version navigation by tag
-  }
-
-  /**
    * Zoom in by configured step amount.
    */
   public zoomIn(): void {
@@ -1225,6 +1266,43 @@ export class GveSnapshotRendition extends HTMLElement {
   }
 
   /**
+   * Navigate to a specific version by tag.
+   * @param versionTag - Version tag (e.g., "v0", "v1")
+   */
+  private async navigateToVersion(versionTag: string): Promise<void> {
+    if (!this._data) return;
+
+    // Extract version index from tag
+    const match = versionTag.match(/^v(\d+)$/);
+    if (!match) {
+      this._logger.warn("Component", `Invalid version tag: ${versionTag}`);
+      return;
+    }
+
+    const versionIndex = parseInt(match[1], 10);
+    await this.goToVersionIndex(versionIndex);
+  }
+
+  /**
+   * Toggle hilites for a specific version.
+   * @param versionTag - Version tag to hilite, or null to clear hilites
+   */
+  private async toggleHilites(versionTag: string | null): Promise<void> {
+    if (!this._hilites || !this._data) return;
+
+    if (versionTag === null) {
+      // Clear hilites
+      await this._hilites.clearHilites();
+      this._logger.debug("Component", "Cleared hilites");
+    } else {
+      // Show hilites for the version
+      const color = this._versionsListArea?.getVersionColor(versionTag) || "#FFE4E1";
+      await this._hilites.showHilites(this._data, versionTag, color);
+      this._logger.debug("Component", `Showing hilites for ${versionTag}`);
+    }
+  }
+
+  /**
    * Get component styles.
    */
   private getStyles(): string {
@@ -1397,6 +1475,146 @@ export class GveSnapshotRendition extends HTMLElement {
 
       .version-text-resize-handle:hover {
         background-color: var(--gve-border-color, #ddd);
+      }
+
+      /* Versions List Area */
+      .versions-list-area {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--gve-versions-list-bg, #fff);
+        border-right: 1px solid var(--gve-border-color, #ddd);
+        max-width: 250px;
+        min-width: 200px;
+        width: 250px;
+      }
+
+      .versions-list-area.collapsed {
+        width: auto !important;
+        max-width: none !important;
+      }
+
+      .versions-list-area.collapsed .versions-list-content {
+        display: none;
+      }
+
+      .versions-list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        background: var(--gve-versions-list-header-bg, #f5f5f5);
+        border-bottom: 1px solid var(--gve-border-color, #ddd);
+        flex-shrink: 0;
+      }
+
+      .versions-list-title {
+        font-weight: bold;
+        font-size: 14px;
+        color: var(--gve-text-color, #333);
+      }
+
+      .versions-list-toolbar {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .versions-checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .versions-checkbox-label input[type="checkbox"]:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      .versions-list-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.5rem;
+      }
+
+      .versions-list-items {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .version-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0;
+      }
+
+      .version-item.indented {
+        padding-left: 1.5rem;
+      }
+
+      .version-item.active .version-link {
+        font-weight: bold;
+        border: 2px solid var(--gve-primary-color, #007bff);
+      }
+
+      .version-item.hilited .version-link {
+        box-shadow: 0 0 0 2px var(--gve-hilite-ring, rgba(0, 123, 255, 0.5));
+      }
+
+      .version-nav-btn {
+        background: var(--gve-button-bg, #fff);
+        border: 1px solid var(--gve-border-color, #ddd);
+        border-radius: 3px;
+        padding: 0.2rem 0.4rem;
+        font-size: 12px;
+        cursor: pointer;
+        color: var(--gve-text-color, #333);
+        min-width: 24px;
+      }
+
+      .version-nav-btn:hover:not(:disabled) {
+        background: var(--gve-button-hover-bg, #f5f5f5);
+      }
+
+      .version-nav-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .version-link {
+        flex: 1;
+        padding: 0.4rem 0.6rem;
+        border-radius: 4px;
+        text-decoration: none;
+        color: var(--gve-text-color, #333);
+        font-size: 13px;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+      }
+
+      .version-link:not(.disabled):hover {
+        border-color: var(--gve-border-color, #ddd);
+        text-decoration: underline;
+      }
+
+      .version-link.disabled {
+        cursor: default;
+        opacity: 0.6;
+      }
+
+      .version-group-badge {
+        display: inline-block;
+        padding: 0.1rem 0.4rem;
+        background: var(--gve-badge-bg, #e9ecef);
+        border: 1px solid var(--gve-border-color, #ddd);
+        border-radius: 3px;
+        font-size: 11px;
+        font-weight: normal;
+        color: var(--gve-badge-text, #666);
       }
 
       /* Details Area */

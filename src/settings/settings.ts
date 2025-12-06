@@ -175,6 +175,11 @@ export interface GveRenditionSettings {
 
   /** Array of feature names to hide when "hidden features" option is not checked */
   hiddenFeatures?: string[];
+
+  // ==================== Versions List Area ====================
+
+  /** Optional map of version tag to color (e.g., {v0: '#FFE4E1', v1: '#E1FFE4'}) */
+  versionColors?: Record<string, string>;
 }
 
 /**
@@ -277,4 +282,7 @@ export const DEFAULT_SETTINGS: GveRenditionSettings = {
   refGlyphWidth: 50,
   refGlyphHeight: 50,
   hiddenFeatures: [],
+
+  // Versions list area
+  versionColors: undefined,
 };
