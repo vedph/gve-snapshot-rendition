@@ -47,7 +47,7 @@ This too, is another line`;
           animation: "#fade-in",
         },
         note: {
-          svg: '<g><text x="0" y="0" font-family="Arial" font-size="12" fill="{{r_fore-color}}" id="placeholder">{{note}}</text></g>',
+          svg: '<g><text x="0" y="0" font-family="Arial" font-size="14" fill="{{r_fore-color}}" id="placeholder">{{note}}</text></g>',
           position: "n",
           offsetX: 0,
           offsetY: -5,
