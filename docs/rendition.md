@@ -166,7 +166,20 @@ In both cases, the logic is the same.
 
 The value of this **position** is an enumerated string telling where to place the element with reference to the _bounding rectangle of the reference text_ (which we name **RBR**; the bounding rectangle of the element positioned with reference to the RBR is named "EBR").
 
-These enumerated values are named after the cardinal points of a compass position, and refer to a position of the EBR "outside" or "inside" the RBR:
+In more detail, the RBR is defined as _the rectangle including all the bounding rectangles of all the subsequent nodes displayed for the text "selected" by an operation_. These nodes are the input nodes defined by trace features as explained above. So if a segment to be deleted is "def", its bounding rectangle is the rectangle including all the rectangles for "d", "e", "f".
+
+⚠️ Note that if the segment happens to be _split_ between lines, because it includes a LF, then there will be **multiple RBR's**, one for each portion of the segment text. In this case:
+
+- the **additional text** just refers to the first RBR.
+- the **hint** is _repeated_ for each RBR, except the hint having a placeholder element. So, more formally, for hints:
+
+- for each reference bounding rectangle:
+  - for each hint:
+    - unless the hint is a placeholder hint and has already been drawn once, draw it and animate it.
+
+The logic of this repetition for hints (and not for additional text or for placeholder hints) is that in most cases hints represent decorations on top of their reference text, e.g. a strikethrough on top of the text being deleted; so, if this text happens to be split between two lines, we still need to apply strikethrough to all the reference text, and not only to a portion of it. The exception for the placeholder element is due to the fact that the placeholder element is an element including dynamically defined text (e.g. the text being added by a replace/insert operation), and this text should not be repeated.
+
+The enumerated values for the position relative to the RBR are named after the cardinal points of a compass position, and refer to a position of the EBR "outside" or "inside" the RBR:
 
 - **outside**:
   - `n`: EBR-bottom edge aligned with RBR-top edge; horizontally centered.
@@ -412,7 +425,7 @@ A special case is the text _placeholder hint_. When this hasn't the `fit` class,
 The **hint's size** is defined by this logic:
 
 1. the hint SVG `g` element is created;
-2. its transformations, if defined, are applied;
+2. its transformations, if defined, are applied, thus preparing it;
 3. if it's a placeholder hint, the first `text` element descendant of the placeholder element gets its text dynamically calculated (from the specified operation's feature), and the size is adjusted accordingly, as described above about placeholder elements;
 4. the bounding rectangle for the resulting `g` element is calculated;
 5. the hint's handle coordinates are calculated according to its handle element, when present; if not present, the center of the bounding rectangle calculated in the previous step is used instead.
@@ -449,17 +462,7 @@ The GSAP animation targets the hint's root `g` element, i.e. the whole hint. Not
 
 ### Hint SVG Rendition
 
-The SVG content of each hint is positioned and sized according to the **reference bounding rectangle**.
-
-The reference bounding rectangle ("RBR" for short) is defined as _the rectangle including all the bounding rectangles of all the subsequent nodes displayed for the text "selected" by an operation_. These nodes are the input nodes defined by trace features as explained above. So if a segment to be deleted is "def", its bounding rectangle is the rectangle including all the rectangles for "d", "e", "f".
-
-⚠️ Note that if the segment happens to be _split_ between lines, because it includes a LF, then there will be _multiple reference bounding rectangles_, one for each portion of the segment text. In this case, the general logic for drawing hints is the same, but the component will _repeat_ the same hint, except the hint having a placeholder element, for each portion. So, more formally:
-
-- for each reference bounding rectangle:
-  - for each hint:
-    - unless the hint is a placeholder hint and has already been drawn once, draw it and animate it.
-
-The logic of this repetition is that in most cases hints represent decorations on top of their reference text, e.g. a strikethrough on top of the text being deleted; so, if this text happens to be split between two lines, we still need to apply strikethrough to all the reference text, and not only to a portion of it. The exception for the placeholder element is due to the fact that the placeholder element is an element including dynamically defined text (e.g. the text being added by a replace/insert operation), and this text should not be repeated.
+The SVG content of each hint is positioned and sized according to the reference bounding rectangle (RBR), like described about [non-base-text elements rendition](#non-base-text-rendition).
 
 The rules for sizing and positioning a hint's SVG are designed so that users who create hints can easily predict their outcome and animation:
 
