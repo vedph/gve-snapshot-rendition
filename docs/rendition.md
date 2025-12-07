@@ -3,13 +3,18 @@
 - [GVE Snapshot Rendition Component](#gve-snapshot-rendition-component)
   - [Rendered Entities](#rendered-entities)
   - [Animations](#animations)
-  - [Text](#text)
-    - [Base Text](#base-text)
-    - [Additional Text](#additional-text)
-    - [Text Rendition Features](#text-rendition-features)
-    - [Init Features](#init-features)
+  - [Base Text](#base-text)
+  - [Non-Base Text Rendition](#non-base-text-rendition)
+    - [Element Transforms](#element-transforms)
+    - [Relative Element Positioning](#relative-element-positioning)
+      - [1. Initial Position](#1-initial-position)
+      - [2. Offset](#2-offset)
+  - [Additional Text](#additional-text)
+  - [Text Rendition Features](#text-rendition-features)
+  - [Init Features](#init-features)
   - [Hints](#hints)
     - [Hint SVG Content Property](#hint-svg-content-property)
+      - [Hint Rendition Features](#hint-rendition-features)
       - [Hint SVG Placeholders](#hint-svg-placeholders)
     - [Hint Transformation Properties](#hint-transformation-properties)
     - [Hint Positioning Properties](#hint-positioning-properties)
@@ -89,9 +94,7 @@ All animations **target** a single designated element; for text characters, this
    2. `targetEl`: the created target SVG element;
    3. `rootEl`: the root `svg` element of the whole text rendition area, should it ever be required by the GSAP animation code.
 
-## Text
-
-### Base Text
+## Base Text
 
 The base text is rendered in a rather predictable and simple way, according to the component's **rendition settings** (font family, size, color, etc.), which are set in this order of increasing specificity:
 
@@ -120,7 +123,118 @@ Base text **drawing logic**:
 2. the GSAP animation is wrapped in a function, which is invoked to run the animation.
 3. after the animation completes, we continue with the next character.
 
-### Additional Text
+## Non-Base Text Rendition
+
+Before discussing [additional text](#additional-text) and [hints](#hints) in more detail, let us introduce their rendering logic, which for the most part is shared among them. Their SVG elements are always rendered with reference to text elements.
+
+### Element Transforms
+
+The elements rendered after the base text elements (=[additional text](#additional-text) and [hints](#hints)) can be prepared via transformations (scale and rotation) before being added.
+
+⚠️ It should be stressed that this is NOT part of the rendition proper: this is just a preparation of those elements, before computing their [relative positioning](#relative-element-positioning). The drawing logic follows this sequence to be predictable and easy for hints designers; it is like drawing in a diagramming app:
+
+1. first, you pick the shape to draw. In our logic, this means getting the corresponding character to render, or picking the hint to render from settings.
+2. then, you freely resize and rotate it as you want. This is just for preparing the shape so it looks like you want it.
+3. finally, you move that shape in the desired position.
+
+So, scaling and rotation (the transforms) are not part of the positioning transform: they are applied first to prepare the hint; then, we simply translate it to position the handle at the target. The transforms, when present, are just preprocessing, which is _totally opaque_ to the component's renderer. The renderer just receives an element to position and add, whether the element had some transformations applied to it to prepare it, or not.
+
+The transforms are **defined** as follows:
+
+- for [additional text](#additional-text), this is set by the `r_rotate` [text rendition feature](#text-rendition-features). There is no scale for text, because its size is set by the `r_font-size` rendition feature.
+- for [hints](#hints), this is set by hint's properties `scaleX`, `scaleY`, `rotation`, which can be overridden by the `r_h-scale-x`, `r_h-scale-y`, `r_h-rotation` [hint rendition features](#hint-rendition-features).
+
+In both cases, the logic is the same.
+
+### Relative Element Positioning
+
+All SVG elements added after the base text elements (=[additional text](#additional-text) and [hints](#hints)) are positioned relative to one or more existing text elements, which work as their reference.
+
+Positioning for these elements happens in two stages:
+
+1. **initial position**: the designated position is computed.
+2. **offsets**: if present, horizontal and/or vertical offsets (positive or negative) shift the computed position.
+
+#### 1. Initial Position
+
+This initial position defined as follows:
+
+- for [additional text](#additional-text), this is set by the `r_t-position` [text rendition feature](#text-rendition-features).
+- for [hints](#hints), this is set by hint's property `position`, which can be overridden by the `r_h-position` [hint rendition feature](#hint-rendition-features).
+
+In both cases, the logic is the same.
+
+The value of this **position** is an enumerated string telling where to place the element with reference to the _bounding rectangle of the reference text_ (which we name **RBR**; the bounding rectangle of the element positioned with reference to the RBR is named "EBR").
+
+These enumerated values are named after the cardinal points of a compass position, and refer to a position of the EBR "outside" or "inside" the RBR:
+
+- **outside**:
+  - `n`: EBR-bottom edge aligned with RBR-top edge; horizontally centered.
+  - `s`: EBR-top edge aligned with RBR-bottom edge; horizontally centered.
+  - `w`: EBR-right edge aligned with RBR-left edge; vertically centered.
+  - `e`: EBR-left edge aligned with RBR-right edge; vertically centered.
+  - `nw`: EBR-bottom-right corner aligned with RBR-top-left corner.
+  - `ne`: EBR-bottom-left corner aligned with RBR-top-right corner.
+  - `sw`: EBR-top-right corner aligned with RBR-bottom-left corner.
+  - `se`: EBR-top-left corner aligned with RBR-bottom-right corner.
+
+This ASCII-picture diagram shows a smaller EBR positioned with reference to a bigger RBR (the different sizes are just used to make the diagrams smaller and have no implication on the elements sizes):
+
+```txt
++---+       +---+       +---+
+|nw |       | n |       |ne |
++---+-------+---+-------+---+
+    |                   |
++---+                   +---+
+| w |                   | e |
++---+                   +---+
+    |                   |
++---+-------+---+-------+---+
+|sw |       | s |       |se |
++---+       +---+       +---+
+```
+
+- **inside**:
+  - `inw`=northwest corner: EBR-top-left corner aligned with RBR top-left-corner.
+  - `ine`=northeast corner: EBR-top-right corner aligned with RBR top-right-corner.
+  - `isw`=southwest corner: EBR-bottom-left corner aligned with RBR bottom-left-corner.
+  - `ise`=southeast corner: EBR-bottom-right corner aligned with RBR bottom-right-corner.
+  - `o` for origin: the EBR origin (=center) aligned with the RBR origin (=center). This is the _default_ when position is not explicitly specified.
+
+The corresponding ASCII-picture diagram is:
+
+```txt
++---+-----------+---+
+|inw|           |ine|
++---+   +---+   +---+
+|       | o |       |
++---+   +---+   +---+
+|isw|           |ise|
++---+-----------+---+
+```
+
+#### 2. Offset
+
+Once the initial position has been computed, it can be offset by a specified amount:
+
+- for [additional text](#additional-text), the offset is set by `r_t-offset-x` and `r_t-offset-y` [text rendition features](#text-rendition-features).
+- for [hints](#hints), this is set by hint's properties `offsetX` and `offsetY`, which can be overridden by `r_h-offset-x` and `r_h-offset-y` [hint rendition features](#hint-rendition-features).
+
+In both cases, the logic is the same.
+
+Offsets use either a simple number, e.g. `10`, or a suffixed number, using these suffixes for metrics derived from the reference text bounds:
+
+- `th` = reference text bounds height.
+- `tw` = reference text bounds width.
+
+>This way we can offset proportionally to the reference text. So, `10`=offset by 10, but `0.5th` = offset by half of the reference text height.
+
+There are two offsets for X and Y:
+
+- X offset: offsets the computed initial position by a specified amount. Default=0.
+- Y offset: offsets the computed initial position by a specified amount. Default=0.
+
+## Additional Text
 
 In addition, new text often comes from insert or replace operations. This text has the same model of the base text: each segment of text added is a sequence of character nodes, each with its unique ID and its set of features. Anyway, differently from the base text, their style, size and position are completely defined by specific rendition logic combined with its [text rendition features](#text-rendition-features).
 
@@ -138,7 +252,7 @@ Like for base text, each SVG `text` element representing one character of the ad
 
 > So in the end the `vN` class attribute in any SVG `text` element specifies which operation first introduced it in the text rendition area (the version output number is univocally linked to a specific operation). It is `v0` for the base text, and any positive number for text elements added by operations. This is also used to identify all the portions of text introduced by a specific version.
 
-### Text Rendition Features
+## Text Rendition Features
 
 Text rendition features are used to override the default rendering settings for text (and sometimes also for hints), whether it is the base text (when used as [init-features](#init-features)), or the text progressively added by an insert/replace operation.
 
@@ -181,20 +295,9 @@ The following text rendition features are applicable ONLY to **added text** (=te
 - `r_t-solid`: a boolean value (`1` or `0`), telling whether the added text behaves as "solid" (thus triggering [spreading](#drawing-logic)) or not (which is the default).
 - `r_t-displaced-span`: a span of base text with format `IDxN` where `ID`=node ID and `N`=count of chars to include, to be used as the RBR instead of the default RBR. This works exactly like a [displaced hint](#displaced-hints), but is applied to added text.
 
-The following rendition features are applicable ONLY to **hints**, and are used to override their corresponding property in the hint's design. By default, they apply to ALL the hints in the operation (those listed by `r_hints`), unless the property value starts with `@` followed by a space delimited list of hint IDs, ended by `:`; in this case, it applies ONLY to those hints matching the list. For instance, `r_h-position`=`e` applies to ALL hints overriding their `position` property to `e`; while `@alpha beta:e` applies ONLY to hints with IDs `alpha` and `beta`, overriding their `position` property to `e`. These hint property override features are:
-
-- `r_h-position`: override hint's `position` property: see [hints](#hints).
-- `r_h-offset-x`: override hint's `offsetX` property.
-- `r_h-offset-y`: override hint's `offsetY` property.
-- `r_h-scale-x`: override hint's `scaleX` property.
-- `r_h-scale-y`: override hint's `scaleY` property.
-- `r_h-rotation`: override hint's `rotation` property.
-- `r_h-solid`: override hint's `solid` property.
-- `r_h-displaced-span`: override hint's `desplacedRefSpan` property (for [displaced hints](#displaced-hints)).
-
 > All these features can be combined, so characters are displayed only after evaluating all of them, and their size and text layout changes accordingly to fit all the characters with their size, which may depend on one or more of these features. Also, in backend all rendition features have their lifespan limited to the version generated by their operation. This avoids accumulating them in the output context, ensuring that they are valid only for the immediate output of the operation containing them.
 
-### Init Features
+## Init Features
 
 Init-features, when set, are provided by an **initial annotation operation**. Annotation operations are those operations which just modify the set of features, in most cases by adding new ones, without changing the text. So, the purpose of an initial annotation operation is to provide a sort of initial rendering setup.
 
@@ -213,45 +316,24 @@ Each hint represents the visual counterpart of an operation; it "hints" at it by
 
 As for its implementation, the hint essentially is an SVG fragment representing something to be rendered on the component text rendition area and corresponding to a specific operation. This rendering always happens before adding the text possibly introduced by that operation, when there is any.
 
-As for hints **definition**:
+As for hints **usage**:
 
 - hints are **defined** in a dictionary in the component's settings. The dictionary has a string key equal to the hint's ID, and a string value equal to its SVG code.
 - hints are **linked** to operations via a special `r_hints` [text rendition feature](#text-rendition-features), which contains the IDs of all the hints to use for that operation. For instance, `r_hints` = `alpha beta` means that we want to apply 2 hints with ID `alpha` and `beta`, in this order.
 
-This is the hint's model:
+The hint has these **properties**:
 
-```ts
-/**
- * Hint position relative to the reference bounding rectangle.
- */
-export type HintPosition =
-  | "n"
-  | "ne"
-  | "e"
-  | "se"
-  | "s"
-  | "sw"
-  | "w"
-  | "nw"
-  | "o";
+- `svg`: SVG code for hint's visuals, always having a root g element.
+- `position`: relative position for the hint.
+- `offsetX`: absolute (10) or proportional ("0.5th" = half text height, "0.5tw" = half text width).
+- `offsetY`: absolute (10) or proportional ("0.5th" = half text height, "0.5tw" = half text width)
+- `scaleX`: horizontal scale: 1 = match bounds width, 1.1 = 110% of bounds width.
+- `scaleY`: vertical scale: 1 = match bounds height, 1.1 = 110% of bounds height.
+- `rotation`: optional hint's rotation (0=none).
+- `animation`: JS code for animating the hint's entrance via GSAP.
+- `displacedRefSpan`: a span of base text with format IDxN where ID=node ID and N=count of chars to include, to be used as the RBR instead of the default RBR.
 
-/**
- * An editing operation's hint.
- */
-export interface OperationHint {
-  svg: string; // SVG code for hint's visuals, always having a root g element
-  position: HintPosition; // relative position for the hint
-  offsetX: number | string; // absolute (10) or proportional ("0.5th" = half text height, "0.5tw" = half text width)
-  offsetY: number | string; // absolute (10) or proportional ("0.5th" = half text height, "0.5tw" = half text width)
-  scaleX: number; // horizontal scale: 1 = match bounds width, 1.1 = 110% of bounds width
-  scaleY: number; // vertical scale: 1 = match bounds height, 1.1 = 110% of bounds height
-  rotation: number; // optional hint's rotation (0=none)
-  animation?: string; // JS code for animating the hint's entrance via GSAP
-  displacedRefSpan?: string; // a span of base text with format IDxN where ID=node ID and N=count of chars to include, to be used as the RBR instead of the default RBR
-}
-```
-
-The following sections describe some of these properties and their usage.
+The following sections provide more details about some of these properties and their usage.
 
 ### Hint SVG Content Property
 
@@ -269,6 +351,21 @@ The hint's `svg` property (`OperationHint.svg`) is a string representing the SVG
     - else, the text value and the settings for drawing it determine the resulting size of `text`. This implies that all the SVG elements containing this `text` element, including the root `g` element, must scale to fit it inside them. So, this is the inverse case with reference to the default one: here the container must fit the text.
 
 > In the documentation, we refer to hints whose SVG include a placeholder element as _placeholder hints_. There can be only either 0 or 1 placeholder hints per operation.
+
+#### Hint Rendition Features
+
+Hints have their design-time properties set for position, offset, scale, rotation and other behavior. Yet, most of these properties can be overridden by specific features, the hint rendition features (similarly to what happens with [text rendition features](#text-rendition-features)). By definition, they are applicable ONLY to **hints**, and are used to override their corresponding property in the hint's design.
+
+By default, the hint rendition features apply to ALL the hints in the operation (those listed by `r_hints`), unless the property value starts with `@` followed by a space delimited list of hint IDs, ended by `:`; in this case, it applies ONLY to those hints matching the list. For instance, `r_h-position`=`e` applies to ALL hints overriding their `position` property to `e`; while `@alpha beta:e` applies ONLY to hints with IDs `alpha` and `beta`, overriding their `position` property to `e`. These hint property override features are:
+
+- `r_h-position`: override hint's `position` property: see [hints](#hints).
+- `r_h-offset-x`: override hint's `offsetX` property.
+- `r_h-offset-y`: override hint's `offsetY` property.
+- `r_h-scale-x`: override hint's `scaleX` property.
+- `r_h-scale-y`: override hint's `scaleY` property.
+- `r_h-rotation`: override hint's `rotation` property.
+- `r_h-solid`: override hint's `solid` property.
+- `r_h-displaced-span`: override hint's `desplacedRefSpan` property (for [displaced hints](#displaced-hints)).
 
 #### Hint SVG Placeholders
 
@@ -318,36 +415,7 @@ The **hint's size** is defined by this logic:
 4. the bounding rectangle for the resulting `g` element is calculated;
 5. the hint's handle coordinates are calculated according to its handle element, when present; if not present, the center of the bounding rectangle calculated in the previous step is used instead.
 
-Then, **positioning hints** is driven by these properties:
-
-- `position`: an enumerated string telling where to place the hint's handle with reference to the bounding rectangle of the affected text (the "RBR"). The position has enumerated string values, like those of cardinal points of a compass position: `n`, `ne`, `e`, `se`, `s`, `sw`, `w`, `nw`, plus `o` for origin (=the center of the bounding rectangle of the affected text). Each enumerated value refers to an imaginary larger bounding rectangle encompassing the reference bounding rectangle. Imagine to draw a rectangle which includes the reference rectangle. You then ideally place a point on this outer rectangle, like in this ASCII picture:
-
-```txt
-
-   nw        n         ne
-   +---------+---------+
-   |                   |
-   |         o         |
- w +         +         + e
-   |                   |
-   |                   |
-   +---------+---------+
-   sw        s         se
-```
-
-- `offsetX`: the X offset. This offsets the calculated start position of the hint (as per its `position` property) by an X amount. Default=0. Offsets use either a simple number, e.g. `10`, or a suffixed number, using these suffixes for metrics derived from the reference text bounds:
-  - `th` = reference text bounds height.
-  - `tw` = reference text bounds width.
-    This way we can offset proportionally to the reference text. So, `10`=offset by 10, but `0.5th` = offset by half of the reference text height.
-- `offsetY`: the Y offset, like `offsetX`. This offsets the calculated start position of the hint (as per its `position` property) by an Y amount. Default=0.
-
-To sum up, the **hint drawing logic** follows this sequence to be predictable and easy for hints designers; it is like drawing in a diagramming tool:
-
-1. first, you pick the shape to draw. In our logic, this means picking the hint from settings.
-2. then, you freely resize and rotate it as you want. This is just for preparing the shape so it looks like you want it.
-3. finally, you move that shape in the desired position.
-
-So, scaling and rotation (the transforms) are not part of the positioning transform: they are applied first to prepare the hint; then, we simply translate it to position the handle at the target. The transforms, when present, are just preprocessing, which is totally opaque to the component's renderer. The renderer just receives a hint, whether it had some transformations applied to it to prepare it, or not (=the hint was just fetched as it is from settings). Then, it simply positions it.
+Then, **positioning hints** happens as described about [non-base text rendition](#non-base-text-rendition).
 
 ### Hint Animation Property
 
