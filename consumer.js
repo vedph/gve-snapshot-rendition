@@ -93,7 +93,7 @@ This too, is another line`;
           return new Promise(resolve => {
             gsap.fromTo(targetEl,
               { opacity: 0 },
-              { opacity: 1, duration: 0.3, onComplete: resolve }
+              { opacity: 1, duration: 1, onComplete: resolve }
             );
           });
         `,
