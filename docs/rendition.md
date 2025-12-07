@@ -894,19 +894,19 @@ This is another line TOO.
 The same operations in their parsable format (DSL) are listed here:
 
 ```txt
-35: [r_char-offsets^="35:x=100 70:x=100"]
-1x3- [r_hints^=diagonal-stroke r_fore-color^=red]
-4=T [r_t-position^=n r_fore-color^=red r_font-size^=14]
-14x2- [r_hints^=diagonal-stroke r_fore-color^=red]
-19+]s [r_t-position^=ne r_fore-color^=red r_font-size^=14]
-64x4: @swap-complex-long [note^=1 r_hints^=note r_fore-color^=red]
-60x3: @swap-complex-long [note^=2 r_hints^=note r_fore-color^=red]
-52x7: @swap-complex-long [note^=3 r_hints^=note r_fore-color^=red]
-52x7<>64x4 [r_fore-color^=red *version^=alpha]
-40- @add-stuff [r_hints^=diagonal-stroke r_fore-color^=green]
-39+]" AND SOME STUFF." @add-stuff [r_t-position^=e r_fore-color^=green]
-112x6=HINTS. [r_t-position^=n r_fore-color^=green r_position^=n r_t-displaced-span^=21x7 r_t-offset-y=20 r_hints=box r_border^="tlbr 1 solid green"]
+35: [r_char-offsets="35:x=100 70:x=100"]
+1x3- [r_hints=diagonal-stroke r_fore-color=red]
+4=T [r_t-position=n r_fore-color=red r_font-size=14]
+14x2- [r_hints=diagonal-stroke r_fore-color=red]
+19+]s [r_t-position=ne r_fore-color=red r_font-size=14]
+64x4: @swap-complex-long [note=1 r_hints=note r_fore-color=red]
+60x3: @swap-complex-long [note=2 r_hints=note r_fore-color=red]
+52x7: @swap-complex-long [note=3 r_hints=note r_fore-color=red]
+52x7<>64x4 [r_fore-color=red *version=alpha]
+40- @add-stuff [r_hints=diagonal-stroke r_fore-color=green]
+39+]" AND SOME STUFF." @add-stuff [r_t-position=e r_fore-color=green]
+112x6=HINTS. [r_t-position=n r_fore-color=green r_position=n r_t-displaced-span=21x7 r_t-offset-y=20 r_hints=box r_border="tlbr 1 solid green"]
 75x5- @mov-too
-94+]" TOO."@mov-too [r_t-position^=e r_fore-color^=red *version^=beta]
-1: [note=12 r_color^=blue r_hint-vars^="rotation=-45" r_hints="note-underline"]
+94+]" TOO."@mov-too [r_t-position=e r_fore-color=red *version=beta]
+1: [note=12 r_color=blue r_hint-vars="rotation=-45" r_hints="note-underline"]
 ```
