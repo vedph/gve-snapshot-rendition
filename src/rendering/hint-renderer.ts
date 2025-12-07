@@ -235,12 +235,10 @@ export class HintRenderer {
     if (nodes.length === 0) return [];
 
     const rbrs: BoundingRect[] = [];
-    const nodeElementIds = nodes.map((n) => `n_${n.id}`);
 
     this._logger.debug(
       "HintRenderer",
-      `Calculating RBRs for ${nodeElementIds.length} node elements`,
-      { nodeElementIds }
+      `Calculating RBRs for ${nodes.length} nodes`
     );
 
     // Group nodes by line by checking their Y coordinates
@@ -248,11 +246,27 @@ export class HintRenderer {
     let currentLineGroup: string[] = [];
     let lastY: number | null = null;
     const missingBounds: string[] = [];
+    const skippedInvisible: string[] = [];
 
-    for (const elementId of nodeElementIds) {
+    for (const node of nodes) {
+      const elementId = `n_${node.id}`;
+
+      // Check if this is an invisible character (LF or space)
+      // These characters don't have visual SVG text elements
+      const isInvisible = node.data === '\n' || node.data === ' ';
+
+      if (isInvisible) {
+        this._logger.debug(
+          "HintRenderer",
+          `Skipping invisible node ${elementId} (char: ${node.data === '\n' ? 'LF' : 'space'})`
+        );
+        skippedInvisible.push(elementId);
+        continue;
+      }
+
       const bounds = this._boundsCache.get(elementId);
       if (!bounds) {
-        this._logger.warn(`Bounds not found for node element ${elementId}`);
+        this._logger.warn(`Bounds not found for visible node element ${elementId} (char: "${node.data}")`);
         missingBounds.push(elementId);
         continue;
       }
@@ -274,11 +288,19 @@ export class HintRenderer {
       lineGroups.push(currentLineGroup);
     }
 
+    if (skippedInvisible.length > 0) {
+      this._logger.debug(
+        "HintRenderer",
+        `Skipped ${skippedInvisible.length} invisible nodes (LF/space)`,
+        { skippedInvisible }
+      );
+    }
+
     if (missingBounds.length > 0) {
       this._logger.error(
         "HintRenderer",
-        `Missing bounds for ${missingBounds.length} of ${nodeElementIds.length} nodes. RBR calculation may be incorrect.`,
-        { missingBounds, foundNodes: currentLineGroup }
+        `Missing bounds for ${missingBounds.length} visible nodes. RBR calculation may be incorrect.`,
+        { missingBounds }
       );
     }
 
