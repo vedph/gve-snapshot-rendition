@@ -848,7 +848,7 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
   - `r_t-displaced-span`=`21x7`. This is a displacement for the text being added by this replace operation (`HINTS`): instead of positioning the text with reference to its reference text (`STUFF`), we position it above an area approximately corresponding to `all ope` of `all operations` in the first line.
   - `r_t-offset-y`=`20`: this shifts the `HINTS` boxed text upper.
   - `r_hints`=`box` (border around `STUFF`).
-  - `r_border`=`tlbr 1 solid green` (1-pixel border around `HINTS`).
+  - `r_border`=`tlbr 1 0 solid green` (1-pixel border around `HINTS`).
 
 - `v13`: **delete** `too,` + space (this operation belongs to group `mov-too`, because on a more abstract --non-diplomatic-- ground this would be considered a movement). Note that there is no hint for this operation; it is implicit in the next addition.
 
@@ -908,7 +908,7 @@ The same operations in their parsable format (DSL) are listed here:
 52x7<>64x4 [r_fore-color=red *version=alpha]
 40- @add-stuff [r_hints=diagonal-stroke r_fore-color=green]
 39+]" AND SOME STUFF." @add-stuff [r_t-position=e r_fore-color=green]
-112x6=HINTS. [r_t-position=n r_fore-color=green r_position=n r_t-displaced-span=21x7 r_t-offset-y=20 r_hints=box r_border="tlbr 1 solid green"]
+112x6=HINTS. [r_t-position=n r_fore-color=green r_position=n r_t-displaced-span=21x7 r_t-offset-y=20 r_hints=box r_border="tlbr 1 0 solid green"]
 75x5- @mov-too
 94+]" TOO."@mov-too [r_t-position=e r_fore-color=red *version=beta]
 1: [note=12 r_color=blue r_hint-vars="rotation=-45" r_hints="note-underline"]

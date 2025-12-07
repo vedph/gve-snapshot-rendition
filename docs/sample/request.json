@@ -239,7 +239,7 @@
         },
         {
           "name": "r_border",
-          "value": "tlbr 1 solid green"
+          "value": "tlbr 1 0 solid green"
         }
       ],
       "sources": [],
