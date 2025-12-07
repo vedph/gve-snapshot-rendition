@@ -391,41 +391,32 @@ export class HintRenderer {
 
   /**
    * Apply size transforms (scale and rotation) to the hint.
-   * Per documentation, these are applied BEFORE finding the handle position.
+   * Per documentation, these are applied BEFORE positioning.
+   *
+   * IMPORTANT: We DON'T actually apply these as transforms on the element.
+   * Instead, we just return the scaling info and rotation, and later we'll create
+   * a combined transform that includes both sizing and positioning.
    */
   private async applyHintSizeTransforms(
     hintGroup: SVGGElement,
     hint: OperationHint,
     scalingInfo: { scaleX: number; scaleY: number }
   ): Promise<void> {
-    const transforms: string[] = [];
-
-    // Apply scale to fit RBR
-    if (scalingInfo.scaleX !== 1 || scalingInfo.scaleY !== 1) {
-      transforms.push(`scale(${scalingInfo.scaleX}, ${scalingInfo.scaleY})`);
-    }
-
-    // Apply rotation if specified
-    if (hint.rotation !== 0) {
-      transforms.push(`rotate(${hint.rotation})`);
-    }
-
-    if (transforms.length > 0) {
-      const transformString = transforms.join(" ");
-      this._logger.debug("HintRenderer", `Applying size transforms`, {
-        transformString,
-        scaleX: scalingInfo.scaleX,
-        scaleY: scalingInfo.scaleY,
-        rotation: hint.rotation,
-      });
-      hintGroup.setAttribute("transform", transformString);
-    }
+    // Don't apply transforms yet - we'll do it all at once in applyHintPositionTransform
+    // This way we avoid the complexity of transform composition
+    this._logger.debug("HintRenderer", `Size transforms calculated`, {
+      scaleX: scalingInfo.scaleX,
+      scaleY: scalingInfo.scaleY,
+      rotation: hint.rotation,
+    });
   }
 
   /**
-   * Apply position transform to the hint.
-   * The hint has already been prepared (scaled/rotated). Now we position it by aligning
-   * the EBR (Element Bounding Rectangle) with the RBR (Reference Bounding Rectangle).
+   * Apply complete transform to the hint (both sizing and positioning).
+   * This builds a single transform that:
+   * 1. Translates so the EBR alignment point is at origin
+   * 2. Scales and rotates the hint
+   * 3. Translates to the final RBR position
    *
    * Per documentation: hints use the handle's bounding box as EBR if a handle element exists,
    * otherwise they use the whole hint's bounding box as EBR.
@@ -440,7 +431,7 @@ export class HintRenderer {
     // Calculate the alignment point on the RBR
     const rbrAlignPoint = this.calculateRBRAlignmentPoint(hint.position, rbr);
 
-    // Calculate the alignment point on the EBR
+    // Calculate the alignment point on the EBR (in local/untransformed coordinates)
     const ebrAlignPoint = this.calculateEBRAlignmentPoint(hint.position, ebrBounds);
 
     // Parse offsets (they can be px or "th"/"tw")
@@ -451,44 +442,59 @@ export class HintRenderer {
     const finalRbrX = rbrAlignPoint.x + offsetX;
     const finalRbrY = rbrAlignPoint.y + offsetY;
 
-    // Calculate the translation needed to align EBR point with RBR point
-    // Since we're appending translate after scale, the translate happens in scaled space
-    // We need to work backwards: what translate in scaled space positions the EBR correctly?
-    // The EBR alignment point is already in scaled space (we got it after transforms applied)
-    // We want: ebrAlignPoint + translate_in_scaled_space = finalRbr
-    // But translate values get multiplied by scale when written as "scale() translate()"
-    // So if we write translate(tx, ty) after scale(sx, sy), the actual displacement is (tx*sx, ty*sy)
-    // Therefore: ebrAlignPoint + (tx*sx, ty*sy) = finalRbr
-    // So: tx = (finalRbrX - ebrAlignPoint.x) / sx
-    //     ty = (finalRbrY - ebrAlignPoint.y) / sy
+    // Build the complete transform:
+    // We want to scale/rotate around the EBR alignment point, then move it to the RBR position.
+    //
+    // The formula is: translate(finalPos) scale(s) rotate(r) translate(-ebrAlign)
+    // This means:
+    // 1. Move EBR align point to origin: translate(-ebrAlign)
+    // 2. Scale and rotate around origin: scale(s) rotate(r)
+    // 3. Move to final position: translate(finalPos)
+    //
+    // For a point P at (px, py):
+    // - After translate(-ebrAlign): (px - ebrAlign.x, py - ebrAlign.y)
+    // - After rotate (skip for now): same if rotation = 0
+    // - After scale: ((px - ebrAlign.x)*sx, (py - ebrAlign.y)*sy)
+    // - After translate(finalPos): ((px - ebrAlign.x)*sx + finalPos.x, (py - ebrAlign.y)*sy + finalPos.y)
+    //
+    // Check: The EBR align point (ebrAlign.x, ebrAlign.y) should end up at (finalRbrX, finalRbrY)
+    // ((ebrAlign.x - ebrAlign.x)*sx + finalRbrX, (ebrAlign.y - ebrAlign.y)*sy + finalRbrY)
+    // = (0*sx + finalRbrX, 0*sy + finalRbrY)
+    // = (finalRbrX, finalRbrY) ✓
 
-    const translateX = (finalRbrX - ebrAlignPoint.x) / scalingInfo.scaleX;
-    const translateY = (finalRbrY - ebrAlignPoint.y) / scalingInfo.scaleY;
+    const transforms: string[] = [];
 
-    this._logger.debug("HintRenderer", `Applying position transform`, {
+    // Step 3: Translate to final position
+    transforms.push(`translate(${finalRbrX}, ${finalRbrY})`);
+
+    // Step 2: Apply scale
+    if (scalingInfo.scaleX !== 1 || scalingInfo.scaleY !== 1) {
+      transforms.push(`scale(${scalingInfo.scaleX}, ${scalingInfo.scaleY})`);
+    }
+
+    // Step 2b: Apply rotation if specified
+    if (hint.rotation !== 0) {
+      transforms.push(`rotate(${hint.rotation})`);
+    }
+
+    // Step 1: Move EBR align point to origin
+    transforms.push(`translate(${-ebrAlignPoint.x}, ${-ebrAlignPoint.y})`);
+
+    const transformString = transforms.join(" ");
+
+    this._logger.debug("HintRenderer", `Applying complete transform`, {
       position: hint.position,
       rbr,
       rbrAlignPoint,
-      ebrBounds,
-      ebrAlignPoint,
+      ebrBounds_LOCAL: ebrBounds,
+      ebrAlignPoint_LOCAL: ebrAlignPoint,
       scalingInfo,
+      rotation: hint.rotation,
       offsets: { x: offsetX, y: offsetY },
       finalRbrPoint: { x: finalRbrX, y: finalRbrY },
-      translation: { x: translateX, y: translateY },
-    });
-
-    // Get the existing transform (which has scale/rotation)
-    const existingTransform = hintGroup.getAttribute("transform") || "";
-
-    // Append the translate to the existing transforms
-    // This positions the already-prepared hint at the target location
-    const transformString = existingTransform
-      ? `${existingTransform} translate(${translateX}, ${translateY})`
-      : `translate(${translateX}, ${translateY})`;
-
-    this._logger.debug("HintRenderer", `Final transform string`, {
       transformString,
     });
+
     hintGroup.setAttribute("transform", transformString);
   }
 
