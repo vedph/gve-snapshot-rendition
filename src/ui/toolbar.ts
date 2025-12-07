@@ -71,18 +71,18 @@ export class Toolbar {
           <button id="first-btn" class="toolbar-btn" title="First Version (Home)">
             <i data-feather="skip-back"></i>
           </button>
-          <button id="prev-btn" class="toolbar-btn" title="Previous Version (←)">
-            <i data-feather="chevron-left"></i>
-          </button>
           <button id="prev-staged-btn" class="toolbar-btn" title="Previous Staged Version">
             <i data-feather="chevrons-left"></i>
           </button>
-          <div id="version-label" class="version-label">v0 (1/1)</div>
-          <button id="next-staged-btn" class="toolbar-btn" title="Next Staged Version">
-            <i data-feather="chevrons-right"></i>
+          <button id="prev-btn" class="toolbar-btn" title="Previous Version (←)">
+            <i data-feather="chevron-left"></i>
           </button>
+          <div id="version-label" class="version-label">v0 (1/1)</div>
           <button id="next-btn" class="toolbar-btn" title="Next Version (→)">
             <i data-feather="chevron-right"></i>
+          </button>
+          <button id="next-staged-btn" class="toolbar-btn" title="Next Staged Version">
+            <i data-feather="chevrons-right"></i>
           </button>
           <button id="last-btn" class="toolbar-btn" title="Last Version (End)">
             <i data-feather="skip-forward"></i>

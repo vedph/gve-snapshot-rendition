@@ -1611,12 +1611,24 @@ export class GveSnapshotRendition extends HTMLElement {
       .toolbar {
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         gap: 1rem;
         padding: 0.5rem 1rem;
         background: var(--gve-toolbar-bg, #f5f5f5);
         border-bottom: 1px solid var(--gve-border-color, #ddd);
         flex-shrink: 0;
+        flex-wrap: wrap;
+      }
+
+      .toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        flex-wrap: nowrap;
+      }
+
+      .toolbar-group.navigation-group {
+        gap: 0.25rem;
       }
 
       .toolbar-btn {
