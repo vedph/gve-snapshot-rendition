@@ -1,3 +1,4 @@
+import * as feather from "feather-icons";
 import { GveRenditionSettings } from "../settings/settings";
 import { Logger } from "../core/logger";
 import { CharChainResult, OperationFeature, CharNode } from "../models";
@@ -39,7 +40,9 @@ export class DetailsArea {
             <input type="checkbox" id="hidden-features-checkbox" />
             <span>Hidden features</span>
           </label>
-          <button id="collapse-details-btn" class="toolbar-btn" title="Collapse">▼</button>
+          <button id="collapse-details-btn" class="toolbar-btn" title="Collapse">
+            <i data-feather="chevron-down"></i>
+          </button>
         </div>
       </div>
       <div class="details-content">
@@ -58,7 +61,28 @@ export class DetailsArea {
 
     this.attachEventListeners();
 
+    // Replace feather icons - must be done after elements are in DOM
+    this.replaceFeatherIcons();
+
     return this.container;
+  }
+
+  /**
+   * Replace feather icon placeholders with actual SVG icons.
+   */
+  private replaceFeatherIcons(): void {
+    const icons = this.container.querySelectorAll("[data-feather]");
+    icons.forEach((icon) => {
+      const iconName = icon.getAttribute("data-feather");
+      if (iconName && feather.icons[iconName]) {
+        const svg = feather.toSvg(iconName, {
+          class: "feather-icon",
+          width: 16,
+          height: 16,
+        });
+        icon.innerHTML = svg;
+      }
+    });
   }
 
   /**
@@ -90,15 +114,18 @@ export class DetailsArea {
 
     if (this._isCollapsed) {
       this.container.classList.add("collapsed");
-      this.collapseBtn.textContent = "▲";
+      this.collapseBtn.innerHTML = '<i data-feather="chevron-up"></i>';
       this.collapseBtn.title = "Expand";
       this._logger.debug("DetailsArea", "Collapsed");
     } else {
       this.container.classList.remove("collapsed");
-      this.collapseBtn.textContent = "▼";
+      this.collapseBtn.innerHTML = '<i data-feather="chevron-down"></i>';
       this.collapseBtn.title = "Collapse";
       this._logger.debug("DetailsArea", "Expanded");
     }
+
+    // Replace feather icons after updating content
+    this.replaceFeatherIcons();
   }
 
   /**

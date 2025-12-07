@@ -58,6 +58,7 @@ export class GveSnapshotRendition extends HTMLElement {
   // State
   private _baseNodes: CharNode[] = [];
   private _versionPalette: Map<string, string> = new Map();
+  private _slideshowTimerId: number | null = null;
   private _currentVersion: string = "v0";
   private _currentVersionIndex: number = 0;
 
@@ -250,35 +251,26 @@ export class GveSnapshotRendition extends HTMLElement {
       const toolbarContainer = this._shadow.querySelector("#toolbar-container");
       if (toolbarContainer) {
         this._toolbar = new Toolbar(toolbarContainer as HTMLElement);
-        this._toolbar.setTotalVersions(this._data.steps.length);
+        this._toolbar.updateData(this._data);
+        this._toolbar.setCustomButtons(this._settings.customButtons || []);
+        this._toolbar.setDisabledButtons(this._settings.disabledButtonIds || []);
 
-        // Listen for navigation events
-        toolbarContainer.addEventListener("navigate", (e: Event) => {
+        // Listen for toolbar navigation events
+        toolbarContainer.addEventListener("toolbar-navigate", (e: Event) => {
           const customEvent = e as CustomEvent;
-          this.goToVersionIndex(customEvent.detail.index);
+          this.handleToolbarNavigation(customEvent.detail.action);
         });
 
-        // Listen for zoom events
-        toolbarContainer.addEventListener("zoom", (e: Event) => {
+        // Listen for toolbar slideshow events
+        toolbarContainer.addEventListener("toolbar-slideshow", (e: Event) => {
           const customEvent = e as CustomEvent;
-          const { action, zoomLevel } = customEvent.detail;
+          this.handleToolbarSlideshow(customEvent.detail.action, customEvent.detail.reverse);
+        });
 
-          switch (action) {
-            case "in":
-              this.zoomIn();
-              break;
-            case "out":
-              this.zoomOut();
-              break;
-            case "reset":
-              this.resetZoom();
-              break;
-            case "set":
-              if (zoomLevel !== undefined) {
-                this.setZoom(zoomLevel);
-              }
-              break;
-          }
+        // Listen for toolbar display events
+        toolbarContainer.addEventListener("toolbar-display", (e: Event) => {
+          const customEvent = e as CustomEvent;
+          this.handleToolbarDisplay(customEvent.detail.action);
         });
       }
     }
@@ -444,10 +436,7 @@ export class GveSnapshotRendition extends HTMLElement {
       mouseWheelZoomEnabled: true, // Enable mouse wheel zoom
       preventMouseEventsDefault: true, // Prevent default mouse events
       onZoom: (newZoom: number) => {
-        // Update toolbar slider when zoom changes (e.g., via mouse wheel)
-        if (this._toolbar) {
-          this._toolbar.updateZoomLevel(newZoom);
-        }
+        // Zoom level is displayed in toolbar via version label area
         this._logger.debug("Zoom", `Zoom changed to ${newZoom.toFixed(2)}x`);
       },
     });
@@ -457,12 +446,6 @@ export class GveSnapshotRendition extends HTMLElement {
       maxZoom: this._settings.maxZoom,
       zoomStep: this._settings.zoomStep,
     });
-
-    // Update toolbar with initial zoom level
-    if (this._toolbar) {
-      const zoom = this._panZoomInstance.getZoom();
-      this._toolbar.updateZoomLevel(zoom);
-    }
   }
 
   /**
@@ -1119,7 +1102,288 @@ export class GveSnapshotRendition extends HTMLElement {
   private updateToolbarZoom(): void {
     if (!this._toolbar || !this._panZoomInstance) return;
     const zoom = this._panZoomInstance.getZoom();
-    this._toolbar.updateZoomLevel(zoom);
+    // Note: toolbar no longer has updateZoomLevel method in new version
+    // Zoom level is displayed via other means
+  }
+
+  /**
+   * Handle toolbar navigation actions.
+   */
+  private async handleToolbarNavigation(action: string): Promise<void> {
+    if (!this._data) return;
+
+    const totalVersions = (this._data.steps?.length || 0);
+
+    switch (action) {
+      case "first":
+        await this.goToVersionIndex(0);
+        break;
+      case "prev":
+        if (this._currentVersionIndex > 0) {
+          await this.goToVersionIndex(this._currentVersionIndex - 1);
+        }
+        break;
+      case "prev-staged":
+        await this.goToPrevStagedVersion();
+        break;
+      case "next-staged":
+        await this.goToNextStagedVersion();
+        break;
+      case "next":
+        if (this._currentVersionIndex < totalVersions) {
+          await this.goToVersionIndex(this._currentVersionIndex + 1);
+        }
+        break;
+      case "last":
+        await this.goToVersionIndex(totalVersions);
+        break;
+    }
+  }
+
+  /**
+   * Navigate to previous staged version.
+   */
+  private async goToPrevStagedVersion(): Promise<void> {
+    if (!this._data || !this._data.steps) return;
+
+    for (let i = this._currentVersionIndex - 1; i >= 0; i--) {
+      if (i === 0) {
+        // v0 is always considered staged
+        await this.goToVersionIndex(0);
+        return;
+      }
+
+      const stepIndex = i - 1;
+      const step = this._data.steps[stepIndex];
+      if (step?.operation?.features) {
+        const hasVersion = step.operation.features.some(
+          (f) => f.name === "version" && f.isGlobal
+        );
+        if (hasVersion) {
+          await this.goToVersionIndex(i);
+          return;
+        }
+      }
+    }
+  }
+
+  /**
+   * Navigate to next staged version.
+   */
+  private async goToNextStagedVersion(): Promise<void> {
+    if (!this._data || !this._data.steps) return;
+
+    const totalVersions = this._data.steps.length;
+    for (let i = this._currentVersionIndex + 1; i <= totalVersions; i++) {
+      const stepIndex = i - 1;
+      const step = this._data.steps[stepIndex];
+      if (step?.operation?.features) {
+        const hasVersion = step.operation.features.some(
+          (f) => f.name === "version" && f.isGlobal
+        );
+        if (hasVersion) {
+          await this.goToVersionIndex(i);
+          return;
+        }
+      }
+    }
+  }
+
+  /**
+   * Handle toolbar slideshow actions.
+   */
+  private handleToolbarSlideshow(action: string, reverse?: boolean): void {
+    switch (action) {
+      case "start":
+        this.startSlideshow();
+        break;
+      case "stop":
+        this.stopSlideshow();
+        break;
+      case "toggle-reverse":
+        // Reverse flag is already updated in toolbar
+        this._logger.debug("Slideshow", `Reverse mode ${reverse ? "enabled" : "disabled"}`);
+        break;
+    }
+  }
+
+  /**
+   * Handle toolbar display actions.
+   */
+  private handleToolbarDisplay(action: string): void {
+    switch (action) {
+      case "zoom-in":
+        this.zoomIn();
+        break;
+      case "zoom-out":
+        this.zoomOut();
+        break;
+      case "fit":
+        this.fitToView();
+        break;
+      case "download":
+        this.downloadSVG();
+        break;
+    }
+  }
+
+  /**
+   * Fit SVG to view (center and zoom to fit all content).
+   */
+  private fitToView(): void {
+    if (!this._panZoomInstance || !this._rootSvg) {
+      this._logger.warn("Cannot fit to view - pan/zoom not initialized");
+      return;
+    }
+
+    // Get SVG bounding box
+    const bbox = (this._rootSvg as SVGSVGElement).getBBox();
+    if (bbox.width === 0 || bbox.height === 0) {
+      this._logger.warn("Cannot fit to view - SVG has no content");
+      return;
+    }
+
+    // Get container dimensions
+    const container = this._rootSvg.parentElement;
+    if (!container) return;
+
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+
+    // Calculate zoom to fit with some padding (90% of container)
+    const zoomX = (containerWidth * 0.9) / bbox.width;
+    const zoomY = (containerHeight * 0.9) / bbox.height;
+    const zoom = Math.min(zoomX, zoomY);
+
+    // Apply zoom and center
+    this._panZoomInstance.zoom(zoom);
+    this._panZoomInstance.resetPan();
+
+    this._logger.info(`Fit to view: zoom ${zoom.toFixed(2)}x`);
+  }
+
+  /**
+   * Download SVG as a file.
+   */
+  private downloadSVG(): void {
+    if (!this._rootSvg) {
+      this._logger.warn("Cannot download - SVG not initialized");
+      return;
+    }
+
+    // Serialize SVG to string
+    const serializer = new XMLSerializer();
+    let svgString = serializer.serializeToString(this._rootSvg);
+
+    // Add XML declaration
+    svgString = '<?xml version="1.0" encoding="UTF-8"?>\n' + svgString;
+
+    // Create blob and download
+    const blob = new Blob([svgString], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `gve-rendition-v${this._currentVersionIndex}.svg`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    this._logger.info(`Downloaded SVG for v${this._currentVersionIndex}`);
+  }
+
+  /**
+   * Start slideshow mode.
+   */
+  private startSlideshow(): void {
+    if (this._slideshowTimerId !== null) {
+      this._logger.warn("Slideshow already running");
+      return;
+    }
+
+    if (!this._data) {
+      this._logger.warn("Cannot start slideshow - no data loaded");
+      return;
+    }
+
+    this._logger.info("Starting slideshow");
+    if (this._toolbar) {
+      this._toolbar.setSlideshowActive(true);
+      this._toolbar.setNavigationDisabled(true);
+    }
+
+    this._slideshowTimerId = window.setInterval(() => {
+      this.slideshowAdvance();
+    }, this._settings.slideshowInterval);
+  }
+
+  /**
+   * Stop slideshow mode.
+   */
+  private stopSlideshow(): void {
+    if (this._slideshowTimerId === null) {
+      this._logger.warn("Slideshow not running");
+      return;
+    }
+
+    this._logger.info("Stopping slideshow");
+    window.clearInterval(this._slideshowTimerId);
+    this._slideshowTimerId = null;
+
+    if (this._toolbar) {
+      this._toolbar.setSlideshowActive(false);
+      this._toolbar.setNavigationDisabled(false);
+    }
+  }
+
+  /**
+   * Advance slideshow by one frame.
+   */
+  private async slideshowAdvance(): Promise<void> {
+    if (!this._data) return;
+
+    const totalVersions = (this._data.steps?.length || 0);
+
+    // Determine direction (forward by default, or reverse if enabled)
+    const reverse = this._toolbar?.getSlideshowReverse() ?? false;
+
+    if (reverse) {
+      // Go backward
+      if (this._currentVersionIndex > 0) {
+        await this.goToVersionIndex(this._currentVersionIndex - 1);
+      } else {
+        // Reached beginning
+        if (this._settings.slideshowLoop) {
+          // Wait for delay then restart from end
+          this.stopSlideshow();
+          setTimeout(() => {
+            this.goToVersionIndex(totalVersions).then(() => {
+              this.startSlideshow();
+            });
+          }, this._settings.slideshowDelay);
+        } else {
+          // Stop at beginning
+          this.stopSlideshow();
+        }
+      }
+    } else {
+      // Go forward
+      if (this._currentVersionIndex < totalVersions) {
+        await this.goToVersionIndex(this._currentVersionIndex + 1);
+      } else {
+        // Reached end
+        if (this._settings.slideshowLoop) {
+          // Wait for delay then restart from beginning
+          this.stopSlideshow();
+          setTimeout(() => {
+            this.goToVersionIndex(0).then(() => {
+              this.startSlideshow();
+            });
+          }, this._settings.slideshowDelay);
+        } else {
+          // Stop at end
+          this.stopSlideshow();
+        }
+      }
+    }
   }
 
   /**
