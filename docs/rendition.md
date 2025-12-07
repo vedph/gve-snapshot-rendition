@@ -908,7 +908,7 @@ The same operations in their parsable format (DSL) are listed here:
 52x7<>64x4 [r_fore-color=red *version=alpha]
 40- @add-stuff [r_hints=diagonal-stroke r_fore-color=green]
 39+]" AND SOME STUFF." @add-stuff [r_t-position=e r_fore-color=green]
-112x6=HINTS. [r_t-position=n r_fore-color=green r_position=n r_t-displaced-span=21x7 r_t-offset-y=20 r_hints=box r_border="tlbr 1 0 solid green"]
+112x6=HINTS. [r_t-position=n r_fore-color=green r_position=n r_t-displaced-span=21x7 r_t-offset-y=-30 r_hints=box r_border="tlbr 1 0 solid green"]
 75x5- @mov-too
 94+]" TOO."@mov-too [r_t-position=e r_fore-color=red *version=beta]
 1: [note=12 r_color=blue r_hint-vars="rotation=-45" r_hints="note-underline"]

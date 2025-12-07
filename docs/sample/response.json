@@ -19164,7 +19164,7 @@
               "isShortLived": false,
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "isNegated": false,
@@ -24355,7 +24355,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -24429,7 +24429,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -24503,7 +24503,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -24577,7 +24577,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -24651,7 +24651,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -24725,7 +24725,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -31045,7 +31045,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -31119,7 +31119,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -31193,7 +31193,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -31267,7 +31267,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -31341,7 +31341,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -31415,7 +31415,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -32661,7 +32661,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -32727,7 +32727,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -32793,7 +32793,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -32859,7 +32859,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -32925,7 +32925,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -32991,7 +32991,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -39337,7 +39337,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -39411,7 +39411,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -39485,7 +39485,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -39559,7 +39559,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -39633,7 +39633,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -39707,7 +39707,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -40953,7 +40953,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -41019,7 +41019,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -41085,7 +41085,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -41151,7 +41151,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -41217,7 +41217,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -41283,7 +41283,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -42681,7 +42681,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -42747,7 +42747,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -42813,7 +42813,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -42879,7 +42879,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -42945,7 +42945,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -43011,7 +43011,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -49413,7 +49413,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -49487,7 +49487,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -49561,7 +49561,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -49635,7 +49635,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -49709,7 +49709,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -49783,7 +49783,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -51029,7 +51029,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -51095,7 +51095,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -51161,7 +51161,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -51227,7 +51227,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -51293,7 +51293,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -51359,7 +51359,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -52809,7 +52809,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -52875,7 +52875,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -52941,7 +52941,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -53007,7 +53007,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -53073,7 +53073,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -53139,7 +53139,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -54443,7 +54443,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -54509,7 +54509,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -54575,7 +54575,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -54641,7 +54641,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -54707,7 +54707,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -54773,7 +54773,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -66298,7 +66298,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -66352,7 +66352,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -66406,7 +66406,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -66460,7 +66460,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -66514,7 +66514,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -66568,7 +66568,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -67951,7 +67951,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -68000,7 +68000,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -68049,7 +68049,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -68098,7 +68098,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -68147,7 +68147,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -68196,7 +68196,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -69525,7 +69525,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -69574,7 +69574,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -69623,7 +69623,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -69672,7 +69672,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -69721,7 +69721,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -69770,7 +69770,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -71223,7 +71223,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -71272,7 +71272,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -71321,7 +71321,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -71370,7 +71370,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -71419,7 +71419,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -71468,7 +71468,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,

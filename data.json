@@ -19113,7 +19113,7 @@
       },
       {
         "operation": {
-          "dsl": "112×6=\"HINTS.\" [r_t-position=n r_fore-color=green r_position=n r_t-displaced-span=21x7 r_t-offset-y=20 r_hints=box r_border=\"tlbr 1 solid green\"]",
+          "dsl": "112×6=\"HINTS.\" [r_t-position=n r_fore-color=green r_position=n r_t-displaced-span=21x7 r_t-offset-y=20 r_hints=box r_border=\"tlbr 1 0 solid green\"]",
           "toAsIndex": false,
           "to": 0,
           "toRun": 0,
@@ -19164,7 +19164,7 @@
               "isShortLived": false,
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "isNegated": false,
@@ -19180,7 +19180,7 @@
               "isShortLived": false,
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ],
           "sources": []
@@ -24355,7 +24355,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -24371,7 +24371,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -24429,7 +24429,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -24445,7 +24445,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -24503,7 +24503,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -24519,7 +24519,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -24577,7 +24577,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -24593,7 +24593,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -24651,7 +24651,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -24667,7 +24667,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -24725,7 +24725,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -24741,7 +24741,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -31045,7 +31045,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -31061,7 +31061,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -31119,7 +31119,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -31135,7 +31135,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -31193,7 +31193,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -31209,7 +31209,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -31267,7 +31267,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -31283,7 +31283,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -31341,7 +31341,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -31357,7 +31357,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -31415,7 +31415,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -31431,7 +31431,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -32661,7 +32661,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -32677,7 +32677,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_114": [
@@ -32727,7 +32727,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -32743,7 +32743,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_115": [
@@ -32793,7 +32793,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -32809,7 +32809,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_116": [
@@ -32859,7 +32859,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -32875,7 +32875,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_117": [
@@ -32925,7 +32925,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -32941,7 +32941,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_118": [
@@ -32991,7 +32991,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -33007,7 +33007,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_97": [
@@ -39337,7 +39337,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -39353,7 +39353,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -39411,7 +39411,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -39427,7 +39427,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -39485,7 +39485,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -39501,7 +39501,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -39559,7 +39559,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -39575,7 +39575,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -39633,7 +39633,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -39649,7 +39649,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -39707,7 +39707,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -39723,7 +39723,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -40953,7 +40953,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -40969,7 +40969,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_114": [
@@ -41019,7 +41019,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -41035,7 +41035,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_115": [
@@ -41085,7 +41085,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -41101,7 +41101,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_116": [
@@ -41151,7 +41151,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -41167,7 +41167,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_117": [
@@ -41217,7 +41217,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -41233,7 +41233,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_118": [
@@ -41283,7 +41283,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -41299,7 +41299,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_97": [
@@ -42681,7 +42681,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -42697,7 +42697,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v14_114": [
@@ -42747,7 +42747,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -42763,7 +42763,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v14_115": [
@@ -42813,7 +42813,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -42829,7 +42829,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v14_116": [
@@ -42879,7 +42879,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -42895,7 +42895,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v14_117": [
@@ -42945,7 +42945,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -42961,7 +42961,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v14_118": [
@@ -43011,7 +43011,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -43027,7 +43027,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v14_97": [
@@ -49413,7 +49413,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -49429,7 +49429,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -49487,7 +49487,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -49503,7 +49503,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -49561,7 +49561,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -49577,7 +49577,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -49635,7 +49635,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -49651,7 +49651,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -49709,7 +49709,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -49725,7 +49725,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -49783,7 +49783,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -49799,7 +49799,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               },
               {
                 "isNegated": false,
@@ -51029,7 +51029,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -51045,7 +51045,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_114": [
@@ -51095,7 +51095,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -51111,7 +51111,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_115": [
@@ -51161,7 +51161,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -51177,7 +51177,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_116": [
@@ -51227,7 +51227,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -51243,7 +51243,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_117": [
@@ -51293,7 +51293,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -51309,7 +51309,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_118": [
@@ -51359,7 +51359,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -51375,7 +51375,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v13_97": [
@@ -52809,7 +52809,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -52825,7 +52825,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v14_114": [
@@ -52875,7 +52875,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -52891,7 +52891,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v14_115": [
@@ -52941,7 +52941,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -52957,7 +52957,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v14_116": [
@@ -53007,7 +53007,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -53023,7 +53023,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v14_117": [
@@ -53073,7 +53073,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -53089,7 +53089,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v14_118": [
@@ -53139,7 +53139,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -53155,7 +53155,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v14_97": [
@@ -54443,7 +54443,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -54459,7 +54459,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v15_114": [
@@ -54509,7 +54509,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -54525,7 +54525,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v15_115": [
@@ -54575,7 +54575,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -54591,7 +54591,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v15_116": [
@@ -54641,7 +54641,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -54657,7 +54657,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v15_117": [
@@ -54707,7 +54707,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -54723,7 +54723,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v15_118": [
@@ -54773,7 +54773,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_t-offset-y",
-                "value": "20"
+                "value": "-30"
               },
               {
                 "isNegated": false,
@@ -54789,7 +54789,7 @@
                 "isShortLived": false,
                 "setPolicy": 0,
                 "name": "r_border",
-                "value": "tlbr 1 solid green"
+                "value": "tlbr 1 0 solid green"
               }
             ],
             "v15_97": [
@@ -66298,7 +66298,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -66308,7 +66308,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             },
             {
               "setPolicy": 0,
@@ -66352,7 +66352,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -66362,7 +66362,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             },
             {
               "setPolicy": 0,
@@ -66406,7 +66406,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -66416,7 +66416,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             },
             {
               "setPolicy": 0,
@@ -66460,7 +66460,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -66470,7 +66470,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             },
             {
               "setPolicy": 0,
@@ -66514,7 +66514,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -66524,7 +66524,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             },
             {
               "setPolicy": 0,
@@ -66568,7 +66568,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -66578,7 +66578,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             },
             {
               "setPolicy": 0,
@@ -67951,7 +67951,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -67961,7 +67961,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -68000,7 +68000,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -68010,7 +68010,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -68049,7 +68049,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -68059,7 +68059,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -68098,7 +68098,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -68108,7 +68108,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -68147,7 +68147,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -68157,7 +68157,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -68196,7 +68196,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -68206,7 +68206,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -69525,7 +69525,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -69535,7 +69535,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -69574,7 +69574,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -69584,7 +69584,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -69623,7 +69623,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -69633,7 +69633,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -69672,7 +69672,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -69682,7 +69682,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -69721,7 +69721,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -69731,7 +69731,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -69770,7 +69770,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -69780,7 +69780,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -71223,7 +71223,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -71233,7 +71233,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -71272,7 +71272,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -71282,7 +71282,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -71321,7 +71321,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -71331,7 +71331,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -71370,7 +71370,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -71380,7 +71380,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -71419,7 +71419,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -71429,7 +71429,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
@@ -71468,7 +71468,7 @@
             {
               "setPolicy": 0,
               "name": "r_t-offset-y",
-              "value": "20"
+              "value": "-30"
             },
             {
               "setPolicy": 0,
@@ -71478,7 +71478,7 @@
             {
               "setPolicy": 0,
               "name": "r_border",
-              "value": "tlbr 1 solid green"
+              "value": "tlbr 1 0 solid green"
             }
           ]
         },
