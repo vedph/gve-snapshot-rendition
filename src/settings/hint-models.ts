@@ -2,19 +2,7 @@
  * Models for operation hints.
  */
 
-/**
- * Hint position relative to the reference bounding rectangle.
- */
-export type HintPosition =
-  | "n" // North (top center)
-  | "ne" // Northeast (top right)
-  | "e" // East (middle right)
-  | "se" // Southeast (bottom right)
-  | "s" // South (bottom center)
-  | "sw" // Southwest (bottom left)
-  | "w" // West (middle left)
-  | "nw" // Northwest (top left)
-  | "o"; // Origin (center)
+import { RelativePosition } from "../core/gve-snapshot-rendition";
 
 /**
  * An editing operation's hint.
@@ -31,7 +19,7 @@ export interface OperationHint {
   /**
    * Relative position for the hint with respect to the reference bounding rectangle.
    */
-  position: HintPosition;
+  position: RelativePosition;
 
   /**
    * X offset from the computed position.

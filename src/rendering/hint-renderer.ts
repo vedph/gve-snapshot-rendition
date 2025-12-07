@@ -1,6 +1,7 @@
 import { CharNode } from "../models";
 import { GveRenditionSettings } from "../settings/settings";
-import { OperationHint, HintPosition } from "../settings/hint-models";
+import { OperationHint } from "../settings/hint-models";
+import { RelativePosition } from "../core/gve-snapshot-rendition";
 import { Logger } from "../core/logger";
 import { AnimationEngine } from "../animation/animation-engine";
 import { BoundsCache, BoundingRect } from "./bounds-cache";
@@ -9,7 +10,6 @@ import {
   parseSVGContent,
   getSafeBBox,
   applyTransform,
-  getRectCenter,
 } from "./svg-utils";
 import { resolvePlaceholders, parseOffset } from "../utils/text-utils";
 import { parseDisplacedSpan } from "../utils/feature-utils";
@@ -167,15 +167,16 @@ export class HintRenderer {
           scalingInfo
         );
 
-        // 10. Find handle position AFTER transformations (in the prepared hint)
-        const handlePos = this.findHandlePosition(currentHintGroup);
+        // 10. Get EBR (Element Bounding Rectangle) AFTER transformations
+        // This is either the handle's bbox or the whole hint's bbox
+        const ebrBounds = this.getEBRBounds(currentHintGroup);
 
-        // 11. Apply positioning transform - simple translate to move handle to target
+        // 11. Apply positioning transform - align EBR with RBR based on position
         await this.applyHintPositionTransform(
           currentHintGroup,
           effectiveHint,
           rbr,
-          handlePos,
+          ebrBounds,
           scalingInfo
         );
 
@@ -401,52 +402,56 @@ export class HintRenderer {
 
   /**
    * Apply position transform to the hint.
-   * The hint has already been prepared (scaled/rotated), so we just need to
-   * translate it to position the handle at the target location.
-   * handlePos is in the ORIGINAL (untransformed) coordinate system from getBBox().
-   * We need to account for the transformations when calculating the final translate.
+   * The hint has already been prepared (scaled/rotated). Now we position it by aligning
+   * the EBR (Element Bounding Rectangle) with the RBR (Reference Bounding Rectangle).
+   *
+   * Per documentation: hints use the handle's bounding box as EBR if a handle element exists,
+   * otherwise they use the whole hint's bounding box as EBR.
    */
   private async applyHintPositionTransform(
     hintGroup: SVGGElement,
     hint: OperationHint,
     rbr: BoundingRect,
-    handlePos: { x: number; y: number },
+    ebrBounds: BoundingRect,
     scalingInfo: { scaleX: number; scaleY: number }
   ): Promise<void> {
-    // Calculate target position based on hint.position
-    const targetPos = this.calculateTargetPosition(hint.position, rbr);
+    // Calculate the alignment point on the RBR
+    const rbrAlignPoint = this.calculateRBRAlignmentPoint(hint.position, rbr);
+
+    // Calculate the alignment point on the EBR
+    const ebrAlignPoint = this.calculateEBRAlignmentPoint(hint.position, ebrBounds);
 
     // Parse offsets (they can be px or "th"/"tw")
     const offsetX = parseOffset(hint.offsetX, rbr.height, rbr.width);
     const offsetY = parseOffset(hint.offsetY, rbr.height, rbr.width);
 
-    const finalX = targetPos.x + offsetX;
-    const finalY = targetPos.y + offsetY;
+    // Apply offsets to the RBR alignment point
+    const finalRbrX = rbrAlignPoint.x + offsetX;
+    const finalRbrY = rbrAlignPoint.y + offsetY;
 
-    // The handle position is in the ORIGINAL coordinate system.
-    // After applying scale(scaleX, scaleY), the handle will be at:
-    // (handlePos.x * scaleX, handlePos.y * scaleY)
-    // We need to translate so this scaled handle ends up at finalPos.
-    // If we write: scale(sx, sy) translate(tx, ty)
-    // The translate happens in the SCALED coordinate system, so:
-    // tx and ty are multiplied by sx and sy respectively.
-    // To position the scaled handle at finalPos, we need:
-    // handlePos.x * scaleX + tx * scaleX = finalX
-    // handlePos.y * scaleY + ty * scaleY = finalY
-    // So: tx = (finalX - handlePos.x * scaleX) / scaleX = finalX/scaleX - handlePos.x
-    //     ty = (finalY - handlePos.y * scaleY) / scaleY = finalY/scaleY - handlePos.y
+    // Calculate the translation needed to align EBR point with RBR point
+    // Since we're appending translate after scale, the translate happens in scaled space
+    // We need to work backwards: what translate in scaled space positions the EBR correctly?
+    // The EBR alignment point is already in scaled space (we got it after transforms applied)
+    // We want: ebrAlignPoint + translate_in_scaled_space = finalRbr
+    // But translate values get multiplied by scale when written as "scale() translate()"
+    // So if we write translate(tx, ty) after scale(sx, sy), the actual displacement is (tx*sx, ty*sy)
+    // Therefore: ebrAlignPoint + (tx*sx, ty*sy) = finalRbr
+    // So: tx = (finalRbrX - ebrAlignPoint.x) / sx
+    //     ty = (finalRbrY - ebrAlignPoint.y) / sy
 
-    const translateX = finalX / scalingInfo.scaleX - handlePos.x;
-    const translateY = finalY / scalingInfo.scaleY - handlePos.y;
+    const translateX = (finalRbrX - ebrAlignPoint.x) / scalingInfo.scaleX;
+    const translateY = (finalRbrY - ebrAlignPoint.y) / scalingInfo.scaleY;
 
     this._logger.debug("HintRenderer", `Applying position transform`, {
       position: hint.position,
       rbr,
-      targetPos,
-      handlePos,
+      rbrAlignPoint,
+      ebrBounds,
+      ebrAlignPoint,
       scalingInfo,
       offsets: { x: offsetX, y: offsetY },
-      finalPosition: { x: finalX, y: finalY },
+      finalRbrPoint: { x: finalRbrX, y: finalRbrY },
       translation: { x: translateX, y: translateY },
     });
 
@@ -466,50 +471,116 @@ export class HintRenderer {
   }
 
   /**
-   * Find the handle position within the hint SVG.
-   * Returns the handle element's position, or the center of the hint if no handle.
+   * Get the EBR (Element Bounding Rectangle) for positioning.
+   * Per documentation: if the hint has a handle element, use its bounding box.
+   * Otherwise, use the whole hint's bounding box.
    */
-  private findHandlePosition(hintGroup: SVGGElement): { x: number; y: number } {
+  private getEBRBounds(hintGroup: SVGGElement): BoundingRect {
     const handleElement = hintGroup.querySelector("#handle");
 
+    let bbox: DOMRect | SVGRect;
     if (handleElement) {
-      const bbox = getSafeBBox(handleElement as SVGElement);
-      return getRectCenter(bbox);
+      // Use handle's bounding box as EBR
+      bbox = getSafeBBox(handleElement as SVGElement);
+    } else {
+      // No handle element, use whole hint's bounding box as EBR
+      bbox = getSafeBBox(hintGroup);
     }
 
-    // No handle element, use center of hint group
-    const bbox = getSafeBBox(hintGroup);
-    return getRectCenter(bbox);
+    // Convert to BoundingRect with right and bottom properties
+    return {
+      x: bbox.x,
+      y: bbox.y,
+      width: bbox.width,
+      height: bbox.height,
+      right: bbox.x + bbox.width,
+      bottom: bbox.y + bbox.height,
+    };
   }
 
   /**
-   * Calculate target position on the RBR based on hint position type.
+   * Calculate the alignment point on the RBR based on position type.
+   * This is where the EBR's corresponding alignment point should be positioned.
    */
-  private calculateTargetPosition(
-    position: HintPosition,
+  private calculateRBRAlignmentPoint(
+    position: string,
     rbr: BoundingRect
   ): { x: number; y: number } {
     const centerX = rbr.x + rbr.width / 2;
     const centerY = rbr.y + rbr.height / 2;
 
     switch (position) {
-      case "n": // North (top center)
+      // Outside positions
+      case "n": // North: align to top-center of RBR
         return { x: centerX, y: rbr.y };
-      case "ne": // Northeast (top right)
+      case "ne": // Northeast: align to top-right corner of RBR
         return { x: rbr.right, y: rbr.y };
-      case "e": // East (middle right)
+      case "e": // East: align to middle-right of RBR
         return { x: rbr.right, y: centerY };
-      case "se": // Southeast (bottom right)
+      case "se": // Southeast: align to bottom-right corner of RBR
         return { x: rbr.right, y: rbr.bottom };
-      case "s": // South (bottom center)
+      case "s": // South: align to bottom-center of RBR
         return { x: centerX, y: rbr.bottom };
-      case "sw": // Southwest (bottom left)
+      case "sw": // Southwest: align to bottom-left corner of RBR
         return { x: rbr.x, y: rbr.bottom };
-      case "w": // West (middle left)
+      case "w": // West: align to middle-left of RBR
         return { x: rbr.x, y: centerY };
-      case "nw": // Northwest (top left)
+      case "nw": // Northwest: align to top-left corner of RBR
         return { x: rbr.x, y: rbr.y };
-      case "o": // Origin (center)
+      // Inside positions
+      case "inw": // Inside Northwest: align to top-left corner of RBR
+        return { x: rbr.x, y: rbr.y };
+      case "ine": // Inside Northeast: align to top-right corner of RBR
+        return { x: rbr.right, y: rbr.y };
+      case "isw": // Inside Southwest: align to bottom-left corner of RBR
+        return { x: rbr.x, y: rbr.bottom };
+      case "ise": // Inside Southeast: align to bottom-right corner of RBR
+        return { x: rbr.right, y: rbr.bottom };
+      case "o": // Origin: align to center of RBR
+      default:
+        return { x: centerX, y: centerY };
+    }
+  }
+
+  /**
+   * Calculate the alignment point on the EBR based on position type.
+   * This is the point on the EBR that should align with the RBR alignment point.
+   */
+  private calculateEBRAlignmentPoint(
+    position: string,
+    ebr: BoundingRect
+  ): { x: number; y: number } {
+    const centerX = ebr.x + ebr.width / 2;
+    const centerY = ebr.y + ebr.height / 2;
+
+    switch (position) {
+      // Outside positions - EBR corners/edges that touch RBR
+      case "n": // North: EBR bottom-center aligns with RBR top-center
+        return { x: centerX, y: ebr.bottom };
+      case "ne": // Northeast: EBR bottom-left corner aligns with RBR top-right corner
+        return { x: ebr.x, y: ebr.bottom };
+      case "e": // East: EBR left-center aligns with RBR right-center
+        return { x: ebr.x, y: centerY };
+      case "se": // Southeast: EBR top-left corner aligns with RBR bottom-right corner
+        return { x: ebr.x, y: ebr.y };
+      case "s": // South: EBR top-center aligns with RBR bottom-center
+        return { x: centerX, y: ebr.y };
+      case "sw": // Southwest: EBR top-right corner aligns with RBR bottom-left corner
+        return { x: ebr.right, y: ebr.y };
+      case "w": // West: EBR right-center aligns with RBR left-center
+        return { x: ebr.right, y: centerY };
+      case "nw": // Northwest: EBR bottom-right corner aligns with RBR top-left corner
+        return { x: ebr.right, y: ebr.bottom };
+      // Inside positions - EBR corners align with same RBR corners
+      case "inw": // Inside Northwest: EBR top-left aligns with RBR top-left
+        return { x: ebr.x, y: ebr.y };
+      case "ine": // Inside Northeast: EBR top-right aligns with RBR top-right
+        return { x: ebr.right, y: ebr.y };
+      case "isw": // Inside Southwest: EBR bottom-left aligns with RBR bottom-left
+        return { x: ebr.x, y: ebr.bottom };
+      case "ise": // Inside Southeast: EBR bottom-right aligns with RBR bottom-right
+        return { x: ebr.right, y: ebr.bottom };
+      case "o": // Origin: EBR center aligns with RBR center
       default:
         return { x: centerX, y: centerY };
     }
@@ -619,7 +690,7 @@ export class HintRenderer {
 
     // Apply each override property
     if (override.position !== undefined) {
-      effectiveHint.position = override.position as HintPosition;
+      effectiveHint.position = override.position as RelativePosition;
       this._logger.debug(
         "HintRenderer",
         `Override position for ${hintId}: ${override.position}`

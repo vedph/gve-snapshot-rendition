@@ -25,6 +25,27 @@ type SvgPanZoomInstance = ReturnType<typeof svgPanZoom>;
 import gsap from "gsap";
 
 /**
+ * Relative position for elements (hints and additional text) with respect to the RBR.
+ * Specifies how the EBR (Element Bounding Rectangle) aligns with the RBR (Reference Bounding Rectangle).
+ */
+export type RelativePosition =
+  // Outside positions - EBR positioned outside RBR
+  | "n" // North: EBR-bottom aligned with RBR-top, horizontally centered
+  | "ne" // Northeast: EBR-bottom-left corner aligned with RBR-top-right corner
+  | "e" // East: EBR-left aligned with RBR-right, vertically centered
+  | "se" // Southeast: EBR-top-left corner aligned with RBR-bottom-right corner
+  | "s" // South: EBR-top aligned with RBR-bottom, horizontally centered
+  | "sw" // Southwest: EBR-top-right corner aligned with RBR-bottom-left corner
+  | "w" // West: EBR-right aligned with RBR-left, vertically centered
+  | "nw" // Northwest: EBR-bottom-right corner aligned with RBR-top-left corner
+  // Inside positions - EBR positioned inside RBR
+  | "inw" // Inside Northwest: EBR-top-left corner aligned with RBR-top-left corner
+  | "ine" // Inside Northeast: EBR-top-right corner aligned with RBR-top-right corner
+  | "isw" // Inside Southwest: EBR-bottom-left corner aligned with RBR-bottom-left corner
+  | "ise" // Inside Southeast: EBR-bottom-right corner aligned with RBR-bottom-right corner
+  | "o"; // Origin: EBR center aligned with RBR center
+
+/**
  * GVE Snapshot Rendition Web Component.
  * Renders interactive text transformations from snapshot model data.
  */

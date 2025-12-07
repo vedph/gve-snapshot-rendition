@@ -9,12 +9,14 @@
 export { GveSnapshotRendition } from "./core/gve-snapshot-rendition";
 
 // Export types
+export type { RelativePosition } from "./core/gve-snapshot-rendition";
+
 export type {
   GveRenditionSettings,
   CustomButtonSettings,
 } from "./settings/settings";
 
-export type { OperationHint, HintPosition } from "./settings/hint-models";
+export type { OperationHint } from "./settings/hint-models";
 
 export { DEFAULT_SETTINGS } from "./settings/settings";
 
