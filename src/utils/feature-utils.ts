@@ -192,7 +192,7 @@ export function parseDisplacedSpan(
 }
 
 /**
- * Parse hint variable assignments from r_hint_vars feature.
+ * Parse hint variable assignments from r_hint-vars feature.
  * Format: "name=value name=value ..."
  * Example: "color=red bold=1"
  *

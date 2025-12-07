@@ -104,7 +104,10 @@ export class HintRenderer {
       let rbrs: BoundingRect[];
       if (effectiveHint.displacedRefSpan) {
         // Use displaced span instead of reference nodes
-        rbrs = this.calculateDisplacedRBRs(effectiveHint.displacedRefSpan, allBaseNodes);
+        rbrs = this.calculateDisplacedRBRs(
+          effectiveHint.displacedRefSpan,
+          allBaseNodes
+        );
       } else {
         rbrs = this.calculateRBRs(referenceNodes);
       }
@@ -150,18 +153,25 @@ export class HintRenderer {
         currentHintGroup.setAttribute("visibility", "hidden");
         rootSvg.appendChild(currentHintGroup);
 
-        // 8. Find handle position BEFORE scaling (important!)
-        const handlePos = this.findHandlePosition(currentHintGroup);
-
-        // 9. Get the scale factors needed to fit RBR
+        // 8. Get the scale factors needed to fit RBR
         const scalingInfo = this.calculateScalingInfo(
           currentHintGroup,
           effectiveHint,
           rbr
         );
 
-        // 10. Apply combined transform (scale + position) in one operation
-        await this.applyHintTransform(
+        // 9. Apply scale and rotation transforms to prepare the hint
+        await this.applyHintSizeTransforms(
+          currentHintGroup,
+          effectiveHint,
+          scalingInfo
+        );
+
+        // 10. Find handle position AFTER transformations (in the prepared hint)
+        const handlePos = this.findHandlePosition(currentHintGroup);
+
+        // 11. Apply positioning transform - simple translate to move handle to target
+        await this.applyHintPositionTransform(
           currentHintGroup,
           effectiveHint,
           rbr,
@@ -226,15 +236,23 @@ export class HintRenderer {
     const rbrs: BoundingRect[] = [];
     const nodeElementIds = nodes.map((n) => `n_${n.id}`);
 
+    this._logger.debug(
+      "HintRenderer",
+      `Calculating RBRs for ${nodeElementIds.length} node elements`,
+      { nodeElementIds }
+    );
+
     // Group nodes by line by checking their Y coordinates
     const lineGroups: string[][] = [];
     let currentLineGroup: string[] = [];
     let lastY: number | null = null;
+    const missingBounds: string[] = [];
 
     for (const elementId of nodeElementIds) {
       const bounds = this._boundsCache.get(elementId);
       if (!bounds) {
         this._logger.warn(`Bounds not found for node element ${elementId}`);
+        missingBounds.push(elementId);
         continue;
       }
 
@@ -255,10 +273,23 @@ export class HintRenderer {
       lineGroups.push(currentLineGroup);
     }
 
+    if (missingBounds.length > 0) {
+      this._logger.error(
+        "HintRenderer",
+        `Missing bounds for ${missingBounds.length} of ${nodeElementIds.length} nodes. RBR calculation may be incorrect.`,
+        { missingBounds, foundNodes: currentLineGroup }
+      );
+    }
+
     // Calculate RBR for each line group
     for (const group of lineGroups) {
       const rbr = this._boundsCache.getUnionBounds(group);
       if (rbr) {
+        this._logger.debug(
+          "HintRenderer",
+          `Calculated RBR from ${group.length} elements`,
+          { elements: group, rbr }
+        );
         rbrs.push(rbr);
       }
     }
@@ -336,10 +367,46 @@ export class HintRenderer {
   }
 
   /**
-   * Apply combined transform (scale + position + rotation) to the hint.
-   * This must be done in a single operation to avoid transform conflicts.
+   * Apply size transforms (scale and rotation) to the hint.
+   * Per documentation, these are applied BEFORE finding the handle position.
    */
-  private async applyHintTransform(
+  private async applyHintSizeTransforms(
+    hintGroup: SVGGElement,
+    hint: OperationHint,
+    scalingInfo: { scaleX: number; scaleY: number }
+  ): Promise<void> {
+    const transforms: string[] = [];
+
+    // Apply scale to fit RBR
+    if (scalingInfo.scaleX !== 1 || scalingInfo.scaleY !== 1) {
+      transforms.push(`scale(${scalingInfo.scaleX}, ${scalingInfo.scaleY})`);
+    }
+
+    // Apply rotation if specified
+    if (hint.rotation !== 0) {
+      transforms.push(`rotate(${hint.rotation})`);
+    }
+
+    if (transforms.length > 0) {
+      const transformString = transforms.join(" ");
+      this._logger.debug("HintRenderer", `Applying size transforms`, {
+        transformString,
+        scaleX: scalingInfo.scaleX,
+        scaleY: scalingInfo.scaleY,
+        rotation: hint.rotation,
+      });
+      hintGroup.setAttribute("transform", transformString);
+    }
+  }
+
+  /**
+   * Apply position transform to the hint.
+   * The hint has already been prepared (scaled/rotated), so we just need to
+   * translate it to position the handle at the target location.
+   * handlePos is in the ORIGINAL (untransformed) coordinate system from getBBox().
+   * We need to account for the transformations when calculating the final translate.
+   */
+  private async applyHintPositionTransform(
     hintGroup: SVGGElement,
     hint: OperationHint,
     rbr: BoundingRect,
@@ -353,36 +420,49 @@ export class HintRenderer {
     const offsetX = parseOffset(hint.offsetX, rbr.height, rbr.width);
     const offsetY = parseOffset(hint.offsetY, rbr.height, rbr.width);
 
-    // After scaling, the handle will be at: handlePos * scale
-    // We want it at: targetPos + offset
-    // So translate by: targetPos + offset - (handlePos * scale)
-    const scaledHandleX = handlePos.x * scalingInfo.scaleX;
-    const scaledHandleY = handlePos.y * scalingInfo.scaleY;
+    const finalX = targetPos.x + offsetX;
+    const finalY = targetPos.y + offsetY;
 
-    const translateX = targetPos.x + offsetX - scaledHandleX;
-    const translateY = targetPos.y + offsetY - scaledHandleY;
+    // The handle position is in the ORIGINAL coordinate system.
+    // After applying scale(scaleX, scaleY), the handle will be at:
+    // (handlePos.x * scaleX, handlePos.y * scaleY)
+    // We need to translate so this scaled handle ends up at finalPos.
+    // If we write: scale(sx, sy) translate(tx, ty)
+    // The translate happens in the SCALED coordinate system, so:
+    // tx and ty are multiplied by sx and sy respectively.
+    // To position the scaled handle at finalPos, we need:
+    // handlePos.x * scaleX + tx * scaleX = finalX
+    // handlePos.y * scaleY + ty * scaleY = finalY
+    // So: tx = (finalX - handlePos.x * scaleX) / scaleX = finalX/scaleX - handlePos.x
+    //     ty = (finalY - handlePos.y * scaleY) / scaleY = finalY/scaleY - handlePos.y
 
-    this._logger.debug("HintRenderer", `Applying hint transform`, {
+    const translateX = finalX / scalingInfo.scaleX - handlePos.x;
+    const translateY = finalY / scalingInfo.scaleY - handlePos.y;
+
+    this._logger.debug("HintRenderer", `Applying position transform`, {
       position: hint.position,
       rbr,
       targetPos,
       handlePos,
       scalingInfo,
-      scaledHandle: { x: scaledHandleX, y: scaledHandleY },
       offsets: { x: offsetX, y: offsetY },
-      translate: { x: translateX, y: translateY },
+      finalPosition: { x: finalX, y: finalY },
+      translation: { x: translateX, y: translateY },
     });
 
-    // Apply combined transform: translate then scale (order matters!)
-    applyTransform(hintGroup, {
-      translateX,
-      translateY,
-      scaleX: scalingInfo.scaleX,
-      scaleY: scalingInfo.scaleY,
-      rotate: hint.rotation,
-      originX: targetPos.x,
-      originY: targetPos.y,
+    // Get the existing transform (which has scale/rotation)
+    const existingTransform = hintGroup.getAttribute("transform") || "";
+
+    // Append the translate to the existing transforms
+    // This positions the already-prepared hint at the target location
+    const transformString = existingTransform
+      ? `${existingTransform} translate(${translateX}, ${translateY})`
+      : `translate(${translateX}, ${translateY})`;
+
+    this._logger.debug("HintRenderer", `Final transform string`, {
+      transformString,
     });
+    hintGroup.setAttribute("transform", transformString);
   }
 
   /**

@@ -171,7 +171,7 @@ All rendering features have their name starting with `r_`. These are the only fe
   - `COLOR` is a color.
     So for `r_border`, for instance `tl 1 4 solid silver` means that the text will have two edges, one at top and one at left, each with 1px thickness and silver color, both offset by 4px (padding) from the bounding rectangle of the text.
     Note that `r_border` SVG line elements are just drawn after the text has been drawn character by character (with their animations when set), with no animation. They just appear at once and variously "box" the text drawn.
-- `r_hint_vars`: this has no effect on text; it is just a rendition feature used only to define a set of variables to be used by [hints placeholders](#hint-svg-placeholders). Each variable has name=value, and is separated with space. For instance, `color=red bold=1` to pass variables `color`=`red` and `bold`=`1` to the hints being rendered for the operation being processed.
+- `r_hint-vars`: this has no effect on text; it is just a rendition feature used only to define a set of variables to be used by [hints placeholders](#hint-svg-placeholders). Each variable has name=value, and is separated with space. For instance, `color=red bold=1` to pass variables `color`=`red` and `bold`=`1` to the hints being rendered for the operation being processed.
 
 The following text rendition features are applicable ONLY to **added text** (=text nodes added by insert/replace operations):
 
@@ -340,6 +340,14 @@ Then, **positioning hints** is driven by these properties:
   - `tw` = reference text bounds width.
     This way we can offset proportionally to the reference text. So, `10`=offset by 10, but `0.5th` = offset by half of the reference text height.
 - `offsetY`: the Y offset, like `offsetX`. This offsets the calculated start position of the hint (as per its `position` property) by an Y amount. Default=0.
+
+To sum up, the **hint drawing logic** follows this sequence to be predictable and easy for hints designers; it is like drawing in a diagramming tool:
+
+1. first, you pick the shape to draw. In our logic, this means picking the hint from settings.
+2. then, you freely resize and rotate it as you want. This is just for preparing the shape so it looks like you want it.
+3. finally, you move that shape in the desired position.
+
+So, scaling and rotation (the transforms) are not part of the positioning transform: they are applied first to prepare the hint; then, we simply translate it to position the handle at the target. The transforms, when present, are just preprocessing, which is totally opaque to the component's renderer. The renderer just receives a hint, whether it had some transformations applied to it to prepare it, or not (=the hint was just fetched as it is from settings). Then, it simply positions it.
 
 ### Hint Animation Property
 
