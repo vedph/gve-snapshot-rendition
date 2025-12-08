@@ -179,6 +179,9 @@ export class TextRenderer {
    * @param versionTag - Version tag for class
    * @param referenceNodes - Reference nodes for RBR calculation
    * @param allBaseNodes - All base text nodes (for displaced span)
+   * @param panZoomInstance - The svg-pan-zoom instance (for prolog)
+   * @param viewportWidth - Width of the visible viewport (for prolog)
+   * @param viewportHeight - Height of the visible viewport (for prolog)
    * @returns Promise that resolves when rendering completes
    */
   public async renderAdditionalText(
@@ -187,7 +190,10 @@ export class TextRenderer {
     config: RenditionConfig,
     versionTag: string,
     referenceNodes: CharNode[],
-    allBaseNodes: CharNode[]
+    allBaseNodes: CharNode[],
+    panZoomInstance?: any,
+    viewportWidth?: number,
+    viewportHeight?: number
   ): Promise<void> {
     this._logger.time(`renderAdditionalText-${versionTag}`);
     this._logger.info(
@@ -301,7 +307,32 @@ export class TextRenderer {
       );
     }
 
-    // 6. Get animation function if specified
+    // 6. Check if prolog panning is needed (element visibility check)
+    // This must happen AFTER positioning and spreading, but BEFORE rendering characters
+    if (panZoomInstance && viewportWidth && viewportHeight && this._settings.prologDuration > 0 && textBounds) {
+      const isVisible = this._animationEngine.isElementVisible(
+        textBounds,
+        panZoomInstance,
+        viewportWidth,
+        viewportHeight
+      );
+
+      if (!isVisible) {
+        this._logger.debug(
+          "TextRenderer",
+          `Additional text for ${versionTag} would be outside viewport, executing prolog`
+        );
+        await this._animationEngine.animateProlog(
+          panZoomInstance,
+          textBounds,
+          viewportWidth,
+          viewportHeight,
+          this._settings.prologDuration
+        );
+      }
+    }
+
+    // 7. Get animation function if specified
     const animationFn = this._settings.charAnimationId
       ? this._animationEngine
           .getFactory()
@@ -312,7 +343,7 @@ export class TextRenderer {
           )
       : undefined;
 
-    // 7. Render each character with features
+    // 8. Render each character with features
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
       const pos = positions[i];
@@ -325,7 +356,7 @@ export class TextRenderer {
       await this.renderCharacter(node, pos, rootSvg, versionTag, animationFn);
     }
 
-    // 8. Draw borders if r_border specified
+    // 9. Draw borders if r_border specified
     if (config.border && textBounds) {
       await this.drawBorder(
         config.border.edges,

@@ -129,6 +129,9 @@ export interface GveRenditionSettings {
   /** Duration in milliseconds for element fade-out animation (backward navigation only): 0=no animation */
   backwardFadeOutTime: number;
 
+  /** Duration in milliseconds for prolog panning animation when added elements would be outside viewport (0=no animation) */
+  prologDuration: number;
+
   // ==================== Hints ====================
 
   /** Dictionary of hints, keyed by hint ID */
@@ -261,6 +264,7 @@ export const DEFAULT_SETTINGS: GveRenditionSettings = {
   charAnimationId: undefined, // No character animation by default
   spreadTime: 1500,
   backwardFadeOutTime: 300,
+  prologDuration: 800,
 
   // Hints - empty by default, to be filled by consumer code
   hints: {},

@@ -54,6 +54,9 @@ export class HintRenderer {
    * @param allBaseNodes - All base text nodes (for displaced span)
    * @param versionTag - Version tag to add as CSS class
    * @param hintOverrides - Optional overrides from r_h-* features
+   * @param panZoomInstance - The svg-pan-zoom instance (for prolog)
+   * @param viewportWidth - Width of the visible viewport (for prolog)
+   * @param viewportHeight - Height of the visible viewport (for prolog)
    * @returns Promise that resolves when rendering completes
    */
   async renderHint(
@@ -66,7 +69,10 @@ export class HintRenderer {
     hintOrdinal: number,
     allBaseNodes: CharNode[],
     versionTag: string,
-    hintOverrides?: Map<string, HintOverrides>
+    hintOverrides?: Map<string, HintOverrides>,
+    panZoomInstance?: any,
+    viewportWidth?: number,
+    viewportHeight?: number
   ): Promise<void> {
     this._logger.time(`renderHint-${hintId}`);
     this._logger.info(`Rendering hint: ${hintId} for operation ${operationId}`);
@@ -185,17 +191,43 @@ export class HintRenderer {
           await this.handleSpreading(currentHintGroup, rootSvg, versionTag);
         }
 
-        // 11. Make visible (set initial opacity to 0 if animation present)
+        // 11. Check if prolog panning is needed (element visibility check)
+        // This must happen AFTER positioning and spreading, but BEFORE making visible
+        if (panZoomInstance && viewportWidth && viewportHeight && this._settings.prologDuration > 0) {
+          const finalBbox = getSafeBBox(currentHintGroup);
+          const isVisible = this._animationEngine.isElementVisible(
+            finalBbox,
+            panZoomInstance,
+            viewportWidth,
+            viewportHeight
+          );
+
+          if (!isVisible) {
+            this._logger.debug(
+              "HintRenderer",
+              `Element ${currentHintGroup.getAttribute("id")} would be outside viewport, executing prolog`
+            );
+            await this._animationEngine.animateProlog(
+              panZoomInstance,
+              finalBbox,
+              viewportWidth,
+              viewportHeight,
+              this._settings.prologDuration
+            );
+          }
+        }
+
+        // 12. Make visible (set initial opacity to 0 if animation present)
         currentHintGroup.removeAttribute("visibility");
         if (effectiveHint.animation) {
           currentHintGroup.style.opacity = "0";
         }
 
-        // 11. Cache bounds
+        // 13. Cache bounds
         const bbox = getSafeBBox(currentHintGroup);
         this._boundsCache.set(currentHintGroup.getAttribute("id")!, bbox);
 
-        // 12. Animate entrance
+        // 14. Animate entrance
         if (effectiveHint.animation) {
           const animation = this._animationEngine
             .getFactory()

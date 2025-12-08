@@ -583,13 +583,20 @@ export class GveSnapshotRendition extends HTMLElement {
       step.outputTag
     );
     if (addedNodes.length > 0 && this._textRenderer && this._rootSvg) {
+      // Get viewport dimensions for prolog
+      const viewportWidth = this._rootSvg?.clientWidth || 0;
+      const viewportHeight = this._rootSvg?.clientHeight || 0;
+
       await this._textRenderer.renderAdditionalText(
         addedNodes,
         this.getSvgContainer(), // Use viewport container, not root SVG
         config,
         versionTag,
         refNodes,
-        this._baseNodes
+        this._baseNodes,
+        this._panZoomInstance,
+        viewportWidth,
+        viewportHeight
       );
     }
 
@@ -682,6 +689,10 @@ export class GveSnapshotRendition extends HTMLElement {
         continue;
       }
 
+      // Get viewport dimensions for prolog
+      const viewportWidth = this._rootSvg?.clientWidth || 0;
+      const viewportHeight = this._rootSvg?.clientHeight || 0;
+
       await this._hintRenderer.renderHint(
         hintId,
         hint,
@@ -692,7 +703,10 @@ export class GveSnapshotRendition extends HTMLElement {
         i + 1, // ordinal (1-based)
         this._baseNodes,
         versionTag,
-        hintOverrides
+        hintOverrides,
+        this._panZoomInstance,
+        viewportWidth,
+        viewportHeight
       );
     }
   }
