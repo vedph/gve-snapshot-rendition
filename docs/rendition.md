@@ -867,7 +867,7 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
   - `r_fore-color`=`green`.
 
 - `v12`: **annotate** `STUFF.` (IDs=112-117, group ID `stuff-hints`) with a box around it (this means that it is being replaced by another boxed text to be added later). Features:
-  - `r_hints`=`box`.
+  - `r_hints`=`box` (border around `STUFF`).
   - `r_fore-color`=`green`.
 
 - `v13`: **replace** `STUFF.` with `HINTS.` (IDs=114-119, group ID `stuff-hints`). Features:
@@ -875,7 +875,6 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
   - `r_t-position`=`n`.
   - `r_t-displaced-span`=`21x7`. This is a displacement for the text being added by this replace operation (`HINTS`): instead of positioning the text with reference to its reference text (`STUFF`), we position it above an area approximately corresponding to `all ope` of `all operations` in the first line.
   - `r_t-offset-y`=`20`: this shifts the `HINTS` boxed text upper.
-  - `r_hints`=`box` (border around `STUFF`).
   - TODO border
 
 - `v14`: **delete** `too,` + space (this operation belongs to group `mov-too`, because on a more abstract --non-diplomatic-- ground this would be considered a movement). Note that there is no hint for this operation; it is implicit in the next addition.
