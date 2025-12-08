@@ -4,7 +4,7 @@
   - [Rendered Entities](#rendered-entities)
   - [Animations](#animations)
   - [Base Text](#base-text)
-  - [Non-Base Text Rendition](#non-base-text-rendition)
+  - [Added Elements Rendition](#added-elements-rendition)
     - [Element Transforms](#element-transforms)
     - [Relative Element Positioning](#relative-element-positioning)
       - [1. Initial Position](#1-initial-position)
@@ -53,12 +53,21 @@ Now, say the next operation replaces a word X with another one Y, and that in th
 
 ## Rendered Entities
 
-The component renders these entities:
+The component renders with SVG these entities:
 
-- **text**:
-  - **base text**: the `v0` text, the input text to start with to transform it via editing operations. In most cases, it is visually identified by the text written on regular rows, with the same ink, by the same hand.
-  - **additional text**: the text successively added by insert/replace operations. This is drawn character by character, just like the base text, but its size, position, and rendering features are calculated according to the operation's features and the default rendering settings.
+- **base text**: the `v0` text, the input text to start with to transform it via editing operations. In most cases, in real world it is visually identified by the text written on regular rows, with the same ink, by the same hand.
+- **additional text**: the text successively added by insert/replace operations. This is drawn character by character, just like the base text, but its size, position, and rendering features are calculated according to the operation's features and the default rendering settings.
 - **hints** which represent the visual counterparts of each editing operation. Each operation has 0-N hints, defined in the order they are meant to be displayed. Each hint can be any shape, e.g. a stroke on a word corresponding to a delete operation for that word, or also some static text like an annotation. Hints too are defined via SVG.
+
+So there is a fundamental difference between the SVG elements added to represent the base text and all the others added later, i.e. additional text and hints:
+
+- the base text elements are added all at once at the very start, following a predictable layout (even with some optional overrides defined by [init features](#init-features)).
+- the added elements are added later, when moving from one version to the next one; their position and size are computed according to their rendition properties and features, and refer to some specific portion of the base text.
+- all elements added stay there forever, thus accumulating when moving from one version to the next one. This implies that if moving backwards they are removed.
+
+We thus call both _additional text_ and _hints_ as **added elements**, in contrast with **base elements** which exist since the beginning and are added only at once and never removed.
+
+>A special class of temporarily added elements are [text hilites](#text-hilites). These are just a visualization artifact triggered by user action; they totally depend on existing SVG elements for their size and position, and they do not interact in any other way with them. So, when describing the component's rendition we can easily ignore them.
 
 ## Animations
 
@@ -123,7 +132,7 @@ Base text **drawing logic**:
 2. the GSAP animation is wrapped in a function, which is invoked to run the animation.
 3. after the animation completes, we continue with the next character.
 
-## Non-Base Text Rendition
+## Added Elements Rendition
 
 Before discussing [additional text](#additional-text) and [hints](#hints) in more detail, let us introduce their rendering logic, which for the most part is shared among them. Their SVG elements are always rendered with reference to text elements.
 
@@ -358,7 +367,7 @@ The hint's `svg` property (`OperationHint.svg`) is a string representing the SVG
   - the _operation's ID_. Each hint is linked to the operation which is going to generate the next step.
   - an _ordinal number_ suffix preceded by `-`: 1=first hint for that operation, 2=second hint for that operation, etc. This ensures that every hint `g` element placed in the component step being drawn is unique within that scope, because each operation has a unique GUID, and each operation's hint has its ordinal suffix.
 - inside this root `g` element we can have **any SVG code** with groups, shapes, lines, text, etc. Apart from sizing and positioning it, and possibly overriding some of its properties dynamically (e.g. color, text decorations, etc.), the component will just render it as it is.
-- it may contain a **handle** element with `id`=`handle`. This represents the "handle" for the SVG code, i.e. the point in it which is used as _the reference for positioning it_. If there is no such handle element, then the component just uses the _bounding rectangle_ for the whole SVG (i.e. its root `g` element, which is always present). Often, in the hint SVG code the handle element has opacity=0 so it is not visible; but this is up to the SVG code you get from the hint. Anyway, the setting `showHintHandles` can force such hidden handles to be displayed setting their opacity to 1 for diagnostic purposes. So, in the end the handle element is just a way of overriding the bounding rectangle used for positioning the hint; when not specified, we just position it as for any other [non-base text element](#non-base-text-rendition), using the bounding rectangle of its whole content.
+- it may contain a **handle** element with `id`=`handle`. This represents the "handle" for the SVG code, i.e. the point in it which is used as _the reference for positioning it_. If there is no such handle element, then the component just uses the _bounding rectangle_ for the whole SVG (i.e. its root `g` element, which is always present). Often, in the hint SVG code the handle element has opacity=0 so it is not visible; but this is up to the SVG code you get from the hint. Anyway, the setting `showHintHandles` can force such hidden handles to be displayed setting their opacity to 1 for diagnostic purposes. So, in the end the handle element is just a way of overriding the bounding rectangle used for positioning the hint; when not specified, we just position it as for any other [added element](#added-elements-rendition), using the bounding rectangle of its whole content.
 - it may contain a **placeholder** element with id=`placeholder`. This is usually an SVG shape, like a rectangle including a `text` SVG element which represents the text to draw, or directly a `text` element. Whatever the placeholder element is, in the end it either is a `text` element, or it contains a `text` element. This text element has this behavior:
   - its _text value_ is resolved at runtime: in the hint SVG, it is just the _name of the variable_ containing the text. This is equal to the name of a _feature_ which is supposed to be provided by the same operation the hints belongs to. If a feature with this name is not found, the text value will just be the feature name, so that users will be able to understand that there are issues in their data.
   - as for its _size_:
@@ -430,7 +439,7 @@ The **hint's size** is defined by this logic:
 4. the bounding rectangle for the resulting `g` element is calculated;
 5. the hint's handle coordinates are calculated according to its handle element, when present; if not present, the center of the bounding rectangle calculated in the previous step is used instead.
 
-Then, **positioning hints** happens as described about [non-base text rendition](#non-base-text-rendition).
+Then, **positioning hints** happens as described about [added elements rendition](#added-elements-rendition).
 
 ### Hint Animation Property
 
@@ -462,7 +471,7 @@ The GSAP animation targets the hint's root `g` element, i.e. the whole hint. Not
 
 ### Hint SVG Rendition
 
-The SVG content of each hint is positioned and sized according to the reference bounding rectangle (RBR), like described about [non-base-text elements rendition](#non-base-text-rendition).
+The SVG content of each hint is positioned and sized according to the reference bounding rectangle (RBR), like described about [added elements rendition](#added-elements-rendition).
 
 The rules for sizing and positioning a hint's SVG are designed so that users who create hints can easily predict their outcome and animation:
 
