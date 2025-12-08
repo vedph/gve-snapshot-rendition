@@ -29,5 +29,9 @@ pnpm i gsap @types/gsap svg-pan-zoom @types/svg-pan-zoom
 
 TODO list:
 
-- consider replacing char offsets feature with multiple char offset.
 - consider simplifying logic by drawing node features from tagged nodes rather than from steps.
+
+Ensure to read the conceptual documentation about this component in these documentation files under the `docs` folder:
+
+- `snapshot.md`: overview of the backend data used by the component.
+- `rendition.md`: especially this one, contains all the details about the behavior of this component.
