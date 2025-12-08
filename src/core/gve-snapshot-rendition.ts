@@ -629,6 +629,10 @@ export class GveSnapshotRendition extends HTMLElement {
    * Get reference nodes for an operation using node IDs from trace features.
    * Reference nodes are the nodes affected by the operation.
    *
+   * According to the snapshot model, deleted nodes are not included in subsequent
+   * versions' taggedNodes. To find a deleted node, we must search backwards through
+   * previous versions until we find it.
+   *
    * @param nodeIds - Array of node IDs from step.refNodeIds (extracted from trace features)
    * @param inputTag - The input version tag to look for nodes (e.g., "v11")
    * @returns Array of CharNode objects matching the IDs
@@ -636,29 +640,58 @@ export class GveSnapshotRendition extends HTMLElement {
   private getReferenceNodes(nodeIds: number[], inputTag: string): CharNode[] {
     if (!this._data || !nodeIds || nodeIds.length === 0) return [];
 
-    // Get nodes from the input version
-    const versionNodes = this._data.taggedNodes?.[inputTag];
-    if (!versionNodes) {
-      this._logger.warn("Navigation", `No nodes found for version ${inputTag}`);
-      return [];
-    }
-
     const nodes: CharNode[] = [];
 
-    // Find nodes by their IDs in the input version
+    // Find nodes by their IDs, searching backwards through versions if needed
     for (const nodeId of nodeIds) {
-      const node = versionNodes.find((n) => n.id === nodeId);
+      const node = this.findNodeById(nodeId, inputTag);
       if (node) {
         nodes.push(node);
       } else {
         this._logger.warn(
           "Navigation",
-          `Node with ID ${nodeId} not found in version ${inputTag}`
+          `Node with ID ${nodeId} not found in any version up to ${inputTag}`
         );
       }
     }
 
     return nodes;
+  }
+
+  /**
+   * Find a node by ID, searching backwards through versions if needed.
+   * This handles the case where a node was deleted in a previous version but
+   * is still referenced by a later operation (e.g., to add a hint to a deleted node).
+   *
+   * @param nodeId - The node ID to find
+   * @param startTag - The version tag to start searching from (e.g., "v11")
+   * @returns The node if found, undefined otherwise
+   */
+  private findNodeById(nodeId: number, startTag: string): CharNode | undefined {
+    if (!this._data?.taggedNodes) return undefined;
+
+    // Extract version number from tag (e.g., "v11" → 11)
+    const match = startTag.match(/v(\d+)/);
+    if (!match) return undefined;
+
+    let versionNum = parseInt(match[1]);
+
+    // Search backwards from startTag to v0
+    while (versionNum >= 0) {
+      const versionTag = `v${versionNum}`;
+      const versionNodes = this._data.taggedNodes[versionTag];
+
+      if (versionNodes) {
+        const node = versionNodes.find((n) => n.id === nodeId);
+        if (node) {
+          return node;
+        }
+      }
+
+      versionNum--;
+    }
+
+    return undefined;
   }
 
   /**
