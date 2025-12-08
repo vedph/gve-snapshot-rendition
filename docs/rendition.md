@@ -887,10 +887,12 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
   - 🚩 `version`=`beta` marks `v15` as staged version `beta`.
 
 - `v16`: **annotate** the initial `I` with features (we target the initial `I` as it's the nearest character):
+  - `r_t-fore-color`=`blue`.
   - `note`=`12`.
-  - `r_color`=`blue`.
-  - `r_hint-vars`=`rotation=-45`. This passes a variable `rotation`=`-45` to the hint so that it can resolve placeholders with this name. This allows applying a rotation to this hint programmatically.
   - `r_hints`=`note-underline`. This is assumed to have a `note` placeholder to be filled with the text (here "12"), and a `r_color` placeholder for its color.
+  - `r_fore-color`=`blue`.
+  - `r_h-scale-x`=`2`. This doubles the width of the note's text, as its RBR is relative to a single `I` character which would make it too narrow.
+  - `r_h-rotation`=`-45`. This passes a variable `rotation`=`-45` to the hint so that it can override its `rotation` property. This allows applying a rotation to this hint programmatically.
 
 👉 The **resulting texts** for staged versions are:
 
@@ -942,5 +944,5 @@ The same operations in their parsable format (DSL) are listed here:
 107x6=HINTS.@stuff-hints [r_t-position=n r_fore-color=green r_position=n r_t-displaced-span=21x7 r_t-offset-y=-30 r_hints=box]
 75x5- @mov-too
 94+]" TOO."@mov-too [r_t-position=e r_t-offset-x=20 r_t-offset-y=0.4th r_fore-color=green *version=beta]
-1: [note=12 r_color=blue r_hint-vars="rotation=-45" r_hints="note-underline"]
+1: [note=12 r_t-fore-color=blue r_fore-color=blue r_hints=note-underline r_h-scale-x=2 r_h-rotation=-45]
 ```
