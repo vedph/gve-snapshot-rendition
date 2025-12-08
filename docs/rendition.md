@@ -9,6 +9,7 @@
     - [Relative Element Positioning](#relative-element-positioning)
       - [1. Initial Position](#1-initial-position)
       - [2. Offset](#2-offset)
+    - [Added Elements Prolog](#added-elements-prolog)
   - [Additional Text](#additional-text)
   - [Text Rendition Features](#text-rendition-features)
   - [Init Features](#init-features)
@@ -257,6 +258,16 @@ There are two offsets for X and Y:
 
 - X offset: offsets the computed initial position by a specified amount. Default=0.
 - Y offset: offsets the computed initial position by a specified amount. Default=0.
+
+### Added Elements Prolog
+
+Immediately before rendering added elements, a special animation can be triggered to adjust the existing elements panning. We call this animation **prolog**. This happens when the element which is going to be added, once its size and position have been fully computed, would fall _outside the currently visible portion of the text rendition area_.
+
+In this case, _before adding the element_, an animation should _gracefully pan_ the existing elements so that there is just enough room to display the element which is going to be added. This prevents this element to be invisible or only partially visible to users.
+
+Animating the panning adjustment here meets user's expectations, which are against any sudden change. The role of animations in this component is semantic, as they show the progressive making of the text, version after version, in a continuous flow, which would be visually broken by abrupt changes or leaps. This is why not only we need to pan the elements to make the new element visible, but we also need to animate this pan movement.
+
+The duration of this transition animation is defined in the `prologDuration` setting.
 
 ## Additional Text
 
