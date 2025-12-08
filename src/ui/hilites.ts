@@ -113,13 +113,27 @@ export class Hilites {
 
   /**
    * Get node IDs for a specific version.
+   * For v0, if not found in taggedNodes, falls back to extracting from base text.
    */
   private getVersionNodeIds(data: CharChainResult, versionTag: string): number[] {
-    if (!data.taggedNodes || !data.taggedNodes[versionTag]) {
-      return [];
+    // Try to get from taggedNodes first
+    if (data.taggedNodes && data.taggedNodes[versionTag]) {
+      return data.taggedNodes[versionTag].map((node) => node.id);
     }
 
-    return data.taggedNodes[versionTag].map((node) => node.id);
+    // Special handling for v0: fall back to base text if not in taggedNodes
+    if (versionTag === "v0" && data.text) {
+      // If text is a string, we need to generate node IDs (1, 2, 3, ...)
+      if (typeof data.text === "string") {
+        return Array.from({ length: data.text.length }, (_, i) => i + 1);
+      }
+      // If text is already an array of nodes, extract their IDs
+      else if (Array.isArray(data.text)) {
+        return data.text.map((node) => node.id);
+      }
+    }
+
+    return [];
   }
 
   /**
