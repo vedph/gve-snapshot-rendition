@@ -327,9 +327,9 @@ All rendering features have their name starting with `r_`. These are the only fe
 
 The following text rendition features are applicable ONLY to **added text** (=text nodes added by insert/replace operations):
 
-- `r_t-position`: the position of added text relative to the RBR; or an override for the . This works exactly like a hint's `position` property: see [hint positioning properties](#hint-positioning-properties).
-- `r_t-offset-x`: the X offset for the added text, relative to the computed `r_t-position`. This works exactly like hint's `offsetX` property: see [hint positioning properties](#hint-positioning-properties).
-- `r_t-offset-y`: the Y offset for the added text, relative to the computed `r_t-position`. This works exactly like hint's `offsetY` property: see [hint positioning properties](#hint-positioning-properties).
+- `r_t-position`: the position of added text relative to the RBR.
+- `r_t-offset-x`: the X offset for the added text, relative to the computed `r_t-position`.
+- `r_t-offset-y`: the Y offset for the added text, relative to the computed `r_t-position`.
 - `r_t-solid`: a boolean value (`1` or `0`), telling whether the added text behaves as "solid" (thus triggering [spreading](#drawing-logic)) or not (which is the default).
 - `r_t-displaced-span`: a span of base text with format `IDxN` where `ID`=node ID and `N`=count of chars to include, to be used as the RBR instead of the default RBR. This works exactly like a [displaced hint](#displaced-hints), but is applied to added text.
 
@@ -839,17 +839,17 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
   - `r_font-size`=`14`.
 
 - `v6`: **annotate** to add features (this operation belongs to group `swap-complex-long` -- belonging to a group has no practical effect, but it is a metadatum which logically groups operations together):
-  - `note`=`1` (the `1` above `long` indicating a change in word order).
+  - `note-interlinear-above`=`1` (the `1` above `long` indicating a change in word order).
   - `r_fore-color`=`red`.
   - `r_hints`=`note` (a hint assumed to display text whose content is defined by a placeholder named `note`).
 
 - `v7`: **annotate** to add features (this operation belongs to group `swap-complex-long`):
-  - `note`=`2` (the `2` above `nor`).
+  - `note-interlinear-above`=`2` (the `2` above `nor`).
   - `r_fore-color`=`red`.
   - `r_hints`=`note`.
 
 - `v8`: **annotate** to add features (this operation belongs to group `swap-complex-long`):
-  - `note`=`3` (the `3` above `complex`).
+  - `note-interlinear-above`=`3` (the `3` above `complex`).
   - `r_fore-color`=`red`.
   - `r_hints`=`note`.
 
@@ -863,24 +863,29 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
 
 - `v11`: **add** space + `AND SOME STUFF.` (IDs=97-113) after `types` (this operation belongs to group `add-stuff`). Note that we could just have inserted this text before the dot after `types` if our purpose was only to get the corresponding output text; but our purpose here is to represent the sheet in its nearly-diplomatic form. In the sheet we have a deletion on this dot, and then a new text with its own dot is added. Here we do the same, with a deletion first, and then an addition. Features:
   - `r_t-position`=`e`.
+  - `r_t-offset-y`=`0.5th`. Move the text down so that it aligns to the base text baseline. This is because with position `e` the additional text appears on the right of the RBR, but by default is vertically center, which makes it start on a higher baseline.
   - `r_fore-color`=`green`.
 
-- `v12`: **replace** `STUFF.` with `HINTS.` (IDs=114-119). Features:
+- `v12`: **annotate** `STUFF.` (IDs=112-117, group ID `stuff-hints`) with a box around it (this means that it is being replaced by another boxed text to be added later). Features:
+  - `r_hints`=`box`.
+  - `r_fore-color`=`green`.
+
+- `v13`: **replace** `STUFF.` with `HINTS.` (IDs=114-119, group ID `stuff-hints`). Features:
   - `r_fore-color`=`green`.
   - `r_t-position`=`n`.
   - `r_t-displaced-span`=`21x7`. This is a displacement for the text being added by this replace operation (`HINTS`): instead of positioning the text with reference to its reference text (`STUFF`), we position it above an area approximately corresponding to `all ope` of `all operations` in the first line.
   - `r_t-offset-y`=`20`: this shifts the `HINTS` boxed text upper.
   - `r_hints`=`box` (border around `STUFF`).
-  - `r_border`=`tlbr 1 0 solid green` (1-pixel border around `HINTS`).
+  - TODO border
 
-- `v13`: **delete** `too,` + space (this operation belongs to group `mov-too`, because on a more abstract --non-diplomatic-- ground this would be considered a movement). Note that there is no hint for this operation; it is implicit in the next addition.
+- `v14`: **delete** `too,` + space (this operation belongs to group `mov-too`, because on a more abstract --non-diplomatic-- ground this would be considered a movement). Note that there is no hint for this operation; it is implicit in the next addition.
 
-- `v14`: **add** `TOO.` (IDs=120-123) after `line` (this operation belongs to group `mov-too`) . Features:
+- `v15`: **add** `TOO.` (IDs=120-123) after `line` (this operation belongs to group `mov-too`) . Features:
   - `r_t-position`=`e`.
   - `r_t-offset-x`=`10` (leave more space to the right before the added text).
-  - 🚩 `version`=`beta` marks `v14` as staged version `beta`.
+  - 🚩 `version`=`beta` marks `v15` as staged version `beta`.
 
-- `v15`: **annotate** the initial `I` with features (we target the initial `I` as it's the nearest character):
+- `v16`: **annotate** the initial `I` with features (we target the initial `I` as it's the nearest character):
   - `note`=`12`.
   - `r_color`=`blue`.
   - `r_hint-vars`=`rotation=-45`. This passes a variable `rotation`=`-45` to the hint so that it can resolve placeholders with this name. This allows applying a rotation to this hint programmatically.
@@ -915,6 +920,7 @@ This is another line TOO.
 - `note`: a text note. This is a hint, not text which is part of the version (this is only base text or additional text).
   - `note`: the note's text.
   - `r_fore-color`: the text color.
+- `note-interlinear-above`: an interlinear note above the reference line. This is equal to `note` but is offset downwards.
 - `note-underline`: equal to `note`, but with added underline text decoration to the note's text.
 
 The same operations in their parsable format (DSL) are listed here:
@@ -925,13 +931,14 @@ The same operations in their parsable format (DSL) are listed here:
 4=T [r_t-position=n r_fore-color=red r_font-size=14]
 14x2- [r_hints=diagonal-stroke r_fore-color=red]
 19+]s [r_t-position=ne r_fore-color=red r_font-size=14]
-64x4: @swap-complex-long [note=1 r_hints=note r_fore-color=red]
-60x3: @swap-complex-long [note=2 r_hints=note r_fore-color=red]
-52x7: @swap-complex-long [note=3 r_hints=note r_fore-color=red]
+64x4: @swap-complex-long [note=1 r_hints=note-interlinear-above r_fore-color=red]
+60x3: @swap-complex-long [note=2 r_hints=note-interlinear-above r_fore-color=red]
+52x7: @swap-complex-long [note=3 r_hints=note-interlinear-above r_fore-color=red]
 52x7<>64x4 [r_fore-color=red *version=alpha]
 40- @add-stuff [r_hints=diagonal-stroke r_fore-color=green]
-39+]" AND SOME STUFF." @add-stuff [r_t-position=e r_fore-color=green]
-112x6=HINTS. [r_t-position=n r_fore-color=green r_position=n r_t-displaced-span=21x7 r_t-offset-y=-30 r_hints=box r_border="tlbr 1 0 solid green"]
+39+]" AND SOME STUFF." @add-stuff [r_t-position=e r_t-offset-y=0.5th r_fore-color=green]
+112x6: @stuff-hints [r_hints=box r_fore-color=green]
+112x6=HINTS.@stuff-hints [r_t-position=n r_fore-color=green r_position=n r_t-displaced-span=21x7 r_t-offset-y=-30 r_hints=box]
 75x5- @mov-too
 94+]" TOO."@mov-too [r_t-position=e r_fore-color=red *version=beta]
 1: [note=12 r_color=blue r_hint-vars="rotation=-45" r_hints="note-underline"]

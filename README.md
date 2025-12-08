@@ -19,6 +19,24 @@ The test page used in this project is `index.html` and its code is `consumer.js`
 2. download dependencies with `pnpm i`.
 3. run with `pnpm start`.
 
+Note: if you need to **update sample data**, follow these steps:
+
+1. open the GVE backend solution and run the demo.
+2. set text and operations as you want (to start with the current data, pick the "rendition features" preset).
+3. click the "build request" button.
+4. paste the request in [docs/sample/request.json](docs/sample/request.json) if you want to make it the default data.
+5. run the GVE backend API and use Postman or similar to send the request body with this header:
+
+```txt
+POST http://localhost:5239/api/text/operations/run
+Accept: application/json
+Content-Type: application/json
+
+...paste your JSON request body here...
+```
+
+6. copy the response and paste it into [data.json](data.json) and also into [docs/sample/response.json](docs/sample/response.json) if you want to make it the default data.
+
 ## Requirements
 
 This component requires GSAP and svg-pan-zoom:
@@ -30,6 +48,8 @@ pnpm i gsap @types/gsap svg-pan-zoom @types/svg-pan-zoom
 TODO list:
 
 - consider simplifying logic by drawing node features from tagged nodes rather than from steps.
+- add muted previous text to version text UI.
+- add setting to continue moving on to next versions until the group ID is the same.
 
 Ensure to read the conceptual documentation about this component in these documentation files under the `docs` folder:
 
