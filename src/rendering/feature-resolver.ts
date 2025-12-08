@@ -8,7 +8,6 @@ import {
   parseDisplacedSpan,
   parseHintVars,
 } from "../utils/feature-utils";
-import { parseOffset } from "../utils/text-utils";
 
 /**
  * Hint property overrides from r_h-* features.
@@ -43,8 +42,8 @@ export interface RenditionConfig {
 
   // r_t-* features for added text
   textPosition?: string;    // r_t-position
-  textOffsetX: number;      // r_t-offset-x
-  textOffsetY: number;      // r_t-offset-y
+  textOffsetX: number | string;      // r_t-offset-x (can be string like "0.5th" for relative offsets)
+  textOffsetY: number | string;      // r_t-offset-y (can be string like "0.5th" for relative offsets)
   textSolid?: boolean;      // r_t-solid
   textDisplacedSpan?: { nodeId: number; count: number }; // r_t-displaced-span
 
@@ -81,14 +80,12 @@ export class FeatureResolver {
    *
    * @param baseSettings - The base settings from component
    * @param features - Array of features to apply
-   * @param textBounds - Optional text bounds for offset calculations
    * @param nodeFeatureContext - Optional context for extracting node features for placeholder resolution
    * @returns Resolved rendition configuration
    */
   resolve(
     baseSettings: GveRenditionSettings,
     features: Feature[] | undefined,
-    textBounds?: { width: number; height: number },
     nodeFeatureContext?: {
       nodeFeatures: Record<string, OperationFeature[]>;
       outputTag: string;
@@ -216,29 +213,15 @@ export class FeatureResolver {
           break;
 
         case "r_t-offset-x":
-          if (textBounds) {
-            config.textOffsetX = parseOffset(
-              value,
-              textBounds.height,
-              textBounds.width
-            );
-          } else {
-            config.textOffsetX =
-              typeof value === "number" ? value : parseFloat(value);
-          }
+          // Store the value as-is (number or string). It will be parsed later
+          // in renderAdditionalText when RBR bounds are available.
+          config.textOffsetX = typeof value === "number" ? value : value;
           break;
 
         case "r_t-offset-y":
-          if (textBounds) {
-            config.textOffsetY = parseOffset(
-              value,
-              textBounds.height,
-              textBounds.width
-            );
-          } else {
-            config.textOffsetY =
-              typeof value === "number" ? value : parseFloat(value);
-          }
+          // Store the value as-is (number or string). It will be parsed later
+          // in renderAdditionalText when RBR bounds are available.
+          config.textOffsetY = typeof value === "number" ? value : value;
           break;
 
         case "r_t-solid":

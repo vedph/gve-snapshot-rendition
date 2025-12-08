@@ -137,7 +137,8 @@ export class TextRenderer {
       gsap: any,
       targetEl: SVGElement,
       rootEl: SVGElement
-    ) => Promise<void>
+    ) => Promise<void>,
+    config?: RenditionConfig
   ): Promise<void> {
     const textEl = createTextElement(node.data, {
       id: `n_${node.id}`,
@@ -146,15 +147,26 @@ export class TextRenderer {
       y: position.y,
     });
 
-    // Apply default styling
-    applyTextStyle(textEl, {
-      fontFamily: this._settings.fontFamily,
-      fontSize: this._settings.fontSize,
-      foreColor: this._settings.foreColor,
-      backColor: this._settings.backColor,
-      italic: this._settings.italic,
-      bold: this._settings.bold,
-    });
+    // Apply styling from config if provided, otherwise use default settings
+    if (config) {
+      applyTextStyle(textEl, {
+        fontFamily: config.fontFamily,
+        fontSize: config.fontSize,
+        foreColor: config.foreColor,
+        backColor: config.backColor,
+        italic: config.italic,
+        bold: config.bold,
+      });
+    } else {
+      applyTextStyle(textEl, {
+        fontFamily: this._settings.fontFamily,
+        fontSize: this._settings.fontSize,
+        foreColor: this._settings.foreColor,
+        backColor: this._settings.backColor,
+        italic: this._settings.italic,
+        bold: this._settings.bold,
+      });
+    }
 
     rootSvg.appendChild(textEl);
 
@@ -232,6 +244,7 @@ export class TextRenderer {
     const position = config.textPosition || "o"; // Default to origin if not specified
     const targetPos = this.calculateTargetPosition(position, rbr);
 
+    // Parse offsets using RBR bounds (offsets can be like "0.5th" = half of RBR height)
     const offsetX = parseOffset(config.textOffsetX || 0, rbr.height, rbr.width);
     const offsetY = parseOffset(config.textOffsetY || 0, rbr.height, rbr.width);
 
@@ -353,7 +366,7 @@ export class TextRenderer {
         continue;
       }
 
-      await this.renderCharacter(node, pos, rootSvg, versionTag, animationFn);
+      await this.renderCharacter(node, pos, rootSvg, versionTag, animationFn, config);
     }
 
     // 9. Draw borders if r_border specified

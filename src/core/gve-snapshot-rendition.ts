@@ -552,7 +552,6 @@ export class GveSnapshotRendition extends HTMLElement {
     const config = this._featureResolver.resolve(
       this._settings,
       operation.features,
-      undefined, // textBounds - calculate if needed
       {
         nodeFeatures: step.featureSet.nodeFeatures,
         outputTag: step.outputTag,
