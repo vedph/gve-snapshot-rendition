@@ -316,13 +316,6 @@ All rendering features have their name starting with `r_`. These are the only fe
 - `r_strike`: the strikethrough value (as for underline).
 - `r_rotate`: the rotation amount to be applied to each single character.
 - `r_hints`: this feature is used to link the operation to any number of hints. The value is a space-delimited list of hint IDs, in the order they should be rendered for that operation.
-- `r_border`: the border to draw around the text. This is different from other rendition features which directly map to SVG text decorations. This is rather a a shortcut to draw one or more edges as an imaginary rectangle wrapping the text. In reality, the component just draws lines along the edges of this imaginary rectangle, one line per edge (top, left, right, bottom), as requested. Its value pattern is `EDGES THICKNESS PADDING TYPE COLOR`, where:
-  - `EDGES` is any combination of characters `tlbr` where `t`=top, `l`=left, `b`=bottom, `r`=right.
-  - `SIZE` is a number (representing `px`).
-  - `TYPE` is an SVG line type among `solid`, `dotted`, `dashed`, `wavy`.
-  - `COLOR` is a color.
-    So for `r_border`, for instance `tl 1 4 solid silver` means that the text will have two edges, one at top and one at left, each with 1px thickness and silver color, both offset by 4px (padding) from the bounding rectangle of the text.
-    Note that `r_border` SVG line elements are just drawn after the text has been drawn character by character (with their animations when set), with no animation. They just appear at once and variously "box" the text drawn.
 - `r_hint-vars`: this has no effect on text; it is just a rendition feature used only to define a set of variables to be used by [hints placeholders](#hint-svg-placeholders). Each variable has name=value, and is separated with space. For instance, `color=red bold=1` to pass variables `color`=`red` and `bold`=`1` to the hints being rendered for the operation being processed.
 
 The following text rendition features are applicable ONLY to **added text** (=text nodes added by insert/replace operations):

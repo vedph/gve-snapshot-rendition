@@ -137,42 +137,6 @@ export function parseCharOffsets(
 }
 
 /**
- * Parse border feature value.
- * Format: "EDGES THICKNESS PADDING TYPE COLOR"
- * Example: "tlbr 1 4 solid silver"
- *
- * @returns Parsed border configuration or undefined if invalid
- */
-export function parseBorder(value: string):
-  | {
-      edges: { top: boolean; left: boolean; bottom: boolean; right: boolean };
-      thickness: number;
-      padding: number;
-      type: string;
-      color: string;
-    }
-  | undefined {
-  const parts = value.trim().split(/\s+/);
-  if (parts.length !== 5) return undefined;
-
-  const [edgesStr, thicknessStr, paddingStr, type, color] = parts;
-
-  const edges = {
-    top: edgesStr.includes("t"),
-    left: edgesStr.includes("l"),
-    bottom: edgesStr.includes("b"),
-    right: edgesStr.includes("r"),
-  };
-
-  const thickness = parseFloat(thicknessStr);
-  const padding = parseFloat(paddingStr);
-
-  if (isNaN(thickness) || isNaN(padding)) return undefined;
-
-  return { edges, thickness, padding, type, color };
-}
-
-/**
  * Parse displaced span reference.
  * Format: "IDxN" where ID is node ID and N is count
  * Example: "21x7" means starting from node 21, include 7 characters

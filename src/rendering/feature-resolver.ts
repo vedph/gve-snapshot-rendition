@@ -4,7 +4,6 @@ import { Logger } from "../core/logger";
 import {
   getFeatureValue,
   parseCharOffsets,
-  parseBorder,
   parseDisplacedSpan,
   parseHintVars,
 } from "../utils/feature-utils";
@@ -52,13 +51,6 @@ export interface RenditionConfig {
   // r_h-* hint overrides (applies to hints in operation)
   hintOverrides?: Map<string, HintOverrides>; // key=hint ID, value=overrides
 
-  border?: {
-    edges: { top: boolean; left: boolean; bottom: boolean; right: boolean };
-    thickness: number;
-    padding: number;
-    type: string;
-    color: string;
-  };
   hintVars?: Map<string, string>;
 }
 
@@ -237,13 +229,6 @@ export class FeatureResolver {
 
         case "r_hints":
           config.hints = value.trim().split(/\s+/);
-          break;
-
-        case "r_border":
-          config.border = parseBorder(value);
-          if (!config.border) {
-            this._logger.warn(`Invalid r_border value: ${value}`);
-          }
           break;
 
         case "r_hint-vars":

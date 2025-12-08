@@ -11,7 +11,6 @@ import {
   createTextElement,
   applyTextStyle,
   getSafeBBox,
-  createLine,
   getTextWidth,
 } from "./svg-utils";
 import { parseOffset } from "../utils/text-utils";
@@ -265,7 +264,7 @@ export class TextRenderer {
       baseY
     );
 
-    // 4. Calculate bounding rectangle for the text (needed for spreading and borders)
+    // 4. Calculate bounding rectangle for the text (needed for spreading and prolog)
     const textBounds = this.calculateTextBounds(nodes, positions);
 
     // 5. Apply spreading if r_t-solid=1
@@ -367,20 +366,6 @@ export class TextRenderer {
       }
 
       await this.renderCharacter(node, pos, rootSvg, versionTag, animationFn, config);
-    }
-
-    // 9. Draw borders if r_border specified
-    if (config.border && textBounds) {
-      await this.drawBorder(
-        config.border.edges,
-        config.border.thickness,
-        config.border.padding,
-        config.border.type,
-        config.border.color,
-        textBounds,
-        rootSvg,
-        versionTag
-      );
     }
 
     this._logger.timeEnd(`renderAdditionalText-${versionTag}`);
@@ -569,107 +554,6 @@ export class TextRenderer {
       right: maxX,
       bottom: maxY,
     };
-  }
-
-  /**
-   * Draw border lines around text.
-   */
-  private async drawBorder(
-    edges: { top: boolean; left: boolean; bottom: boolean; right: boolean },
-    thickness: number,
-    padding: number,
-    lineType: string,
-    color: string,
-    bounds: BoundingRect,
-    rootSvg: SVGElement,
-    versionTag: string
-  ): Promise<void> {
-    this._logger.debug("TextRenderer", `Drawing border`, {
-      edges,
-      thickness,
-      padding,
-      lineType,
-      color,
-    });
-
-    // Expand bounds by padding
-    const x1 = bounds.x - padding;
-    const y1 = bounds.y - padding;
-    const x2 = bounds.right + padding;
-    const y2 = bounds.bottom + padding;
-
-    // Draw each requested edge
-    const groupId = `border-${versionTag}`;
-    const borderGroup = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "g"
-    );
-    borderGroup.setAttribute("id", groupId);
-    borderGroup.setAttribute("class", "border");
-
-    if (edges.top) {
-      // Top edge
-      const line = createLine(x1, y1, x2, y1, {
-        stroke: color,
-        strokeWidth: thickness,
-        strokeDasharray: this.getStrokeDasharray(lineType),
-      });
-      borderGroup.appendChild(line);
-    }
-
-    if (edges.bottom) {
-      // Bottom edge
-      const line = createLine(x1, y2, x2, y2, {
-        stroke: color,
-        strokeWidth: thickness,
-        strokeDasharray: this.getStrokeDasharray(lineType),
-      });
-      borderGroup.appendChild(line);
-    }
-
-    if (edges.left) {
-      // Left edge
-      const line = createLine(x1, y1, x1, y2, {
-        stroke: color,
-        strokeWidth: thickness,
-        strokeDasharray: this.getStrokeDasharray(lineType),
-      });
-      borderGroup.appendChild(line);
-    }
-
-    if (edges.right) {
-      // Right edge
-      const line = createLine(x2, y1, x2, y2, {
-        stroke: color,
-        strokeWidth: thickness,
-        strokeDasharray: this.getStrokeDasharray(lineType),
-      });
-      borderGroup.appendChild(line);
-    }
-
-    rootSvg.appendChild(borderGroup);
-
-    // Cache bounds for the border group
-    const bbox = getSafeBBox(borderGroup);
-    this._boundsCache.set(groupId, bbox);
-  }
-
-  /**
-   * Get SVG stroke-dasharray value for line type.
-   */
-  private getStrokeDasharray(lineType: string): string {
-    switch (lineType) {
-      case "dotted":
-        return "2,2";
-      case "dashed":
-        return "5,5";
-      case "wavy":
-        // Wavy is approximated with dashed for now
-        return "3,2";
-      case "solid":
-      default:
-        return "none";
-    }
   }
 
   /**
