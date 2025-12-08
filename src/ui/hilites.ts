@@ -25,11 +25,11 @@ export class Hilites {
     this._rootSvg = rootSvg;
 
     // Create hilites group if it doesn't exist
+    // NOTE: The group will be created, but we'll insert it dynamically
+    // into the correct container (viewport group) when showing hilites
     if (!this._hilitesGroup) {
       this._hilitesGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
       this._hilitesGroup.setAttribute("id", "hilites-group");
-      // Insert at the beginning so hilites are behind everything
-      this._rootSvg.insertBefore(this._hilitesGroup, this._rootSvg.firstChild);
     }
   }
 
@@ -56,6 +56,17 @@ export class Hilites {
     // Clear any existing hilites first
     await this.clearHilites();
 
+    // Get the correct container for hilites (viewport group if pan/zoom is active)
+    // The viewport group is where all content lives and gets transformed
+    const container = this.getSvgContainer();
+
+    // Ensure hilites group is in the container and at the back (for z-ordering)
+    if (!container.contains(this._hilitesGroup)) {
+      // Insert at the beginning so hilites are behind everything
+      container.insertBefore(this._hilitesGroup, container.firstChild);
+      this._logger.debug("Hilites", "Inserted hilites group into viewport container");
+    }
+
     // Get node IDs for this version
     const nodeIds = this.getVersionNodeIds(data, versionTag);
     if (nodeIds.length === 0) {
@@ -66,7 +77,7 @@ export class Hilites {
     // Create hilite rectangles for each text element
     const hilites: SVGRectElement[] = [];
     for (const nodeId of nodeIds) {
-      const textEl = this._rootSvg.querySelector<SVGTextElement>(`text.node#n_${nodeId}`);
+      const textEl = container.querySelector<SVGTextElement>(`text.node#n_${nodeId}`);
       if (textEl) {
         const hiliteRect = this.createHiliteRect(textEl, color);
         hilites.push(hiliteRect);
@@ -113,6 +124,11 @@ export class Hilites {
 
   /**
    * Create a hilite rectangle for a text element.
+   *
+   * IMPORTANT: Since hilites are now placed in the same container (viewport group)
+   * as the text elements, they share the same coordinate space and transforms.
+   * This means getBBox() gives us the correct relative coordinates, and the
+   * hilites will automatically pan/zoom with the text when PROLOG is triggered.
    */
   private createHiliteRect(textEl: SVGTextElement, color: string): SVGRectElement {
     const bbox = textEl.getBBox();
@@ -200,5 +216,38 @@ export class Hilites {
    */
   hasActiveHilites(): boolean {
     return this._activeHilites.length > 0;
+  }
+
+  /**
+   * Get the SVG container where hilites should be added.
+   * When svg-pan-zoom is active, this returns the viewport group.
+   * Otherwise, returns the root SVG.
+   *
+   * CRITICAL: svg-pan-zoom wraps all content in a <g> viewport element.
+   * Hilites MUST be added to this group, not the root SVG, so they
+   * transform with the content when PROLOG panning occurs.
+   */
+  private getSvgContainer(): SVGElement {
+    if (!this._rootSvg) {
+      throw new Error("Root SVG not initialized");
+    }
+
+    // Try to find the svg-pan-zoom viewport group
+    // svg-pan-zoom creates a <g> with id containing 'viewport'
+    const viewport = this._rootSvg.querySelector(
+      'g[id*="viewport"]'
+    ) as SVGGElement;
+    if (viewport) {
+      return viewport;
+    }
+
+    // Alternative: get first <g> child (svg-pan-zoom's wrapper)
+    const firstG = this._rootSvg.querySelector("g") as SVGGElement;
+    if (firstG) {
+      return firstG;
+    }
+
+    // No pan/zoom viewport found - use root SVG
+    return this._rootSvg;
   }
 }
