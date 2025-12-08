@@ -29,6 +29,7 @@ export class Toolbar {
 
   // Current step label
   private versionLabel!: HTMLElement;
+  private groupBadge!: HTMLElement;
 
   // Slideshow buttons
   private slideshowStartBtn!: HTMLButtonElement;
@@ -121,6 +122,9 @@ export class Toolbar {
         <!-- Custom Buttons Group -->
         <div id="custom-buttons-group" class="toolbar-group custom-buttons-group">
         </div>
+
+        <!-- Group Badge (at the end) -->
+        <div id="group-badge" class="version-group-badge" style="display: none; margin-left: auto;"></div>
       </div>
     `;
 
@@ -132,6 +136,7 @@ export class Toolbar {
     this.nextBtn = this.container.querySelector("#next-btn")!;
     this.lastBtn = this.container.querySelector("#last-btn")!;
     this.versionLabel = this.container.querySelector("#version-label")!;
+    this.groupBadge = this.container.querySelector("#group-badge")!;
 
     this.slideshowStartBtn = this.container.querySelector("#slideshow-start-btn")!;
     this.slideshowStopBtn = this.container.querySelector("#slideshow-stop-btn")!;
@@ -270,6 +275,7 @@ export class Toolbar {
     const info = this.getVersionInfo();
     if (!info) {
       this.versionLabel.innerHTML = "v0 (1/1)";
+      this.groupBadge.style.display = "none";
       return;
     }
 
@@ -280,11 +286,15 @@ export class Toolbar {
       labelHtml += ` <span class="version-staged">${info.stagedVersion}</span>`;
     }
 
-    if (info.groupId) {
-      labelHtml += ` <span class="version-group">[${info.groupId}]</span>`;
-    }
-
     this.versionLabel.innerHTML = labelHtml;
+
+    // Update group badge (displayed at the end of the toolbar)
+    if (info.groupId) {
+      this.groupBadge.textContent = info.groupId;
+      this.groupBadge.style.display = "inline-block";
+    } else {
+      this.groupBadge.style.display = "none";
+    }
   }
 
   /**
