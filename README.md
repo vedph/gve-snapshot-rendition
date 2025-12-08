@@ -48,7 +48,7 @@ pnpm i gsap @types/gsap svg-pan-zoom @types/svg-pan-zoom
 TODO list:
 
 - consider simplifying logic by drawing node features from tagged nodes rather than from steps.
-- add muted previous text to version text UI.
+- add muted previous text to version text UI and diffing between them.
 - add setting to continue moving on to next versions until the group ID is the same.
 
 Ensure to read the conceptual documentation about this component in these documentation files under the `docs` folder:

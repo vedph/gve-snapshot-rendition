@@ -274,7 +274,9 @@ export class GveSnapshotRendition extends HTMLElement {
         this._toolbar = new Toolbar(toolbarContainer as HTMLElement);
         this._toolbar.updateData(this._data);
         this._toolbar.setCustomButtons(this._settings.customButtons || []);
-        this._toolbar.setDisabledButtons(this._settings.disabledButtonIds || []);
+        this._toolbar.setDisabledButtons(
+          this._settings.disabledButtonIds || []
+        );
 
         // Listen for toolbar navigation events
         toolbarContainer.addEventListener("toolbar-navigate", (e: Event) => {
@@ -285,7 +287,10 @@ export class GveSnapshotRendition extends HTMLElement {
         // Listen for toolbar slideshow events
         toolbarContainer.addEventListener("toolbar-slideshow", (e: Event) => {
           const customEvent = e as CustomEvent;
-          this.handleToolbarSlideshow(customEvent.detail.action, customEvent.detail.reverse);
+          this.handleToolbarSlideshow(
+            customEvent.detail.action,
+            customEvent.detail.reverse
+          );
         });
 
         // Listen for toolbar display events
@@ -343,9 +348,11 @@ export class GveSnapshotRendition extends HTMLElement {
     this._versionsListArea.setNavigateCallback((versionTag: string) => {
       this.navigateToVersion(versionTag);
     });
-    this._versionsListArea.setHiliteToggleCallback((versionTag: string | null) => {
-      this.toggleHilites(versionTag);
-    });
+    this._versionsListArea.setHiliteToggleCallback(
+      (versionTag: string | null) => {
+        this.toggleHilites(versionTag);
+      }
+    );
 
     // Create version text area
     this._versionTextArea = new VersionTextArea(this._settings, this._logger);
@@ -529,7 +536,8 @@ export class GveSnapshotRendition extends HTMLElement {
 
     // Get reference nodes (nodes affected by this operation)
     // Use refNodeIds from the step (populated from trace features)
-    const refNodes = this.getReferenceNodes(step.refNodeIds);
+    // Reference nodes are from the INPUT version (before this operation is applied)
+    const refNodes = this.getReferenceNodes(step.refNodeIds, step.inputTag);
     if (refNodes.length === 0) {
       this._logger.warn(
         `No reference nodes found for operation ${operation.id}`
@@ -548,7 +556,8 @@ export class GveSnapshotRendition extends HTMLElement {
     }
 
     // Resolve features to config
-    // Pass node feature context so all node features (including "note", etc.) are available for placeholder resolution
+    // Pass node feature context so all node features (including "note", etc.)
+    // are available for placeholder resolution
     const config = this._featureResolver.resolve(
       this._settings,
       operation.features,
@@ -621,22 +630,30 @@ export class GveSnapshotRendition extends HTMLElement {
    * Reference nodes are the nodes affected by the operation.
    *
    * @param nodeIds - Array of node IDs from step.refNodeIds (extracted from trace features)
+   * @param inputTag - The input version tag to look for nodes (e.g., "v11")
    * @returns Array of CharNode objects matching the IDs
    */
-  private getReferenceNodes(nodeIds: number[]): CharNode[] {
-    if (!this._baseNodes || this._baseNodes.length === 0 || !nodeIds) return [];
+  private getReferenceNodes(nodeIds: number[], inputTag: string): CharNode[] {
+    if (!this._data || !nodeIds || nodeIds.length === 0) return [];
+
+    // Get nodes from the input version
+    const versionNodes = this._data.taggedNodes?.[inputTag];
+    if (!versionNodes) {
+      this._logger.warn("Navigation", `No nodes found for version ${inputTag}`);
+      return [];
+    }
 
     const nodes: CharNode[] = [];
 
-    // Find nodes by their IDs
+    // Find nodes by their IDs in the input version
     for (const nodeId of nodeIds) {
-      const node = this._baseNodes.find((n) => n.id === nodeId);
+      const node = versionNodes.find((n) => n.id === nodeId);
       if (node) {
         nodes.push(node);
       } else {
         this._logger.warn(
           "Navigation",
-          `Node with ID ${nodeId} not found in base nodes`
+          `Node with ID ${nodeId} not found in version ${inputTag}`
         );
       }
     }
@@ -675,7 +692,10 @@ export class GveSnapshotRendition extends HTMLElement {
     hintVars: Map<string, string>,
     operationId: string,
     versionTag: string,
-    hintOverrides?: Map<string, import("../rendering/feature-resolver").HintOverrides>
+    hintOverrides?: Map<
+      string,
+      import("../rendering/feature-resolver").HintOverrides
+    >
   ): Promise<void> {
     if (!this._hintRenderer || !this._rootSvg) return;
 
@@ -803,10 +823,7 @@ export class GveSnapshotRendition extends HTMLElement {
     const versionTag = `v${versionIndex}`;
     this._detailsArea.updateVersion(this._data, versionTag);
 
-    this._logger.debug(
-      "Component",
-      `Updated details area for ${versionTag}`
-    );
+    this._logger.debug("Component", `Updated details area for ${versionTag}`);
   }
 
   /**
@@ -870,7 +887,11 @@ export class GveSnapshotRendition extends HTMLElement {
     let foundElement: SVGTextElement | null = null;
     let foundNode: CharNode | null = null;
 
-    for (let versionIdx = this._currentVersionIndex; versionIdx >= 0; versionIdx--) {
+    for (
+      let versionIdx = this._currentVersionIndex;
+      versionIdx >= 0;
+      versionIdx--
+    ) {
       const versionTag = `v${versionIdx}`;
       const versionClass = `version-${versionTag}`;
 
@@ -902,7 +923,9 @@ export class GveSnapshotRendition extends HTMLElement {
 
     // Update details area with the found element
     if (foundElement && foundNode) {
-      this._detailsArea.updateHoveredElements([{ element: foundElement, node: foundNode }]);
+      this._detailsArea.updateHoveredElements([
+        { element: foundElement, node: foundNode },
+      ]);
       this._logger.debug(
         "Component",
         `Hovered over node ${hoveredNodeId} in ${this._currentVersion}`
@@ -968,9 +991,7 @@ export class GveSnapshotRendition extends HTMLElement {
 
     const versionClass = `version-v${versionIndex}`;
     const container = this.getSvgContainer();
-    const elements = Array.from(
-      container.querySelectorAll(`.${versionClass}`)
-    );
+    const elements = Array.from(container.querySelectorAll(`.${versionClass}`));
 
     if (elements.length === 0) {
       this._logger.debug("Navigation", `No elements found for ${versionClass}`);
@@ -1074,7 +1095,10 @@ export class GveSnapshotRendition extends HTMLElement {
     }
     this._panZoomInstance.zoomIn();
     this.updateToolbarZoom();
-    this._logger.debug("Zoom", `Zoomed in to ${this._panZoomInstance.getZoom().toFixed(2)}x`);
+    this._logger.debug(
+      "Zoom",
+      `Zoomed in to ${this._panZoomInstance.getZoom().toFixed(2)}x`
+    );
   }
 
   /**
@@ -1087,7 +1111,10 @@ export class GveSnapshotRendition extends HTMLElement {
     }
     this._panZoomInstance.zoomOut();
     this.updateToolbarZoom();
-    this._logger.debug("Zoom", `Zoomed out to ${this._panZoomInstance.getZoom().toFixed(2)}x`);
+    this._logger.debug(
+      "Zoom",
+      `Zoomed out to ${this._panZoomInstance.getZoom().toFixed(2)}x`
+    );
   }
 
   /**
@@ -1146,7 +1173,7 @@ export class GveSnapshotRendition extends HTMLElement {
   private async handleToolbarNavigation(action: string): Promise<void> {
     if (!this._data) return;
 
-    const totalVersions = (this._data.steps?.length || 0);
+    const totalVersions = this._data.steps?.length || 0;
 
     switch (action) {
       case "first":
@@ -1236,7 +1263,10 @@ export class GveSnapshotRendition extends HTMLElement {
         break;
       case "toggle-reverse":
         // Reverse flag is already updated in toolbar
-        this._logger.debug("Slideshow", `Reverse mode ${reverse ? "enabled" : "disabled"}`);
+        this._logger.debug(
+          "Slideshow",
+          `Reverse mode ${reverse ? "enabled" : "disabled"}`
+        );
         break;
     }
   }
@@ -1374,7 +1404,7 @@ export class GveSnapshotRendition extends HTMLElement {
   private async slideshowAdvance(): Promise<void> {
     if (!this._data) return;
 
-    const totalVersions = (this._data.steps?.length || 0);
+    const totalVersions = this._data.steps?.length || 0;
 
     // Determine direction (forward by default, or reverse if enabled)
     const reverse = this._toolbar?.getSlideshowReverse() ?? false;
@@ -1528,13 +1558,15 @@ export class GveSnapshotRendition extends HTMLElement {
     if (this._panZoomInstance) {
       // svg-pan-zoom creates a <g> with id containing 'viewport'
       // Try to find it, fall back to rootSvg if not found
-      const viewport = this._rootSvg.querySelector('g[id*="viewport"]') as SVGGElement;
+      const viewport = this._rootSvg.querySelector(
+        'g[id*="viewport"]'
+      ) as SVGGElement;
       if (viewport) {
         return viewport;
       }
 
       // Alternative: get first <g> child (svg-pan-zoom's wrapper)
-      const firstG = this._rootSvg.querySelector('g') as SVGGElement;
+      const firstG = this._rootSvg.querySelector("g") as SVGGElement;
       if (firstG) {
         return firstG;
       }
@@ -1594,7 +1626,8 @@ export class GveSnapshotRendition extends HTMLElement {
       this._logger.debug("Component", "Cleared hilites");
     } else {
       // Show hilites for the version
-      const color = this._versionsListArea?.getVersionColor(versionTag) || "#FFE4E1";
+      const color =
+        this._versionsListArea?.getVersionColor(versionTag) || "#FFE4E1";
       await this._hilites.showHilites(this._data, versionTag, color);
       this._logger.debug("Component", `Showing hilites for ${versionTag}`);
     }

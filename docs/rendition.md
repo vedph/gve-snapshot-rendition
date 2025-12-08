@@ -866,7 +866,7 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
   - `r_t-offset-y`=`0.4th`. Move the text down so that it aligns to the base text baseline. This is because with position `e` the additional text appears on the right of the RBR, but by default is vertically center, which makes it start on a higher baseline.
   - `r_fore-color`=`green`.
 
-- `v12`: **annotate** `STUFF.` (IDs=112-117, group ID `stuff-hints`) with a box around it (this means that it is being replaced by another boxed text to be added later). Features:
+- `v12`: **annotate** `STUFF.` (IDs=107-112, group ID `stuff-hints`) with a box around it (this means that it is being replaced by another boxed text to be added later). Features:
   - `r_hints`=`box` (border around `STUFF`).
   - `r_fore-color`=`green`.
 
