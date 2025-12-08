@@ -1881,6 +1881,102 @@ export class GveSnapshotRendition extends HTMLElement {
         background-color: var(--gve-border-color, #ddd);
       }
 
+      /* Text Panels (A, B, Diff) */
+      .text-panel {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        position: relative;
+        flex: 1;
+      }
+
+      .text-panel:not(:last-child) {
+        border-bottom: 1px solid var(--gve-border-color, #ddd);
+      }
+
+      .panel-resize-handle {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        cursor: ns-resize;
+        background: transparent;
+        transition: background-color 0.2s ease;
+        z-index: 10;
+      }
+
+      .panel-resize-handle:hover {
+        background-color: var(--gve-primary-color, #007bff);
+        opacity: 0.3;
+      }
+
+      .text-panel-label {
+        padding: 0.4rem 1rem;
+        background: var(--gve-text-panel-label-bg, #f5f5f5);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--gve-text-color, #333);
+        border-bottom: 1px solid var(--gve-border-color, #e0e0e0);
+      }
+
+      .text-panel-b .text-panel-label {
+        color: var(--gve-text-secondary-color, #666);
+      }
+
+      .text-panel-b .version-text-secondary {
+        color: var(--gve-text-secondary-color, #666);
+        background: var(--gve-text-pane-secondary-bg, #fafafa);
+      }
+
+      .text-panel-diff {
+        flex: 1;
+        min-height: 100px;
+      }
+
+      .diff-content {
+        flex: 1;
+        padding: 1rem;
+        overflow: auto;
+        font-family: var(--gve-text-pane-font-family, monospace);
+        font-size: var(--gve-text-pane-font-size, 14px);
+        line-height: 1.5;
+        white-space: pre-wrap;
+        background: var(--gve-text-pane-bg, #fff);
+      }
+
+      .diff-empty {
+        color: var(--gve-placeholder-color, #999);
+        font-style: italic;
+      }
+
+      .diff-insert {
+        background-color: var(--gve-diff-insert-bg, #d4edda);
+        color: var(--gve-diff-insert-text, #155724);
+      }
+
+      .diff-delete {
+        background-color: var(--gve-diff-delete-bg, #f8d7da);
+        color: var(--gve-diff-delete-text, #721c24);
+        text-decoration: line-through;
+      }
+
+      .diff-equal {
+        color: var(--gve-text-color, #333);
+      }
+
+      /* Pin button active state */
+      .toolbar-btn.active {
+        background: var(--gve-primary-color, #007bff);
+        color: white;
+        border-color: var(--gve-primary-color, #007bff);
+      }
+
+      .toolbar-btn.active:hover:not(:disabled) {
+        background: var(--gve-primary-dark, #0056b3);
+        border-color: var(--gve-primary-dark, #0056b3);
+      }
+
       /* Versions List Area */
       #versions-list-container {
         grid-area: versions-list;

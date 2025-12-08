@@ -728,13 +728,6 @@ This area can be collapsed.
 
 The version text area contains the multiline **plain text** corresponding to the _currently displayed text version_ (as already remarked, lines are ended by LF characters, which have their corresponding text node in the output data, just like any other character). So, this area is updated whenever we move to another version. The generated text of each version is got from the `result` property in result data.
 
-A small **toolbar** here contains buttons for the following actions:
-
-- **copy all text**: copy the currently displayed text to the clipboard.
-- **toggle word-wrap**: toggle word wrap for text.
-- **increase font size**.
-- **decrease font size**.
-
 When the text is too long, scrollbars will appear (horizontal scrollbars can appear only when word wrap is off).
 
 The reason for this area is to help users read the rendered text. This rendition is focused on a diplomatic representation ("ink and paper"), which might not always immediately readable to end users. For instance:
@@ -743,6 +736,22 @@ The reason for this area is to help users read the rendered text. This rendition
 - when two words are moved or swapped by means of arrows or numbers annotated above them (e.g. "2" and "1" on two words meaning that the second one should be swapped with the first one), the text stays the same, but it should be _read_ in a different order, as suggested by its visual hints. Here too, having a text pane clearly shows the way text is meant to be read.
 
 This implies that the text elements on the component will accumulate, and will not be necessarily in synch with the node elements of each version; there will surely be in synch with all the nodes from that version, but there will be also all the nodes added before it. This is why we are also adding the version text area: its task is to show the resulting text, which corresponds to the nodes in the targeted version, but in many cases will not correspond to the text elements on the component text rendition surface.
+
+This area is structured into 1 toolbar and 3 resizable sub-panels below it, one on top of the other:
+
+- **text-A panel**: the first sub-panel contains the current text. Let us call it "text A".
+- **text-B panel**: a second sub-panel contains the previously displayed text, in a grayish color. Let us call it "text B".
+- **diff panel**: a third sub-panel contains the diffing between texts B and A, or A and B, when toggling diff directions. The diffing is computed via the `fast-diff` library, which is open-source, light and very popular.
+- the **toolbar** here contains buttons for the following actions:
+  - **copy all text**: copy the currently displayed text to the clipboard.
+  - **toggle word-wrap**: toggle word wrap for text.
+  - **increase font size**.
+  - **decrease font size**.
+  - **pin previous text**: when pinned, the B text never changes until the pin is toggled off. This allows comparing a selected, pinned version of text with another one.
+  - **toggle diff directions**: toggle the direction for diffing from B to A (default) to A to B and vice-versa.
+  - **collapse** the whole area.
+
+The purpose of these panels is to immediately show what changed in the text from the previously displayed version to the current one. Pinning text B also allows comparing texts from two chosen versions.
 
 #### Component UI: Details Area
 
