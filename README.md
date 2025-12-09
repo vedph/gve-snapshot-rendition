@@ -6,14 +6,19 @@ Custom web component for feature-based GVE snapshot rendition.
 
 Conceptual documentation and sample data:
 
-- [snapshot backend model](docs/snapshot.md)
-- [rendition description](docs/rendition.md)
-- [sample request to backend snapshot processor](docs/sample/request.json)
-- [sample response from backend snapshot processor](docs/sample/response.json)
+- [snapshot backend model](docs/snapshot.md): overview of the backend data used by the component.
+- [rendition description](docs/rendition.md): details about the architecture and logic of this component.
+- [sample request to backend snapshot processor](docs/sample/request.json): the request used to generate our sample data via backend. This is used only when we want to change our sample data.
+- [sample response from backend snapshot processor](docs/sample/response.json): the response received from backend corresponding to our request. This is used only when we want to change our sample data.
+- [data used in the demo](data.json): the data loaded in the web component to test it. This is copied from [response.json](docs/sample/response.json), and contains all the data received by the web component for rendering.
 
 The test page used in this project is `index.html` and its code is `consumer.js`.
 
+Always ensure to read the conceptual documentation about this component in these documentation files under the `docs` folder.
+
 ## Quick Start
+
+To start working with this code:
 
 1. clone this repository.
 2. download dependencies with `pnpm i`.
@@ -27,31 +32,30 @@ Note: if you need to **update sample data**, follow these steps:
 4. paste the request in [docs/sample/request.json](docs/sample/request.json) if you want to make it the default data.
 5. run the GVE backend API and use Postman or similar to send the request body with this header:
 
-```txt
-POST http://localhost:5239/api/text/operations/run
-Accept: application/json
-Content-Type: application/json
+    ```txt
+    POST http://localhost:5239/api/text/operations/run
+    Accept: application/json
+    Content-Type: application/json
 
-...paste your JSON request body here...
-```
+    ...paste your JSON request body here...
+    ```
 
 6. copy the response and paste it into [data.json](data.json) and also into [docs/sample/response.json](docs/sample/response.json) if you want to make it the default data.
 
 ## Requirements
 
-This component requires GSAP and svg-pan-zoom:
+This component requires the following packages:
 
-```sh
-pnpm i gsap @types/gsap svg-pan-zoom @types/svg-pan-zoom
-```
+- [GSAP](https://gsap.com) for animations (`pnpm i gsap @types/gsap`).
+- [svg-pan-zoom](https://github.com/bumbu/svg-pan-zoom) for zooming and panning (`pnpm i svg-pan-zoom @types/svg-pan-zoom`).
+- [fast-diff](https://github.com/jhchen/fast-diff) for text diffing (`pnpm i fast-diff @types/fast-diff`).
+- [feather-icons](https://github.com/feathericons/feather) for icons. See also the [icons list](https://feathericons.com) (`pnpm i feather-icons`).
 
-TODO list:
+## Task List
 
-- add muted previous text to version text UI and diffing between them.
+This is only a reminder.
+
+- add feature adapter service and tests.
+- add settings and support for CodePen hint designer.
 - add setting to continue moving on to next versions until the group ID is the same.
 - consider simplifying logic by drawing node features from tagged nodes rather than from steps.
-
-Ensure to read the conceptual documentation about this component in these documentation files under the `docs` folder:
-
-- `snapshot.md`: overview of the backend data used by the component.
-- `rendition.md`: especially this one, contains all the details about the behavior of this component.
