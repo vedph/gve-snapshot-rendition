@@ -68,6 +68,11 @@ export class OperationSummaryService {
 
   /**
    * Get a node by ID, searching in version tagged nodes.
+   *
+   * Searches backwards from the specified version to v0. Since v0 is normalized
+   * and added to taggedNodes by the component during data processing, no special
+   * handling is needed.
+   *
    * @param nodeId - Node ID
    * @param versionTag - Version tag to search in (searches backwards if not found)
    * @returns The node, or null

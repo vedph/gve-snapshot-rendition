@@ -260,6 +260,18 @@ export class GveSnapshotRendition extends HTMLElement {
       this._baseNodes = this._data.text;
     }
 
+    // Data normalization: Add v0 to taggedNodes if not present
+    // This simplifies all node lookup logic by eliminating v0 as a special case
+    if (this._baseNodes.length > 0 && this._data.taggedNodes) {
+      if (!this._data.taggedNodes["v0"]) {
+        this._data.taggedNodes["v0"] = this._baseNodes;
+        this._logger.debug(
+          "Data normalization",
+          `Added v0 with ${this._baseNodes.length} base nodes to taggedNodes`
+        );
+      }
+    }
+
     // Generate version color palette
     this._versionPalette = generateVersionPalette(this._data.chainTags);
 
@@ -662,6 +674,9 @@ export class GveSnapshotRendition extends HTMLElement {
    * Find a node by ID, searching backwards through versions if needed.
    * This handles the case where a node was deleted in a previous version but
    * is still referenced by a later operation (e.g., to add a hint to a deleted node).
+   *
+   * Searches backwards from the specified version to v0. Since v0 is now normalized
+   * and added to taggedNodes during data processing, no special handling is needed.
    *
    * @param nodeId - The node ID to find
    * @param startTag - The version tag to start searching from (e.g., "v11")
