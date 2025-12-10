@@ -82,12 +82,15 @@ export class GveSnapshotRendition extends HTMLElement {
   private _slideshowTimerId: number | null = null;
   private _currentVersion: string = "v0";
   private _currentVersionIndex: number = 0;
+  private _autoForwardEnabled: boolean = false;
+  private _autoForwardTimerId: number | null = null;
 
   constructor() {
     super();
 
     // Initialize with default settings
     this._settings = { ...DEFAULT_SETTINGS };
+    this._autoForwardEnabled = this._settings.autoForwardOnGroup;
 
     // Create logger
     this._logger = new Logger("GVE-Rendition", this._settings.debug);
@@ -289,6 +292,7 @@ export class GveSnapshotRendition extends HTMLElement {
         this._toolbar.setDisabledButtons(
           this._settings.disabledButtonIds || []
         );
+        this._toolbar.setAutoForwardEnabled(this._autoForwardEnabled);
 
         // Listen for toolbar navigation events
         toolbarContainer.addEventListener("toolbar-navigate", (e: Event) => {
@@ -304,6 +308,15 @@ export class GveSnapshotRendition extends HTMLElement {
             customEvent.detail.reverse
           );
         });
+
+        // Listen for toolbar auto-forward events
+        toolbarContainer.addEventListener(
+          "toolbar-auto-forward",
+          (e: Event) => {
+            const customEvent = e as CustomEvent;
+            this.setAutoForwardEnabled(customEvent.detail.enabled);
+          }
+        );
 
         // Listen for toolbar display events
         toolbarContainer.addEventListener("toolbar-display", (e: Event) => {
@@ -795,6 +808,9 @@ export class GveSnapshotRendition extends HTMLElement {
       return;
     }
 
+    // Stop any pending auto-forward when user manually navigates
+    this.stopAutoForward();
+
     // Clear hilites before navigating
     if (this._hilites && this._hilites.hasActiveHilites()) {
       await this._hilites.clearHilites();
@@ -830,6 +846,21 @@ export class GveSnapshotRendition extends HTMLElement {
 
     // Re-setup hover listeners (new text elements may have been added)
     this.setupTextElementHoverListeners();
+
+    // Check if we should auto-forward through grouped operations
+    // Only auto-forward if:
+    // 1. Feature is enabled
+    // 2. We moved forward (targetIndex > previous index)
+    // 3. Current operation has a groupId
+    // 4. Not already in slideshow mode
+    if (
+      this._autoForwardEnabled &&
+      targetIndex > 0 &&
+      targetIndex <= (this._data?.steps?.length || 0) &&
+      this._slideshowTimerId === null
+    ) {
+      this.checkAndTriggerAutoForward(targetIndex);
+    }
   }
 
   /**
@@ -1496,6 +1527,108 @@ export class GveSnapshotRendition extends HTMLElement {
         }
       }
     }
+  }
+
+  /**
+   * Check if the current version belongs to a group and trigger auto-forward if needed.
+   * Auto-forward continues to the next version after a delay, as long as operations
+   * share the same groupId.
+   *
+   * @param versionIndex - The current version index (just navigated to)
+   */
+  private checkAndTriggerAutoForward(versionIndex: number): void {
+    if (!this._data || !this._data.steps) return;
+
+    // Get the current operation (versionIndex is 1-based for steps array)
+    const stepIndex = versionIndex - 1;
+    if (stepIndex < 0 || stepIndex >= this._data.steps.length) return;
+
+    const currentStep = this._data.steps[stepIndex];
+    const currentGroupId = currentStep.operation.groupId;
+
+    // Only auto-forward if current operation has a groupId
+    if (!currentGroupId) {
+      this._logger.debug(
+        "AutoForward",
+        `Version v${versionIndex} has no groupId, not auto-forwarding`
+      );
+      return;
+    }
+
+    // Check if there's a next version
+    const nextVersionIndex = versionIndex + 1;
+    if (nextVersionIndex > this._data.steps.length) {
+      this._logger.debug(
+        "AutoForward",
+        `Already at last version, not auto-forwarding`
+      );
+      return;
+    }
+
+    // Get the next operation
+    const nextStepIndex = nextVersionIndex - 1;
+    const nextStep = this._data.steps[nextStepIndex];
+    const nextGroupId = nextStep.operation.groupId;
+
+    // Only auto-forward if next operation has the SAME groupId
+    if (nextGroupId !== currentGroupId) {
+      this._logger.debug(
+        "AutoForward",
+        `Next version has different groupId (current: ${currentGroupId}, next: ${
+          nextGroupId || "none"
+        }), stopping auto-forward`
+      );
+      return;
+    }
+
+    // Trigger auto-forward after slideshow interval
+    this._logger.info(
+      `AutoForward`,
+      `Continuing through group "${currentGroupId}" to v${nextVersionIndex}`
+    );
+
+    // Clear any existing timer
+    if (this._autoForwardTimerId !== null) {
+      window.clearTimeout(this._autoForwardTimerId);
+    }
+
+    // Set timer to advance to next version
+    this._autoForwardTimerId = window.setTimeout(() => {
+      this._autoForwardTimerId = null;
+      this.goToVersionIndex(nextVersionIndex);
+    }, this._settings.slideshowInterval);
+  }
+
+  /**
+   * Stop any pending auto-forward timer.
+   */
+  private stopAutoForward(): void {
+    if (this._autoForwardTimerId !== null) {
+      this._logger.debug("AutoForward", "Stopping auto-forward");
+      window.clearTimeout(this._autoForwardTimerId);
+      this._autoForwardTimerId = null;
+    }
+  }
+
+  /**
+   * Toggle auto-forward on group feature.
+   * @param enabled - Whether to enable auto-forward
+   */
+  public setAutoForwardEnabled(enabled: boolean): void {
+    this._autoForwardEnabled = enabled;
+    this._logger.info(`AutoForward ${enabled ? "enabled" : "disabled"}`);
+
+    // If disabling, stop any pending auto-forward
+    if (!enabled) {
+      this.stopAutoForward();
+    }
+  }
+
+  /**
+   * Get current auto-forward enabled state.
+   */
+  public getAutoForwardEnabled(): boolean {
+    return this._autoForwardEnabled;
   }
 
   /**

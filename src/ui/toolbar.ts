@@ -35,6 +35,7 @@ export class Toolbar {
   private slideshowStartBtn!: HTMLButtonElement;
   private slideshowStopBtn!: HTMLButtonElement;
   private slideshowReverseBtn!: HTMLButtonElement;
+  private autoForwardBtn!: HTMLButtonElement;
 
   // Display buttons
   private zoomInBtn!: HTMLButtonElement;
@@ -48,6 +49,7 @@ export class Toolbar {
   private _customButtons: CustomButtonSettings[] = [];
   private _disabledButtonIds: string[] = [];
   private _slideshowReverse: boolean = false;
+  private _autoForwardEnabled: boolean = false;
 
   /**
    * Get slideshow reverse state.
@@ -101,6 +103,9 @@ export class Toolbar {
           <button id="slideshow-reverse-btn" class="toolbar-btn" title="Toggle Reverse Slideshow">
             <i data-feather="rotate-ccw"></i>
           </button>
+          <button id="auto-forward-btn" class="toolbar-btn" title="Auto-Forward on Group: Continue through grouped operations automatically">
+            <i data-feather="fast-forward"></i>
+          </button>
         </div>
 
         <!-- Display Group -->
@@ -141,6 +146,7 @@ export class Toolbar {
     this.slideshowStartBtn = this.container.querySelector("#slideshow-start-btn")!;
     this.slideshowStopBtn = this.container.querySelector("#slideshow-stop-btn")!;
     this.slideshowReverseBtn = this.container.querySelector("#slideshow-reverse-btn")!;
+    this.autoForwardBtn = this.container.querySelector("#auto-forward-btn")!;
 
     this.zoomInBtn = this.container.querySelector("#zoom-in-btn")!;
     this.zoomOutBtn = this.container.querySelector("#zoom-out-btn")!;
@@ -193,6 +199,11 @@ export class Toolbar {
       this._slideshowReverse = !this._slideshowReverse;
       this.updateSlideshowReverseButton();
       this.dispatchSlideshowEvent("toggle-reverse", this._slideshowReverse);
+    });
+    this.autoForwardBtn.addEventListener("click", () => {
+      this._autoForwardEnabled = !this._autoForwardEnabled;
+      this.updateAutoForwardButton();
+      this.dispatchAutoForwardEvent(this._autoForwardEnabled);
     });
 
     // Display buttons
@@ -405,6 +416,17 @@ export class Toolbar {
   }
 
   /**
+   * Update auto-forward button visual state.
+   */
+  private updateAutoForwardButton(): void {
+    if (this._autoForwardEnabled) {
+      this.autoForwardBtn.classList.add("active");
+    } else {
+      this.autoForwardBtn.classList.remove("active");
+    }
+  }
+
+  /**
    * Apply disabled state to buttons from settings.
    */
   private applyDisabledButtons(): void {
@@ -451,6 +473,18 @@ export class Toolbar {
     this.container.dispatchEvent(
       new CustomEvent("toolbar-slideshow", {
         detail: { action, reverse },
+        bubbles: true,
+      })
+    );
+  }
+
+  /**
+   * Dispatch auto-forward event for parent component to handle.
+   */
+  private dispatchAutoForwardEvent(enabled: boolean): void {
+    this.container.dispatchEvent(
+      new CustomEvent("toolbar-auto-forward", {
+        detail: { enabled },
         bubbles: true,
       })
     );
@@ -530,5 +564,13 @@ export class Toolbar {
     this.nextStagedBtn.disabled = disabled;
     this.nextBtn.disabled = disabled;
     this.lastBtn.disabled = disabled;
+  }
+
+  /**
+   * Set auto-forward enabled state and update button appearance.
+   */
+  setAutoForwardEnabled(enabled: boolean): void {
+    this._autoForwardEnabled = enabled;
+    this.updateAutoForwardButton();
   }
 }

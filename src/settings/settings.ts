@@ -104,6 +104,9 @@ export interface GveRenditionSettings {
   /** Milliseconds delay between slideshow restarts (when looping) */
   slideshowDelay: number;
 
+  /** Automatically continue forward through operations with the same groupId */
+  autoForwardOnGroup: boolean;
+
   /** Enable detailed logging for diagnostic purposes */
   debug?: boolean;
 
@@ -126,10 +129,12 @@ export interface GveRenditionSettings {
   /** Duration in milliseconds for spreading animation (0=no animation) */
   spreadTime: number;
 
-  /** Duration in milliseconds for element fade-out animation (backward navigation only): 0=no animation */
+  /** Duration in milliseconds for element fade-out animation
+   * (backward navigation only): 0=no animation */
   backwardFadeOutTime: number;
 
-  /** Duration in milliseconds for prolog panning animation when added elements would be outside viewport (0=no animation) */
+  /** Duration in milliseconds for prolog panning animation when added
+   * elements would be outside viewport (0=no animation) */
   prologDuration: number;
 
   // ==================== Hints ====================
@@ -167,7 +172,8 @@ export interface GveRenditionSettings {
 
   // ==================== Details Area ====================
 
-  /** Function to generate operation summary HTML from data, version tag, and summary service */
+  /** Function to generate operation summary HTML from data, version tag,
+   *  and summary service */
   opSummaryFn?: (data: any, versionTag: string, summaryService: any) => string;
 
   /** Reference glyph width in pixels for scaling hovered text elements */
@@ -220,6 +226,7 @@ export const DEFAULT_SETTINGS: GveRenditionSettings = {
   slideshowInterval: 1000,
   slideshowLoop: false,
   slideshowDelay: 3000,
+  autoForwardOnGroup: false,
   debug: false,
 
   // Custom buttons
