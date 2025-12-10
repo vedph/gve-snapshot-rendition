@@ -1,8 +1,16 @@
 # Feature Adapter
 
-The feature adapter service (`FeatureAdapter`) is totally independent from the GVE rendition web component. It can be used by consumer code to _adapt_ the features found in its data to the set used in the rendition component.
+The feature adapter service (`FeatureAdapter`) is totally independent from the GVE rendition web component. It can be used by consumer code to _adapt_ the features found in its data to the set used in the rendition component. This way, scholars can use higher-level taxonomies (e.g., `epigram-nr`, `correction-type`) without worrying about rendition details.
 
 The feature adapter service itself just deals with a received array of features. It does not need to know anything about their source. Its only task is returning a new array with adapted features. Features here just include a name and a value, ignoring any other properties.
+
+So, the adapter is designed to be used before passing data to the web component:
+
+```txt
+Backend Data → DataFeatureAdapter → Adapted Data → Web Component
+```
+
+The web component remains unchanged and unaware of the adapter. This maintains separation of concerns and allows the adapter to be optional.
 
 ## Usage Context
 
@@ -104,3 +112,34 @@ So the settings model is:
   - `mode`: one of `add` (default), `replace`, having this behavior:
     - `add` just adds `features`.
     - `replace` removes the matched features before adding `features` (when present; if empty, this means that we will just remove the matched features).
+
+## Usage Example
+
+```ts
+import { DataFeatureAdapter, ProcessingMode } from "./adapter/index.js";
+
+// Configure the adapter
+const adapter = new DataFeatureAdapter({
+  operations: [
+    {
+      // Match epigram numbers and transform to rendition hints
+      pattern: "[num:epigram-nr==12]",
+      features: [
+        "r_hints=note",
+        "r_hint-vars=note=$num.value",  // Use captured value
+        "r_h-position=nw",
+        "r_h-offset-y=10",
+        "r_h-scale-x=2",
+      ],
+      mode: ProcessingMode.REPLACE,  // Remove original, add new
+    },
+  ],
+});
+
+// Apply to data before passing to component
+const originalData = fetchDataFromBackend();
+const adaptedData = adapter.adaptData(originalData);
+
+// Use with component
+component.data = adaptedData;
+```
