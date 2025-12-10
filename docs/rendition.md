@@ -303,17 +303,17 @@ All rendering features have their name starting with `r_`. These are the only fe
 
 >The logic for these two features, `r_char-offsets` and `r_char-offset`, is equal; the only difference is that the former works on multiple characters at once. This is preferable to having just `r_char-offset` and using it multiple times, because when a character gets an offset, this affects not only it, but also all the following characters. So, order of application matters, and this could not be ensured when using multiple features, unless introducing ad-hoc logic which would be against generalization.
 
-- `r_font-size`: the font size.
 - `r_font-family`: the font family.
+- `r_font-size`: the font size.
 - `r_fore-color`: the foreground color.
 - `r_back-color`: the background color.
 - `r_italic`: the italic value (boolean).
 - `r_bold`: the bold value (boolean).
-- `r_text-line-style`: the style of overline, underline, or strikethrough: `solid`, `dotted`, `dashed`, `wavy` (as in SVG and CSS; corresponds to SVG `text-decoration-line`).
-- `r_text-line-color`: the default color of the overline, underline or strikethrough.
 - `r_underline`: the underline value (0-N being the thickness in `px`).
 - `r_overline`: the overline value (as for underline).
 - `r_strike`: the strikethrough value (as for underline).
+- `r_text-line-style`: the style of overline, underline, or strikethrough: `solid`, `dotted`, `dashed`, `wavy` (as in SVG and CSS; corresponds to SVG `text-decoration-line`).
+- `r_text-line-color`: the default color of the overline, underline or strikethrough.
 - `r_rotate`: the rotation amount to be applied to each single character.
 - `r_hints`: this feature is used to link the operation to any number of hints. The value is a space-delimited list of hint IDs, in the order they should be rendered for that operation.
 - `r_hint-vars`: this has no effect on text; it is just a rendition feature used only to define a set of variables to be used by [hints placeholders](#hint-svg-placeholders). Each variable has name=value, and is separated with space. For instance, `color=red bold=1` to pass variables `color`=`red` and `bold`=`1` to the hints being rendered for the operation being processed.
