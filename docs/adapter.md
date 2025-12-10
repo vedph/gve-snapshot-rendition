@@ -40,7 +40,8 @@ For instance, one might have a generic, higher-level feature named `epigram-nr` 
 - `r_hints`=`note`: use hint with ID `note`.
 - `r_hint-vars`=`note=12`: set the `note` variable of the hint to `12`.
 - `r_h-position`=`nw`: override the hint's position to `nw`.
-- `r_h-offset-y`=`10`: override the hint's Y-offset to `10`.
+- `r_h-offset-y`=`-10`: override the hint's Y-offset to `-10` (up).
+- `r_h-offset-x`=`-15`: override the hint's X-offset to `-15` (left).
 - `r_h-scale-x`=`2`: double the width of the hint with reference to the bounding rectangle of the reference character, or it would be too narrow to fit a number without distorting the number to display.
 
 ## Feature Adapter Logic
