@@ -9,6 +9,7 @@ import { SpreadingEngine } from "./spreading-engine";
 import {
   parseSVGContent,
   getSafeBBox,
+  getTransformedBBox,
   applyTransform,
 } from "./svg-utils";
 import { resolvePlaceholders, parseOffset } from "../utils/text-utils";
@@ -194,7 +195,11 @@ export class HintRenderer {
         // 11. Check if prolog panning is needed (element visibility check)
         // This must happen AFTER positioning and spreading, but BEFORE making visible
         if (panZoomInstance && viewportWidth && viewportHeight && this._settings.prologDuration > 0) {
-          const finalBbox = getSafeBBox(currentHintGroup);
+          // IMPORTANT: Use getTransformedBBox() instead of getSafeBBox() here!
+          // getSafeBBox() returns LOCAL coordinates (without transforms), which would
+          // give incorrect results for the visibility check since the element has been
+          // transformed to its final position.
+          const finalBbox = getTransformedBBox(currentHintGroup);
           const isVisible = this._animationEngine.isElementVisible(
             finalBbox,
             panZoomInstance,

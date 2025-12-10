@@ -210,12 +210,99 @@ export function cloneSVGElement<T extends SVGElement>(element: T): T {
 /**
  * Get the bounding box of an SVG element in a safe way.
  * Returns a default rectangle if getBBox() fails.
+ *
+ * IMPORTANT: This returns the bbox in LOCAL coordinates (without transforms).
+ * Use getTransformedBBox() if you need the actual screen/SVG coordinates.
  */
 export function getSafeBBox(element: SVGElement): DOMRect {
   try {
     return (element as any).getBBox();
   } catch (error) {
     console.warn("getBBox() failed, returning default rect", error);
+    return new DOMRect(0, 0, 0, 0);
+  }
+}
+
+/**
+ * Get the bounding box of an SVG element WITH transforms applied.
+ * This returns the actual position in the SVG coordinate system.
+ *
+ * This is crucial for visibility checks because getBBox() returns local coords
+ * which don't reflect the element's actual position after transforms.
+ *
+ * @param element - The SVG element
+ * @returns The bounding box in SVG coordinate space (with transforms applied)
+ */
+export function getTransformedBBox(element: SVGElement): DOMRect {
+  try {
+    // Get the bounding box in local coordinates
+    const localBBox = (element as any).getBBox();
+
+    // Get the transformation matrix from the element's coordinate system to the SVG root
+    const svg = element.ownerSVGElement;
+    if (!svg) {
+      return localBBox;
+    }
+
+    // getCTM() is only available on SVGGraphicsElement (which includes g, text, etc.)
+    // We need transformation to the SVG coordinate system
+    const ctm = (element as SVGGraphicsElement).getCTM();
+    if (!ctm) {
+      return localBBox;
+    }
+
+    // Transform the bounding box corners using the CTM
+    // We need to transform all 4 corners and then find the bounding box of the result
+    // because rotation/skew can change which corners are the min/max
+    const topLeft = svg.createSVGPoint();
+    topLeft.x = localBBox.x;
+    topLeft.y = localBBox.y;
+    const transformedTopLeft = topLeft.matrixTransform(ctm);
+
+    const topRight = svg.createSVGPoint();
+    topRight.x = localBBox.x + localBBox.width;
+    topRight.y = localBBox.y;
+    const transformedTopRight = topRight.matrixTransform(ctm);
+
+    const bottomLeft = svg.createSVGPoint();
+    bottomLeft.x = localBBox.x;
+    bottomLeft.y = localBBox.y + localBBox.height;
+    const transformedBottomLeft = bottomLeft.matrixTransform(ctm);
+
+    const bottomRight = svg.createSVGPoint();
+    bottomRight.x = localBBox.x + localBBox.width;
+    bottomRight.y = localBBox.y + localBBox.height;
+    const transformedBottomRight = bottomRight.matrixTransform(ctm);
+
+    // Find the bounding box of the transformed corners
+    const minX = Math.min(
+      transformedTopLeft.x,
+      transformedTopRight.x,
+      transformedBottomLeft.x,
+      transformedBottomRight.x
+    );
+    const maxX = Math.max(
+      transformedTopLeft.x,
+      transformedTopRight.x,
+      transformedBottomLeft.x,
+      transformedBottomRight.x
+    );
+    const minY = Math.min(
+      transformedTopLeft.y,
+      transformedTopRight.y,
+      transformedBottomLeft.y,
+      transformedBottomRight.y
+    );
+    const maxY = Math.max(
+      transformedTopLeft.y,
+      transformedTopRight.y,
+      transformedBottomLeft.y,
+      transformedBottomRight.y
+    );
+
+    return new DOMRect(minX, minY, maxX - minX, maxY - minY);
+  } catch (error) {
+    console.warn("getTransformedBBox() failed, returning default rect", error);
     return new DOMRect(0, 0, 0, 0);
   }
 }
