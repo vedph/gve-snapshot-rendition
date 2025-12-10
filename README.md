@@ -19,10 +19,8 @@ The test page used in this project is `index.html` and its code is `consumer.js`
 
 The **Feature Adapter** is a utility system for transforming features in snapshot data. It enables you to adapt high-level features into low-level rendition features that the component can use:
 
-- [Feature Adapter Overview](FEATURE-ADAPTER.md): Architecture and usage guide
-- [Detailed Documentation](src/adapter/README.md): Complete API reference and examples
-
-Always ensure to read the conceptual documentation about this component in these documentation files under the `docs` folder.
+- [Feature Adapter Overview](docs/adapter.md): Architecture and usage guide.
+- [Detailed Documentation](src/adapter/README.md): Complete API reference and examples.
 
 ## Quick Start
 
