@@ -121,7 +121,7 @@ export class Parser {
       this.advance();
       const expr = this.parseOrExpression();
 
-      if (this.current.type !== TokenType.RPAREN) {
+      if ((this.current.type as TokenType) !== TokenType.RPAREN) {
         throw new AdapterError(
           "Expected closing parenthesis ')'",
           this.current.position,
@@ -163,7 +163,7 @@ export class Parser {
     // Parse the clause
     const clauseExpr = this.parseClause(true, groupName);
 
-    if (this.current.type !== TokenType.RBRACKET) {
+    if ((this.current.type as TokenType) !== TokenType.RBRACKET) {
       throw new AdapterError(
         "Expected closing bracket ']'",
         this.current.position,
@@ -194,15 +194,15 @@ export class Parser {
     let value: string | undefined;
 
     // Check for operator
-    if (this.current.type === TokenType.OPERATOR) {
+    if ((this.current.type as TokenType) === TokenType.OPERATOR) {
       operator = this.current.value as ComparisonOperator;
       this.advance();
 
       // After operator, we expect a value
-      if (this.current.type === TokenType.VALUE) {
+      if ((this.current.type as TokenType) === TokenType.VALUE) {
         value = this.current.value;
         this.advance();
-      } else if (this.current.type === TokenType.NAME) {
+      } else if ((this.current.type as TokenType) === TokenType.NAME) {
         // Unquoted value (trim whitespace as specified)
         value = this.current.value.trim();
         this.advance();
