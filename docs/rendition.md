@@ -877,18 +877,21 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
   - `r_t-position`=`n`.
   - `r_t-displaced-span`=`21x7`. This is a displacement for the text being added by this replace operation (`HINTS`): instead of positioning the text with reference to its reference text (`STUFF`), we position it above an area approximately corresponding to `all ope` of `all operations` in the first line.
   - `r_t-offset-y`=`20`: this shifts the `HINTS` boxed text upper.
-  - TODO border
+  
+- `v14`: **annotate** `HINTS` with a box around it, which visually connects this replacement text the the replaced one which is a bit displaced. Features:
+  - `r_hints`=`box` (border around `HINTS`).
+  - `r_fore-color`=`green`.
 
-- `v14`: **delete** `too,` + space (this operation belongs to group `mov-too`, because on a more abstract --non-diplomatic-- ground this would be considered a movement). Note that there is no hint for this operation; it is implicit in the next addition.
+- `v15`: **delete** `too,` + space (this operation belongs to group `mov-too`, because on a more abstract --non-diplomatic-- ground this would be considered a movement). Note that there is no hint for this operation; it is implicit in the next addition.
 
-- `v15`: **add** `TOO.` (IDs=120-123) after `line` (this operation belongs to group `mov-too`) . Features:
+- `v16`: **add** `TOO.` (IDs=120-123) after `line` (this operation belongs to group `mov-too`) . Features:
   - `r_t-fore-color`=`green`.
   - `r_t-position`=`e`.
   - `r_t-offset-x`=`20` (leave more space to the right before the added text).
   - `r_t-offset-y=0.4th` (align to base text baseline).
-  - 🚩 `version`=`beta` marks `v15` as staged version `beta`.
+  - 🚩 `version`=`beta` marks `v16` as staged version `beta`.
 
-- `v16`: **annotate** the initial `I` with features (we target the initial `I` as it's the nearest character):
+- `v17`: **annotate** the initial `I` with features (we target the initial `I` as it's the nearest character):
   - `r_t-fore-color`=`blue`.
   - `note`=`12`.
   - `r_hints`=`note-underline`. This is assumed to have a `note` placeholder to be filled with the text (here "12"), and a `r_color` placeholder for its color.
@@ -939,12 +942,13 @@ The same operations in their parsable format (DSL) are listed here:
 64x4: @swap-complex-long [note=1 r_hints=note-interlinear-above r_fore-color=red]
 60x3: @swap-complex-long [note=2 r_hints=note-interlinear-above r_fore-color=red]
 52x7: @swap-complex-long [note=3 r_hints=note-interlinear-above r_fore-color=red]
-52x7<>64x4 [r_fore-color=red *version=alpha]
+52x7<>64x4 [r_fore-color=red *version^=alpha]
 40- @add-stuff [r_hints=diagonal-stroke r_fore-color=green]
 39+]" AND SOME STUFF." @add-stuff [r_t-position=e r_t-offset-y=0.4th r_fore-color=green]
 107x6: @stuff-hints [r_hints=box r_fore-color=green]
 107x6=HINTS.@stuff-hints [r_t-position=n r_fore-color=green r_position=n r_t-displaced-span=21x7 r_t-offset-y=-30 r_hints=box]
+113x6: @stuff-hints [r_hints=box r_fore-color=green]
 75x5- @mov-too
-94+]" TOO."@mov-too [r_t-position=e r_t-offset-x=20 r_t-offset-y=0.4th r_fore-color=green *version=beta]
+94+]" TOO."@mov-too [r_t-position=e r_t-offset-x=20 r_t-offset-y=0.4th r_fore-color=green *version^=beta]
 1: [note=12 r_t-fore-color=blue r_fore-color=blue r_hints=note-underline r_h-scale-x=2 r_h-rotation=-45]
 ```

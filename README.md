@@ -61,7 +61,6 @@ This component requires the following packages:
 
 This is only a reminder.
 
-- ✅ add feature adapter service and tests.
-- add settings and support for CodePen hint designer.
 - add setting to continue moving on to next versions until the group ID is the same.
+- add settings and support for CodePen hint designer.
 - consider simplifying logic by drawing node features from tagged nodes rather than from steps.
