@@ -12,7 +12,14 @@ Conceptual documentation and sample data:
 - [sample response from backend snapshot processor](docs/sample/response.json): the response received from backend corresponding to our request. This is used only when we want to change our sample data.
 - [data used in the demo](data.json): the data loaded in the web component to test it. This is copied from [response.json](docs/sample/response.json), and contains all the data received by the web component for rendering.
 
-The test page used in this project is `index.html` and its code is `consumer.js`.
+The test page used in this project is `index.html` and its code is `consumer.js`. The data model is `CharChainResult` and it is found with all the imported models in `models.ts`. These are the models imported from another package and should not be touched.
+
+### Feature Adapter
+
+The **Feature Adapter** is a utility system for transforming features in snapshot data. It enables you to adapt high-level features into low-level rendition features that the component can use:
+
+- [Feature Adapter Overview](FEATURE-ADAPTER.md): Architecture and usage guide
+- [Detailed Documentation](src/adapter/README.md): Complete API reference and examples
 
 Always ensure to read the conceptual documentation about this component in these documentation files under the `docs` folder.
 
@@ -55,7 +62,7 @@ This component requires the following packages:
 
 This is only a reminder.
 
-- add feature adapter service and tests.
+- ✅ add feature adapter service and tests.
 - add settings and support for CodePen hint designer.
 - add setting to continue moving on to next versions until the group ID is the same.
 - consider simplifying logic by drawing node features from tagged nodes rather than from steps.
