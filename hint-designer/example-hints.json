@@ -1,0 +1,143 @@
+{
+  "hints": {
+    "diagonal-stroke": {
+      "svg": "<g><line x1=\"0\" y1=\"0\" x2=\"100\" y2=\"10\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" /></g>",
+      "position": "o",
+      "offsetX": 0,
+      "offsetY": 0,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "animation": "#fade-in"
+    },
+    "note": {
+      "svg": "<g><text x=\"0\" y=\"0\" font-family=\"Arial\" font-size=\"14\" fill=\"{{r_fore-color}}\" id=\"placeholder\">{{note}}</text></g>",
+      "position": "n",
+      "offsetX": 0,
+      "offsetY": 0,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "animation": "#scale-in"
+    },
+    "note-interlinear-above": {
+      "svg": "<g><text x=\"0\" y=\"0\" font-family=\"Arial\" font-size=\"14\" fill=\"{{r_fore-color}}\" id=\"placeholder\">{{note-interlinear-above}}</text></g>",
+      "position": "n",
+      "offsetX": 0,
+      "offsetY": 14,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "animation": "#scale-in"
+    },
+    "note-underline": {
+      "svg": "<g><text x=\"0\" y=\"0\" font-family=\"Arial\" font-size=\"14\" fill=\"{{r_fore-color}}\" text-decoration=\"underline\" id=\"placeholder\">{{note}}</text></g>",
+      "position": "nw",
+      "offsetX": -20,
+      "offsetY": -10,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "animation": "#wipe-right"
+    },
+    "box": {
+      "svg": "<g><rect x=\"0\" y=\"0\" width=\"100\" height=\"30\" fill=\"none\" stroke=\"{{r_fore-color}}\" stroke-width=\"1\" /></g>",
+      "position": "o",
+      "offsetX": 0,
+      "offsetY": 0,
+      "scaleX": 1.1,
+      "scaleY": 1.1,
+      "rotation": 0,
+      "animation": "#fade-in"
+    },
+    "arrow-right": {
+      "svg": "<g><path d=\"M 0 0 L 20 0 L 15 -5 M 20 0 L 15 5\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" fill=\"none\" /></g>",
+      "position": "e",
+      "offsetX": 5,
+      "offsetY": 0,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "animation": "#wipe-right"
+    },
+    "circle-marker": {
+      "svg": "<g><circle cx=\"0\" cy=\"0\" r=\"8\" fill=\"none\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" /></g>",
+      "position": "o",
+      "offsetX": 0,
+      "offsetY": 0,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "animation": "#scale-in"
+    },
+    "underline": {
+      "svg": "<g><line x1=\"0\" y1=\"0\" x2=\"100\" y2=\"0\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" /></g>",
+      "position": "s",
+      "offsetX": 0,
+      "offsetY": 2,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "animation": "#wipe-right"
+    },
+    "bracket-left": {
+      "svg": "<g><path d=\"M 5 0 L 0 0 L 0 30 L 5 30\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" fill=\"none\" /></g>",
+      "position": "w",
+      "offsetX": -3,
+      "offsetY": 0,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "animation": "#fade-in"
+    },
+    "bracket-right": {
+      "svg": "<g><path d=\"M 0 0 L 5 0 L 5 30 L 0 30\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" fill=\"none\" /></g>",
+      "position": "e",
+      "offsetX": 3,
+      "offsetY": 0,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "animation": "#fade-in"
+    },
+    "asterisk": {
+      "svg": "<g><text x=\"0\" y=\"0\" font-family=\"Arial\" font-size=\"18\" font-weight=\"bold\" fill=\"{{r_fore-color}}\" text-anchor=\"middle\" dominant-baseline=\"middle\">*</text></g>",
+      "position": "ne",
+      "offsetX": 5,
+      "offsetY": -5,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "animation": "#bounce-in"
+    },
+    "checkmark": {
+      "svg": "<g><path d=\"M 0 5 L 5 10 L 15 0\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" fill=\"none\" stroke-linecap=\"round\" /></g>",
+      "position": "ne",
+      "offsetX": 3,
+      "offsetY": -3,
+      "scaleX": 0.8,
+      "scaleY": 0.8,
+      "rotation": 0,
+      "animation": "#scale-in"
+    },
+    "cross-mark": {
+      "svg": "<g><line x1=\"0\" y1=\"0\" x2=\"10\" y2=\"10\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" /><line x1=\"10\" y1=\"0\" x2=\"0\" y2=\"10\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" /></g>",
+      "position": "o",
+      "offsetX": 0,
+      "offsetY": 0,
+      "scaleX": 1.5,
+      "scaleY": 1.5,
+      "rotation": 0,
+      "animation": "#fade-in"
+    }
+  },
+  "animations": {
+    "fade-in": "\n      return new Promise(resolve => {\n        gsap.fromTo(targetEl,\n          { opacity: 0 },\n          { opacity: 1, duration: 1, onComplete: resolve }\n        );\n      });\n    ",
+    "wipe-right": "\n      return new Promise(resolve => {\n        gsap.fromTo(targetEl,\n          { opacity: 0, x: -20 },\n          { opacity: 1, x: 0, duration: 0.6, ease: 'power2.out', onComplete: resolve }\n        );\n      });\n    ",
+    "scale-in": "\n      return new Promise(resolve => {\n        gsap.fromTo(targetEl,\n          { opacity: 0, scale: 0.5 },\n          { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)', onComplete: resolve }\n        );\n      });\n    ",
+    "bounce-in": "\n      return new Promise(resolve => {\n        gsap.fromTo(targetEl,\n          { opacity: 0, y: -20, scale: 0.8 },\n          {\n            opacity: 1,\n            y: 0,\n            scale: 1,\n            duration: 0.8,\n            ease: 'elastic.out(1, 0.5)',\n            onComplete: resolve\n          }\n        );\n      });\n    ",
+    "slide-in-bottom": "\n      return new Promise(resolve => {\n        gsap.fromTo(targetEl,\n          { opacity: 0, y: 20 },\n          { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', onComplete: resolve }\n        );\n      });\n    ",
+    "rotate-in": "\n      return new Promise(resolve => {\n        gsap.fromTo(targetEl,\n          { opacity: 0, rotation: -90, scale: 0.5 },\n          { opacity: 1, rotation: 0, scale: 1, duration: 0.7, ease: 'back.out(1.5)', onComplete: resolve }\n        );\n      });\n    ",
+    "pulse": "\n      return new Promise(resolve => {\n        gsap.fromTo(targetEl,\n          { opacity: 0, scale: 0.8 },\n          {\n            opacity: 1,\n            scale: 1,\n            duration: 0.6,\n            ease: 'power2.out',\n            onComplete: () => {\n              gsap.to(targetEl, {\n                scale: 1.1,\n                duration: 0.3,\n                yoyo: true,\n                repeat: 1,\n                ease: 'sine.inOut',\n                onComplete: resolve\n              });\n            }\n          }\n        );\n      });\n    "
+  }
+}

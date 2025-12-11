@@ -13,3 +13,4 @@ pnpm-lock.yaml
 consumer.js
 index.html
 rollup.config.mjs
+hint-designer
