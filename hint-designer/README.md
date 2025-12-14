@@ -22,8 +22,8 @@ This toolkit helps you design custom hints (visual representations of editing op
 3. Copy the content from `template-css.css` into the CSS pane
 4. Copy the content from `template-js.js` into the JS pane
 5. In the JS settings, add these external libraries:
-   - GSAP: `https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js`
-   - GSDevTools: `https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/GSDevTools.min.js`
+   - GSAP: `https://cdn.jsdelivr.net/npm/gsap/dist/gsap.min.js`
+   - GSDevTools: `https://cdn.jsdelivr.net/npm/gsap/GSDevTools.js`
 6. Start designing!
 
 ### Option 2: Local Development

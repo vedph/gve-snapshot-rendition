@@ -142,11 +142,12 @@ const DATA = {
 let currentHintId = null;
 let currentTimeline = null;
 let showHandle = false;
-let gsapTools = null;
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-  initializeApp();
+// Initialize when DOM is ready and scripts are loaded
+// Wait for both DOM and window load to ensure external scripts are ready
+window.addEventListener('load', () => {
+  // Small delay to ensure scripts are fully initialized
+  setTimeout(initializeApp, 100);
 });
 
 /**
@@ -157,16 +158,30 @@ function initializeApp() {
 
   // Check if GSAP is loaded
   if (typeof gsap === 'undefined') {
-    showStatus('Error: GSAP library not loaded. Please add GSAP to your external JavaScript libraries.', 'error');
+    const errorMsg = 'Error: GSAP library not loaded. Please verify external scripts are added correctly in JS Settings.';
+    console.error(errorMsg);
+    console.error('Expected: https://cdn.jsdelivr.net/npm/gsap/dist/gsap.min.js');
+    showStatus(errorMsg, 'error');
+    document.getElementById('gsap-tools').innerHTML = '<p style="color: #ef4444; padding: 20px; text-align: center;"><strong>GSAP Not Loaded!</strong><br><br>Please check JS Settings and add:<br><code>https://cdn.jsdelivr.net/npm/gsap/dist/gsap.min.js</code></p>';
     return;
   }
 
+  console.log('✓ GSAP loaded successfully:', gsap.version);
+
   // Check if GSDevTools is loaded
   if (typeof GSDevTools === 'undefined') {
-    showStatus('Warning: GSDevTools not loaded. Animation timeline controls will not be available.', 'error');
+    console.log('GSDevTools not loaded. Add it to external scripts for timeline controls.');
+    document.getElementById('gsap-tools').innerHTML = '<p style="color: #999; font-style: italic; text-align: center;">Timeline controls not available<br>Add <code>https://cdn.jsdelivr.net/npm/gsap/GSDevTools.js</code> to external scripts<br>or use the "Reset Animation" button</p>';
   } else {
-    // Register GSDevTools
+    // Register GSDevTools plugin
     gsap.registerPlugin(GSDevTools);
+    console.log('GSDevTools plugin registered');
+
+    // Initialize GSDevTools immediately with global timeline
+    GSDevTools.create({
+      animation: gsap.globalTimeline,
+      container: document.getElementById('gsap-tools')
+    });
   }
 
   // Setup canvas
@@ -386,9 +401,6 @@ function renderHint(hintId) {
     currentTimeline = null;
   }
 
-  // Parse SVG
-  const parser = new DOMParser();
-
   // Resolve placeholders (use mock values)
   let svgContent = hint.svg;
   svgContent = svgContent.replace(/\{\{r_fore-color\}\}/g, 'red');
@@ -396,8 +408,13 @@ function renderHint(hintId) {
   svgContent = svgContent.replace(/\{\{note\}\}/g, 'Sample');
   svgContent = svgContent.replace(/\{\{[^}]+\}\}/g, 'PLACEHOLDER');
 
+  // Parse and import the SVG element
+  const parser = new DOMParser();
   const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
-  const hintElement = svgDoc.documentElement;
+  const parsedElement = svgDoc.documentElement;
+
+  // Import the node into the current document's SVG namespace
+  const hintElement = document.importNode(parsedElement, true);
 
   // Position hint in the center of canvas (mock RBR)
   const centerX = CONFIG.HINT_WIDTH / 2;
@@ -441,6 +458,8 @@ function renderHint(hintId) {
 function animateHint(targetEl, hint) {
   if (!hint.animation) {
     console.log('No animation defined for hint');
+    // Make sure element is visible if no animation
+    gsap.set(targetEl, { opacity: 1 });
     return;
   }
 
@@ -454,6 +473,8 @@ function animateHint(targetEl, hint) {
     animationCode = DATA.animations[animId];
     if (!animationCode) {
       showStatus(`Error: Animation "${animId}" not found`, 'error');
+      // Make sure element is visible even if animation not found
+      gsap.set(targetEl, { opacity: 1 });
       return;
     }
   }
@@ -473,41 +494,17 @@ function animateHint(targetEl, hint) {
       }).catch(err => {
         console.error('Animation error:', err);
         showStatus('Animation error - check console', 'error');
+        // Make sure element is visible even if animation fails
+        gsap.set(targetEl, { opacity: 1 });
       });
     }
 
-    // Setup GSDevTools if available
-    if (typeof GSDevTools !== 'undefined') {
-      setupGSDevTools();
-    }
   } catch (error) {
     console.error('Error executing animation:', error);
     showStatus('Animation error - check console', 'error');
+    // Make sure element is visible even if error
+    gsap.set(targetEl, { opacity: 1 });
   }
-}
-
-/**
- * Setup GSAP DevTools for animation control
- */
-function setupGSDevTools() {
-  const container = document.getElementById('gsap-tools');
-
-  if (!GSDevTools) {
-    container.innerHTML = '<p style="color: #999; font-style: italic;">GSDevTools not available</p>';
-    return;
-  }
-
-  // Clear previous tools
-  if (gsapTools) {
-    gsapTools.kill();
-  }
-
-  // Create new tools instance
-  gsapTools = GSDevTools.create({
-    container: container,
-    animation: gsap.globalTimeline,
-    minimal: false
-  });
 }
 
 /**

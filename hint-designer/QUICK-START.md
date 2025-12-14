@@ -1,21 +1,41 @@
 # GVE Hint Designer - Quick Start Guide
 
-Get started designing hints in under 5 minutes!
+## Important: Two Different HTML Files
+
+**This toolkit has its own `hint-designer/index.html` file** which is completely separate from the root `index.html` (which loads the main GVE component).
+
+- ✅ **Correct**: Open `hint-designer/index.html` in your browser
+- ❌ **Wrong**: Opening root `index.html` will load the component, not the designer
+
+---
 
 ## Step 1: Setup CodePen
 
 1. Go to [CodePen.io](https://codepen.io)
 2. Click "Create" → "Pen"
-3. Click the gear icon ⚙️ in the **JS** panel
-4. Scroll to "Add External Scripts/Pens"
-5. Add these two libraries **in order**:
+3. Click the **gear icon ⚙️** in the **JS** panel (JavaScript settings)
+4. In the "Add External Scripts/Pens" section, add these URLs one at a time:
+
+   **First**, type or paste:
 
    ```txt
-   https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js
-   https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/GSDevTools.min.js
+   https://cdn.jsdelivr.net/npm/gsap/dist/gsap.min.js
    ```
 
+   Press Enter or click outside to add it.
+
+   **Then**, type or paste:
+
+   ```txt
+   https://cdn.jsdelivr.net/npm/gsap/GSDevTools.js
+   ```
+
+   Press Enter or click outside to add it.
+
+5. Verify both scripts appear in the list
 6. Click "Save & Close"
+
+> **Important**: Make sure to use "Add External Scripts/Pens", NOT "Add Packages". The scripts must be added as external URLs.
 
 ## Step 2: Copy Templates
 
@@ -159,15 +179,43 @@ The grid represents the Reference Bounding Rectangle (RBR) in the actual compone
 
 ## Troubleshooting
 
+### GSAP Not Loading
+
+If you see "GSAP library not loaded" error:
+
+1. **Check JS Settings**: Click the gear ⚙️ on the JS panel
+2. **Verify Scripts Section**: Look for "Add External Scripts/Pens" (NOT "Add Packages")
+3. **Check Script URLs**: You should see both URLs listed:
+   - `https://cdn.jsdelivr.net/npm/gsap/dist/gsap.min.js`
+   - `https://cdn.jsdelivr.net/npm/gsap/GSDevTools.js`
+4. **Order Matters**: GSAP must be listed before GSDevTools
+5. **Force Refresh**: Try hard-refresh (Ctrl+Shift+R or Cmd+Shift+R)
+6. **Clear CodePen Cache**: Delete the pen and create a new one
+
+**Still not working?** Try using the standalone [index.html](index.html) file locally instead.
+
+### Local File Not Loading Scripts
+
+If you're using the local `hint-designer/index.html` file and see "Timeline controls not available":
+
+1. **Hard Refresh**: Press `Ctrl+Shift+R` (Windows/Linux) or `Cmd+Shift+R` (Mac)
+2. **Clear Browser Cache**: Your browser may have cached the old (broken) CDN URLs
+3. **Check Console**: Open DevTools (F12) and verify both scripts load successfully
+4. **Check Network Tab**: In DevTools Network tab, verify the script URLs are correct (no `@3.12.5` version, and GSDevTools.js not in `/dist/` folder)
+
+### Other Issues
+
 - **"Hint not showing"**:
   - Check if SVG has valid coordinates
   - Try position "o" first
   - Look for syntax errors in SVG
-- **"Animation not working"**
+
+- **"Animation not working"**:
   - Make sure animation returns a Promise
   - Check for `onComplete: resolve`
   - Look at browser console for errors
-- **"GSDevTools not appearing"**
+
+- **"GSDevTools not appearing"**:
   - Verify GSDevTools URL is correct
   - Check it's loaded AFTER gsap.min.js
   - Refresh the page
