@@ -1,6 +1,12 @@
 # GVE Snapshot Rendition Component
 
-Custom web component for feature-based GVE snapshot rendition.
+This workspace contains a custom web component for the rendition of a complex Academic model representing the transformations of an autograph text. Text is represented character by character; each character is named node because in backend, where all the transformations happen, there is a graph-like structure which recombines the same characters to form different versions of the text, just like nodes are connected by edges in a graph.
+
+The transformations are essentially represented by a set of editing operations (like delete, replace, add, move, swap) which are executed one after another starting with a base text. The base text is known as version 0 (tag=`v0`). All the operations are executed in their order and each outputs a new version of the text, progressively numbered (`v1`, `v2`...).
+
+Operations also inject metadata, in form of features (essentially name=value pairs), either into versions as a whole (for global features), or into specific characters of the output text (node features). A specific set of features (rendition features, all starting with prefix `r_`) is used to represent the visual counterpart of each operation; for instance, a delete might be visually represented by a diagonal line on top of the portion of the text being deleted. In this case, multiple features of the operation (which injects them into nodes) are used to set the drawing connected to it, in this case a line, and specify additional parameters like its color. Such drawings are often recurring multiple times; so, they belong to a catalog of so-called hints, because they hint at the operation with their appearance (e.g. a line stroke on a text hints at its deletion). These hints have entrance animations, handled by GSAP (like any other animations in this project). These too typically belong to a catalog of animations.
+
+Both hints and animations are part of the settings for the component. The component is found under [src/core/gve-snapshot-rendition.ts](src/core/gve-snapshot-rendition.ts), and most of its logic is properly encapsulated in its own set of classes.
 
 ## Documentation
 
