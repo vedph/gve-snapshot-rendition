@@ -8,6 +8,9 @@
 // Export main component
 export { GveSnapshotRendition } from "./core/gve-snapshot-rendition";
 
+// Export hint designer component
+export { GveHintDesigner } from "./hint-designer/gve-hint-designer";
+
 // Export types
 export type { RelativePosition } from "./core/gve-snapshot-rendition";
 
@@ -19,6 +22,15 @@ export type {
 export type { OperationHint } from "./settings/hint-models";
 
 export { DEFAULT_SETTINGS } from "./settings/settings";
+
+// Export hint designer types
+export type {
+  HintDesignerData,
+  HintDesignerSettings,
+  StringPair,
+} from "./hint-designer/hint-designer-models";
+
+export { DEFAULT_HINT_DESIGNER_SETTINGS } from "./hint-designer/hint-designer-models";
 
 // Export models (re-export from models.ts)
 export type {

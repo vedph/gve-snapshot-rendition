@@ -36,6 +36,20 @@ The **Feature Adapter** is a utility system for transforming features in snapsho
 - [Feature Adapter Overview](docs/adapter.md): Architecture and usage guide.
 - [Detailed Documentation](src/adapter/README.md): Complete API reference and examples.
 
+### Hint Designer
+
+The **Hint Designer** is a companion web component which can be used to help users edit and test their hints SVG and JS animation code. The main web component used for display has no relation with it. Rather, the hint designer component reuses some logic from the main component, while still being aside.
+
+- [hint designer documentation](docs/hint-designer.md)
+
+Use the npm script to start the designer:
+
+```bash
+pnpm run start:designer
+```
+
+This will build the component and open the hint designer in your browser.
+
 ## Quick Start
 
 To start working with this code:
@@ -70,6 +84,7 @@ This component requires the following packages:
 - [svg-pan-zoom](https://github.com/bumbu/svg-pan-zoom) for zooming and panning (`pnpm i svg-pan-zoom @types/svg-pan-zoom`).
 - [fast-diff](https://github.com/jhchen/fast-diff) for text diffing (`pnpm i fast-diff @types/fast-diff`).
 - [feather-icons](https://github.com/feathericons/feather) for icons. See also the [icons list](https://feathericons.com) (`pnpm i feather-icons`).
+- [highlight.js](https://highlightjs.org/) for the hint designer (syntax highlight for SVG and JS code; `pnpm i highlight.js`).
 
 ## Task List
 
