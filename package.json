@@ -12,7 +12,7 @@
     "build": "rollup -c",
     "watch": "rollup -c -w",
     "start": "concurrently \"rollup -c -w\" \"lite-server\"",
-    "start:designer": "concurrently \"rollup -c -w\" \"lite-server --open hint-designer.html\"",
+    "start:designer": "concurrently \"rollup -c -w\" \"lite-server -c bs-config.designer.json\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "test-ui": "vitest --ui"
