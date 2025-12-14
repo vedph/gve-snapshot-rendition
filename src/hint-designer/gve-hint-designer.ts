@@ -246,8 +246,8 @@ export class GveHintDesigner extends HTMLElement {
 
     this._svgDisplay = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     this._svgDisplay.setAttribute("class", "svg-display");
-    this._svgDisplay.setAttribute("width", "100%");
-    this._svgDisplay.setAttribute("height", "100%");
+    this._svgDisplay.setAttribute("width", this._settings.hintDesignWidth.toString());
+    this._svgDisplay.setAttribute("height", this._settings.hintDesignHeight.toString());
     this._svgDisplay.setAttribute(
       "viewBox",
       `0 0 ${this._settings.hintDesignWidth} ${this._settings.hintDesignHeight}`
@@ -1478,16 +1478,19 @@ export class GveHintDesigner extends HTMLElement {
       /* SVG Display */
       .svg-display-panel {
         flex: 1;
-        min-height: 0;
+        min-height: 300px;
         background: var(--hint-designer-svg-bg, white);
         border-bottom: 1px solid var(--hint-designer-border, #ddd);
-        overflow: hidden;
+        overflow: auto;
         position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .svg-display {
-        width: 100%;
-        height: 100%;
+        display: block;
+        border: 1px solid #ddd;
       }
 
       /* Timeline Player */
