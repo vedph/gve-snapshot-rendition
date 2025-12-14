@@ -41,6 +41,7 @@ The **Feature Adapter** is a utility system for transforming features in snapsho
 The **Hint Designer** is a companion web component which can be used to help users edit and test their hints SVG and JS animation code. The main web component used for display has no relation with it. Rather, the hint designer component reuses some logic from the main component, while still being aside.
 
 - [hint designer documentation](docs/hint-designer.md)
+- [hint designer usage](src/hint-designer/README.md)
 
 Use the npm script to start the designer:
 
