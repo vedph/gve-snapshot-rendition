@@ -969,23 +969,34 @@ export class GveHintDesigner extends HTMLElement {
     svgCode = this.resolveVariables(svgCode);
 
     try {
-      // Parse and insert SVG
+      // Parse SVG code - wrap in SVG to ensure proper parsing
+      const wrappedSvg = `<svg xmlns="http://www.w3.org/2000/svg">${svgCode}</svg>`;
       const parser = new DOMParser();
-      const doc = parser.parseFromString(svgCode, "image/svg+xml");
+      const doc = parser.parseFromString(wrappedSvg, "image/svg+xml");
       const errorNode = doc.querySelector("parsererror");
 
       if (errorNode) {
         throw new Error("Invalid SVG syntax");
       }
 
-      const gElement = doc.documentElement;
-      if (gElement.tagName !== "g") {
-        throw new Error("SVG must have <g> as root element");
+      const svgElement = doc.documentElement;
+      const gElement = svgElement.querySelector("g");
+
+      if (!gElement) {
+        throw new Error("SVG must contain a <g> element");
       }
 
-      // Import and append
-      const importedNode = document.importNode(gElement, true);
+      // Clone the g element using adoptNode for proper namespace handling
+      const importedNode = this._shadow.ownerDocument!.adoptNode(gElement.cloneNode(true)) as SVGGElement;
       this._svgDisplay.appendChild(importedNode);
+
+      // Debug: Log the imported node
+      this._logger.debug("Component", "Imported SVG node", {
+        tagName: importedNode.tagName,
+        childCount: importedNode.children.length,
+        namespaceURI: importedNode.namespaceURI,
+        firstChild: importedNode.firstElementChild?.outerHTML,
+      });
 
       // Force a reflow to ensure the SVG is fully rendered
       this._svgDisplay.getBoundingClientRect();
