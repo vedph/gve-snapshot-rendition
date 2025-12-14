@@ -7,9 +7,6 @@ import {
 import { OperationHint } from "../settings/hint-models";
 import { RelativePosition } from "../core/gve-snapshot-rendition";
 import { Logger } from "../core/logger";
-import svgPanZoom from "svg-pan-zoom";
-
-type SvgPanZoomInstance = ReturnType<typeof svgPanZoom>;
 
 /**
  * GVE Hint Designer Web Component.
@@ -28,8 +25,15 @@ export class GveHintDesigner extends HTMLElement {
 
   // UI Elements
   private _svgDisplay?: SVGSVGElement;
-  private _panZoomInstance?: SvgPanZoomInstance;
   private _messagePanel?: HTMLDivElement;
+
+  // Custom zoom/pan state
+  private _zoomLevel: number = 1;
+  private _panX: number = 0;
+  private _panY: number = 0;
+  private _isPanning: boolean = false;
+  private _lastPanX: number = 0;
+  private _lastPanY: number = 0;
   private _svgTextarea?: HTMLTextAreaElement;
   private _jsTextarea?: HTMLTextAreaElement;
   private _hintsDropdown?: HTMLSelectElement;
@@ -623,7 +627,52 @@ export class GveHintDesigner extends HTMLElement {
       this._jsTextarea.addEventListener("input", () => this.highlightJs());
     }
 
+    // Pan with mouse drag on SVG display
+    this.initializePanning();
+
     this._logger.debug("Component", "Event listeners initialized");
+  }
+
+  /**
+   * Initialize panning with mouse drag.
+   */
+  private initializePanning(): void {
+    const panel = this._shadow.querySelector('.svg-display-panel');
+    if (!panel) return;
+
+    panel.addEventListener('mousedown', (e: Event) => {
+      const mouseEvent = e as MouseEvent;
+      this._isPanning = true;
+      this._lastPanX = mouseEvent.clientX;
+      this._lastPanY = mouseEvent.clientY;
+      (panel as HTMLElement).style.cursor = 'grabbing';
+    });
+
+    document.addEventListener('mousemove', (e: MouseEvent) => {
+      if (!this._isPanning) return;
+
+      const deltaX = e.clientX - this._lastPanX;
+      const deltaY = e.clientY - this._lastPanY;
+
+      this._panX += deltaX;
+      this._panY += deltaY;
+
+      this._lastPanX = e.clientX;
+      this._lastPanY = e.clientY;
+
+      this.updateSvgTransform();
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (this._isPanning) {
+        this._isPanning = false;
+        const panelEl = panel as HTMLElement;
+        panelEl.style.cursor = 'grab';
+      }
+    });
+
+    // Set initial cursor
+    (panel as HTMLElement).style.cursor = 'grab';
   }
 
   /**
@@ -640,10 +689,6 @@ export class GveHintDesigner extends HTMLElement {
    * Cleanup resources.
    */
   private cleanup(): void {
-    if (this._panZoomInstance) {
-      this._panZoomInstance.destroy();
-      this._panZoomInstance = undefined;
-    }
     if (this._currentAnimation) {
       this._currentAnimation.kill();
       this._currentAnimation = undefined;
@@ -949,12 +994,6 @@ export class GveHintDesigner extends HTMLElement {
   private refreshSvgDisplay(): void {
     if (!this._svgDisplay) return;
 
-    // Destroy existing pan/zoom instance
-    if (this._panZoomInstance) {
-      this._panZoomInstance.destroy();
-      this._panZoomInstance = undefined;
-    }
-
     // Clear existing content
     this._svgDisplay.innerHTML = "";
 
@@ -1001,30 +1040,8 @@ export class GveHintDesigner extends HTMLElement {
       // Force a reflow to ensure the SVG is fully rendered
       this._svgDisplay.getBoundingClientRect();
 
-      // Initialize pan/zoom after content is added
-      // Use requestAnimationFrame to ensure DOM is fully updated
-      requestAnimationFrame(() => {
-        if (this._svgDisplay && this._svgDisplay.children.length > 0) {
-          try {
-            // Ensure the SVG has proper dimensions
-            const bbox = this._svgDisplay.getBBox();
-            if (bbox && bbox.width > 0 && bbox.height > 0) {
-              this._panZoomInstance = svgPanZoom(this._svgDisplay, {
-                zoomEnabled: true,
-                panEnabled: true,
-                controlIconsEnabled: false,
-                fit: false,
-                center: false,
-                minZoom: 0.1,
-                maxZoom: 10,
-              });
-            }
-          } catch (pzErr) {
-            // Silently ignore pan-zoom errors, SVG will still be visible
-            this._logger.debug("Component", "Pan-zoom initialization skipped", pzErr);
-          }
-        }
-      });
+      // Apply initial transform
+      this.updateSvgTransform();
 
       this.showMessage("", ""); // Clear message
       this._logger.debug("Component", "SVG display refreshed");
@@ -1168,27 +1185,43 @@ export class GveHintDesigner extends HTMLElement {
    * Zoom in.
    */
   private zoomIn(): void {
-    if (this._panZoomInstance) {
-      this._panZoomInstance.zoomIn();
-    }
+    this._zoomLevel = Math.min(this._zoomLevel * 1.2, 10);
+    this.updateSvgTransform();
   }
 
   /**
    * Zoom out.
    */
   private zoomOut(): void {
-    if (this._panZoomInstance) {
-      this._panZoomInstance.zoomOut();
-    }
+    this._zoomLevel = Math.max(this._zoomLevel / 1.2, 0.1);
+    this.updateSvgTransform();
   }
 
   /**
    * Reset zoom.
    */
   private resetZoom(): void {
-    if (this._panZoomInstance) {
-      this._panZoomInstance.resetZoom();
-      this._panZoomInstance.resetPan();
+    this._zoomLevel = 1;
+    this._panX = 0;
+    this._panY = 0;
+    this.updateSvgTransform();
+  }
+
+  /**
+   * Update SVG transform based on zoom and pan.
+   */
+  private updateSvgTransform(): void {
+    if (!this._svgDisplay) return;
+
+    // Apply transform: translate first, then scale from the SVG's own center
+    this._svgDisplay.style.transform = `translate(${this._panX}px, ${this._panY}px) scale(${this._zoomLevel})`;
+    this._svgDisplay.style.transformOrigin = '0 0';
+
+    // Only apply transition during zoom, not during pan (to avoid sluggishness)
+    if (!this._isPanning) {
+      this._svgDisplay.style.transition = 'transform 0.15s ease-out';
+    } else {
+      this._svgDisplay.style.transition = 'none';
     }
   }
 
