@@ -8,7 +8,6 @@ import { OperationHint } from "../settings/hint-models";
 import { RelativePosition } from "../core/gve-snapshot-rendition";
 import { Logger } from "../core/logger";
 import svgPanZoom from "svg-pan-zoom";
-import hljs from "highlight.js";
 
 type SvgPanZoomInstance = ReturnType<typeof svgPanZoom>;
 
@@ -770,7 +769,10 @@ export class GveHintDesigner extends HTMLElement {
       this._hintsDropdown.value = hintId;
     }
 
-    this._logger.debug("Loaded hint for editing", hintId);
+    // Auto-refresh SVG display when hint is loaded
+    this.refreshSvgDisplay();
+
+    this._logger.debug("Component", "Loaded hint for editing", hintId);
   }
 
   /**
@@ -947,6 +949,12 @@ export class GveHintDesigner extends HTMLElement {
   private refreshSvgDisplay(): void {
     if (!this._svgDisplay) return;
 
+    // Destroy existing pan/zoom instance
+    if (this._panZoomInstance) {
+      this._panZoomInstance.destroy();
+      this._panZoomInstance = undefined;
+    }
+
     // Clear existing content
     this._svgDisplay.innerHTML = "";
 
@@ -979,18 +987,33 @@ export class GveHintDesigner extends HTMLElement {
       const importedNode = document.importNode(gElement, true);
       this._svgDisplay.appendChild(importedNode);
 
-      // Initialize pan/zoom if not already done
-      if (!this._panZoomInstance && this._svgDisplay) {
-        this._panZoomInstance = svgPanZoom(this._svgDisplay, {
-          zoomEnabled: true,
-          panEnabled: true,
-          controlIconsEnabled: false,
-          fit: false,
-          center: false,
-          minZoom: 0.1,
-          maxZoom: 10,
-        });
-      }
+      // Force a reflow to ensure the SVG is fully rendered
+      this._svgDisplay.getBoundingClientRect();
+
+      // Initialize pan/zoom after content is added
+      // Use requestAnimationFrame to ensure DOM is fully updated
+      requestAnimationFrame(() => {
+        if (this._svgDisplay && this._svgDisplay.children.length > 0) {
+          try {
+            // Ensure the SVG has proper dimensions
+            const bbox = this._svgDisplay.getBBox();
+            if (bbox && bbox.width > 0 && bbox.height > 0) {
+              this._panZoomInstance = svgPanZoom(this._svgDisplay, {
+                zoomEnabled: true,
+                panEnabled: true,
+                controlIconsEnabled: false,
+                fit: false,
+                center: false,
+                minZoom: 0.1,
+                maxZoom: 10,
+              });
+            }
+          } catch (pzErr) {
+            // Silently ignore pan-zoom errors, SVG will still be visible
+            this._logger.debug("Component", "Pan-zoom initialization skipped", pzErr);
+          }
+        }
+      });
 
       this.showMessage("", ""); // Clear message
       this._logger.debug("Component", "SVG display refreshed");
