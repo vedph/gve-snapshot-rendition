@@ -57,8 +57,9 @@ export class GveHintDesigner extends HTMLElement {
   private _progressBar?: HTMLInputElement;
 
   // Animation state
-  private _currentAnimation?: gsap.core.Timeline;
+  private _currentTimeline?: any; // GSAP timeline
   private _isPlaying: boolean = false;
+  private _progressUpdateInterval?: number;
 
   constructor() {
     super();
@@ -462,6 +463,9 @@ export class GveHintDesigner extends HTMLElement {
     const toolbar = document.createElement("div");
     toolbar.className = "panel-toolbar";
 
+    const addVarBtn = this.createButton("add-variable", "+", "Add new variable");
+    toolbar.appendChild(addVarBtn);
+
     const deleteAllBtn = this.createButton("delete-all-vars", "🗑️", "Delete all variables");
     toolbar.appendChild(deleteAllBtn);
 
@@ -475,10 +479,6 @@ export class GveHintDesigner extends HTMLElement {
     this._variablesTable = document.createElement("table");
     this._variablesTable.className = "variables-table";
     content.appendChild(this._variablesTable);
-
-    // Add variable button
-    const addVarBtn = this.createButton("add-variable", "+ Add Variable", "Add new variable");
-    content.appendChild(addVarBtn);
 
     panel.appendChild(content);
 
@@ -713,9 +713,13 @@ export class GveHintDesigner extends HTMLElement {
    * Cleanup resources.
    */
   private cleanup(): void {
-    if (this._currentAnimation) {
-      this._currentAnimation.kill();
-      this._currentAnimation = undefined;
+    if (this._currentTimeline) {
+      this._currentTimeline.kill();
+      this._currentTimeline = undefined;
+    }
+    if (this._progressUpdateInterval) {
+      clearInterval(this._progressUpdateInterval);
+      this._progressUpdateInterval = undefined;
     }
   }
 
@@ -780,6 +784,18 @@ export class GveHintDesigner extends HTMLElement {
    * Load a hint for editing.
    */
   private loadHint(hintId: string | undefined): void {
+    // Clear any existing animation timeline
+    if (this._currentTimeline) {
+      this._currentTimeline.kill();
+      this._currentTimeline = undefined;
+    }
+    this.stopProgressUpdate();
+    if (this._progressBar) {
+      this._progressBar.value = "0";
+    }
+    if (this._playButton) this._playButton.disabled = false;
+    if (this._pauseButton) this._pauseButton.disabled = true;
+
     if (!hintId || !this._data.hints[hintId]) {
       // Clear form
       this.clearHintForm();
@@ -1093,6 +1109,16 @@ export class GveHintDesigner extends HTMLElement {
    * Play animation.
    */
   private playAnimation(): void {
+    if (this._currentTimeline) {
+      // If timeline exists, just play it
+      this._currentTimeline.play();
+      this._isPlaying = true;
+      if (this._playButton) this._playButton.disabled = true;
+      if (this._pauseButton) this._pauseButton.disabled = false;
+      this.startProgressUpdate();
+      return;
+    }
+
     if (!this._svgDisplay || !this._hintId || !this._data.hints[this._hintId]) {
       this.showMessage("No hint to animate!", "error");
       return;
@@ -1129,35 +1155,60 @@ export class GveHintDesigner extends HTMLElement {
       // Set initial opacity to 0 (on style attribute)
       (hintEl as SVGGElement).style.opacity = "0";
 
-      // Create animation function
-      const animFn = new Function(
-        "gsap",
-        "targetEl",
-        "rootEl",
-        jsCode
-      ) as (gsap: any, targetEl: SVGElement, rootEl: SVGElement) => Promise<void>;
-
       // Check if GSAP is available
       const gsap = (window as any).gsap;
       if (!gsap) {
         throw new Error("GSAP not available");
       }
 
-      // Execute animation
-      const promise = animFn(gsap, hintEl as SVGElement, this._svgDisplay);
+      // Create a wrapper function that returns a timeline instead of a promise
+      const timelineWrapperCode = `
+        const tl = gsap.timeline({ paused: true });
+        const originalCode = ${JSON.stringify(jsCode)};
+        const animFn = new Function("gsap", "targetEl", "rootEl", originalCode);
 
-      if (promise && typeof promise.then === "function") {
-        promise.then(() => {
-          this._logger.debug("Component", "Animation completed");
-          this._isPlaying = false;
-          if (this._playButton) this._playButton.disabled = false;
-          if (this._pauseButton) this._pauseButton.disabled = true;
-        });
-      }
+        // Execute the animation function and capture any tweens it creates
+        const result = animFn(gsap, targetEl, rootEl);
 
+        // If it returns a promise, we need to handle it differently
+        if (result && typeof result.then === 'function') {
+          // For promise-based animations, we'll need to create a timeline manually
+          // This is a workaround - ideally animations should add to timeline
+          result.then(() => {
+            if (tl.onComplete) tl.onComplete();
+          });
+        }
+
+        return tl;
+      `;
+
+      const createTimeline = new Function(
+        "gsap",
+        "targetEl",
+        "rootEl",
+        timelineWrapperCode
+      );
+
+      // Create timeline
+      this._currentTimeline = createTimeline(gsap, hintEl, this._svgDisplay);
+
+      // Set up timeline callbacks
+      this._currentTimeline.eventCallback("onComplete", () => {
+        this._logger.debug("Component", "Animation completed");
+        this._isPlaying = false;
+        if (this._playButton) this._playButton.disabled = false;
+        if (this._pauseButton) this._pauseButton.disabled = true;
+        this.stopProgressUpdate();
+      });
+
+      // Play the timeline
+      this._currentTimeline.play();
       this._isPlaying = true;
       if (this._playButton) this._playButton.disabled = true;
       if (this._pauseButton) this._pauseButton.disabled = false;
+
+      // Start updating progress bar
+      this.startProgressUpdate();
 
       this.showMessage("", "");
       this._logger.info("Animation started");
@@ -1174,13 +1225,12 @@ export class GveHintDesigner extends HTMLElement {
    * Pause animation.
    */
   private pauseAnimation(): void {
-    // Note: Simple pause using GSAP global timeline
-    const gsap = (window as any).gsap;
-    if (gsap && gsap.globalTimeline) {
-      gsap.globalTimeline.pause();
+    if (this._currentTimeline) {
+      this._currentTimeline.pause();
       this._isPlaying = false;
       if (this._playButton) this._playButton.disabled = false;
       if (this._pauseButton) this._pauseButton.disabled = true;
+      this.stopProgressUpdate();
       this._logger.debug("Component", "Animation paused");
     }
   }
@@ -1189,19 +1239,52 @@ export class GveHintDesigner extends HTMLElement {
    * Restart animation.
    */
   private restartAnimation(): void {
-    this.playAnimation();
+    if (this._currentTimeline) {
+      this._currentTimeline.restart();
+      this._isPlaying = true;
+      if (this._playButton) this._playButton.disabled = true;
+      if (this._pauseButton) this._pauseButton.disabled = false;
+      this.startProgressUpdate();
+    } else {
+      this.playAnimation();
+    }
   }
 
   /**
    * Seek animation (timeline scrubbing).
    */
   private seekAnimation(): void {
-    // Note: This would require more sophisticated timeline management
-    // For simplicity, we'll just restart the animation
-    const gsap = (window as any).gsap;
-    if (gsap && gsap.globalTimeline && this._progressBar) {
+    if (this._currentTimeline && this._progressBar) {
       const progress = parseFloat(this._progressBar.value) / 1000;
-      gsap.globalTimeline.progress(progress);
+      this._currentTimeline.progress(progress);
+
+      // If not playing, update one frame to show the scrubbed position
+      if (!this._isPlaying) {
+        this._currentTimeline.pause();
+      }
+    }
+  }
+
+  /**
+   * Start updating progress bar.
+   */
+  private startProgressUpdate(): void {
+    this.stopProgressUpdate();
+    this._progressUpdateInterval = window.setInterval(() => {
+      if (this._currentTimeline && this._progressBar) {
+        const progress = this._currentTimeline.progress();
+        this._progressBar.value = (progress * 1000).toString();
+      }
+    }, 50); // Update every 50ms
+  }
+
+  /**
+   * Stop updating progress bar.
+   */
+  private stopProgressUpdate(): void {
+    if (this._progressUpdateInterval) {
+      clearInterval(this._progressUpdateInterval);
+      this._progressUpdateInterval = undefined;
     }
   }
 
@@ -1413,15 +1496,16 @@ export class GveHintDesigner extends HTMLElement {
 
       // Actions cell
       const actionsCell = row.insertCell();
+
+      const editBtn = this.createButton(`edit-var-${index}`, "✏️", "Edit variable");
+      editBtn.onclick = () => this.editVariable(index);
+
       const deleteBtn = this.createButton(
         `delete-var-${index}`,
         "🗑️",
         "Delete variable"
       );
       deleteBtn.onclick = () => this.deleteVariable(index);
-
-      const editBtn = this.createButton(`edit-var-${index}`, "✏️", "Edit variable");
-      editBtn.onclick = () => this.editVariable(index);
 
       actionsCell.appendChild(editBtn);
       actionsCell.appendChild(deleteBtn);
@@ -1547,19 +1631,29 @@ export class GveHintDesigner extends HTMLElement {
         width: 100%;
         height: 100%;
         font-family: Arial, sans-serif;
+        overflow: hidden;
       }
 
       .hint-designer-container {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-rows: auto 1fr auto auto auto auto;
+        grid-template-areas:
+          "toolbar"
+          "svg-display"
+          "timeline"
+          "message"
+          "properties"
+          "variables";
         width: 100%;
         height: 100%;
-        overflow: hidden;
+        overflow-y: auto;
+        overflow-x: hidden;
         background: var(--hint-designer-bg, #fafafa);
       }
 
       /* Toolbar */
       .toolbar {
+        grid-area: toolbar;
         display: flex;
         align-items: center;
         gap: 0.5rem;
@@ -1567,7 +1661,6 @@ export class GveHintDesigner extends HTMLElement {
         background: var(--hint-designer-toolbar-bg, #f5f5f5);
         border-bottom: 1px solid var(--hint-designer-border, #ddd);
         flex-wrap: wrap;
-        flex-shrink: 0;
       }
 
       .toolbar-group {
@@ -1606,8 +1699,9 @@ export class GveHintDesigner extends HTMLElement {
 
       /* SVG Display */
       .svg-display-panel {
-        flex: 1;
+        grid-area: svg-display;
         min-height: 300px;
+        max-height: 500px;
         background: var(--hint-designer-svg-bg, white);
         border-bottom: 1px solid var(--hint-designer-border, #ddd);
         overflow: auto;
@@ -1624,13 +1718,13 @@ export class GveHintDesigner extends HTMLElement {
 
       /* Timeline Player */
       .timeline-player {
+        grid-area: timeline;
         display: flex;
         align-items: center;
         gap: 0.5rem;
         padding: 0.5rem;
         background: var(--hint-designer-player-bg, #f9f9f9);
         border-bottom: 1px solid var(--hint-designer-border, #ddd);
-        flex-shrink: 0;
       }
 
       .progress-bar {
@@ -1641,12 +1735,12 @@ export class GveHintDesigner extends HTMLElement {
 
       /* Message Panel */
       .message-panel {
+        grid-area: message;
         min-height: 30px;
         padding: 0.5rem;
         background: var(--hint-designer-message-bg, #fff);
         border-bottom: 1px solid var(--hint-designer-border, #ddd);
         font-size: 13px;
-        flex-shrink: 0;
       }
 
       .message-panel.message-error {
@@ -1672,6 +1766,15 @@ export class GveHintDesigner extends HTMLElement {
         border-bottom: 1px solid var(--hint-designer-border, #ddd);
         overflow: hidden;
         position: relative;
+        min-height: 200px;
+      }
+
+      .properties-panel {
+        grid-area: properties;
+      }
+
+      .variables-panel {
+        grid-area: variables;
       }
 
       .panel-header {
@@ -1704,9 +1807,48 @@ export class GveHintDesigner extends HTMLElement {
       }
 
       .panel-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
         padding: 0.5rem;
         border-bottom: 1px solid var(--hint-designer-border, #ddd);
         flex-shrink: 0;
+      }
+
+      .panel-toolbar button {
+        padding: 0.3rem 0.6rem;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        background: white;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+      }
+
+      .panel-toolbar button:hover {
+        opacity: 0.8;
+      }
+
+      /* Add variable button - green color */
+      .panel-toolbar button#add-variable {
+        background: #e8f5e9;
+        border-color: #4caf50;
+        color: #2e7d32;
+      }
+
+      .panel-toolbar button#add-variable:hover {
+        background: #c8e6c9;
+      }
+
+      /* Delete all button - red color */
+      .panel-toolbar button#delete-all-vars {
+        background: #ffebee;
+        border-color: #f44336;
+        color: #c62828;
+      }
+
+      .panel-toolbar button#delete-all-vars:hover {
+        background: #ffcdd2;
       }
 
       .panel-content {
@@ -1871,14 +2013,66 @@ export class GveHintDesigner extends HTMLElement {
         border-collapse: collapse;
       }
 
+      .variables-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      .variables-table tr:nth-child(odd) {
+        background-color: #fff;
+      }
+
       .variables-table td {
-        padding: 0.3rem;
-        border-bottom: 1px solid #eee;
+        padding: 0.4rem 0.5rem;
         font-size: 13px;
+        vertical-align: middle;
       }
 
       .variables-table td:first-child {
-        width: 80px;
+        width: 100px;
+        white-space: nowrap;
+      }
+
+      .variables-table td:nth-child(2),
+      .variables-table td:nth-child(3) {
+        padding-left: 0.5rem;
+      }
+
+      /* Button styles for table actions */
+      .variables-table button {
+        padding: 0.2rem 0.5rem;
+        margin: 0 0.2rem;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        background: white;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s;
+      }
+
+      .variables-table button:hover {
+        opacity: 0.8;
+      }
+
+      /* Edit button - blue color */
+      .variables-table button[id^="edit-"] {
+        background: #e3f2fd;
+        border-color: #2196f3;
+        color: #1976d2;
+      }
+
+      .variables-table button[id^="edit-"]:hover {
+        background: #bbdefb;
+      }
+
+      /* Delete button - red color */
+      .variables-table button[id^="delete-"] {
+        background: #ffebee;
+        border-color: #f44336;
+        color: #c62828;
+      }
+
+      .variables-table button[id^="delete-"]:hover {
+        background: #ffcdd2;
       }
 
       /* Responsive layout */

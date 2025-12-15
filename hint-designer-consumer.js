@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleY: 1,
         rotation: 0,
         solid: false,
-        animation: "#fade-in",
+        animation: "#wipe-right",
       },
       box: {
         svg: `<g>
@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
 return new Promise(resolve => {
   gsap.fromTo(targetEl,
     { opacity: 0 },
-    { opacity: 1, duration: 0.5, onComplete: resolve }
+    { opacity: 1, duration: 2, onComplete: resolve }
   );
 });
 `,
@@ -76,10 +76,23 @@ return new Promise(resolve => {
 });
 `,
       "wipe-right": `
+// Simple wipe-right effect using GSAP DrawSVGPlugin
 return new Promise(resolve => {
-  gsap.fromTo(targetEl,
-    { opacity: 0, x: -20 },
-    { opacity: 1, x: 0, duration: 0.4, ease: 'power2.out', onComplete: resolve }
+  // Set initial state
+  targetEl.style.opacity = '1';
+
+  // Find all drawable elements (line, path, polyline, polygon, circle, rect, ellipse)
+  const drawables = targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse');
+
+  gsap.fromTo(drawables,
+    { drawSVG: '0%' },
+    {
+      drawSVG: '100%',
+      duration: 0.8,
+      ease: 'power2.out',
+      stagger: 0.1,
+      onComplete: resolve
+    }
   );
 });
 `,
