@@ -4,7 +4,7 @@
 
 export { FeatureAdapter } from "./feature-adapter.js";
 export { DataFeatureAdapter } from "./data-feature-adapter.js";
-export {
+export type {
   FeatureAdapterSettings,
   AdapterOperation,
   ProcessingMode,

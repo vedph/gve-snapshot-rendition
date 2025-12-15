@@ -1,7 +1,9 @@
 import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
-import { terser } from "rollup-plugin-terser"; // Optional: Minification (for production)
+import * as terserModule from "@rollup/plugin-terser"; // Optional: Minification (for production)
 import { nodeResolve } from "@rollup/plugin-node-resolve";
+
+const terser = terserModule.terser || terserModule.default || terserModule;
 
 export default {
   input: "src/index.ts", // Entry point for your library
