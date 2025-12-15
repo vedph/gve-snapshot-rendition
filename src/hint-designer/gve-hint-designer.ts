@@ -8,6 +8,7 @@ import { OperationHint } from "../settings/hint-models";
 import { RelativePosition } from "../core/gve-snapshot-rendition";
 import { Logger } from "../core/logger";
 import hljs from "highlight.js";
+import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 
 /**
  * GVE Hint Designer Web Component.
@@ -66,6 +67,13 @@ export class GveHintDesigner extends HTMLElement {
 
     // Create logger
     this._logger = new Logger("GVE-HintDesigner", this._settings.debug);
+
+    // Register GSAP plugins
+    const gsap = (window as any).gsap;
+    if (gsap) {
+      gsap.registerPlugin(DrawSVGPlugin);
+      this._logger.debug("Component", "DrawSVG plugin registered:", gsap.plugins.drawSVG !== undefined);
+    }
 
     // Create shadow DOM
     this._shadow = this.attachShadow({ mode: "open" });
