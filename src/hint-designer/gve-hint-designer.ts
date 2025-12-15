@@ -7,6 +7,7 @@ import {
 import { OperationHint } from "../settings/hint-models";
 import { RelativePosition } from "../core/gve-snapshot-rendition";
 import { Logger } from "../core/logger";
+import hljs from "highlight.js";
 
 /**
  * GVE Hint Designer Web Component.
@@ -36,6 +37,8 @@ export class GveHintDesigner extends HTMLElement {
   private _lastPanY: number = 0;
   private _svgTextarea?: HTMLTextAreaElement;
   private _jsTextarea?: HTMLTextAreaElement;
+  private _svgHighlightContainer?: HTMLDivElement;
+  private _jsHighlightContainer?: HTMLDivElement;
   private _hintsDropdown?: HTMLSelectElement;
   private _animationsDropdown?: HTMLSelectElement;
   private _embeddedJsCheckbox?: HTMLInputElement;
@@ -367,10 +370,20 @@ export class GveHintDesigner extends HTMLElement {
     svgLabel.className = "textarea-label";
     content.appendChild(svgLabel);
 
+    // Create wrapper for textarea with highlighting
+    const svgWrapper = document.createElement("div");
+    svgWrapper.className = "code-editor-wrapper";
+
+    this._svgHighlightContainer = document.createElement("div");
+    this._svgHighlightContainer.className = "code-highlight";
+    svgWrapper.appendChild(this._svgHighlightContainer);
+
     this._svgTextarea = document.createElement("textarea");
     this._svgTextarea.className = "code-textarea";
     this._svgTextarea.spellcheck = false;
-    content.appendChild(this._svgTextarea);
+    svgWrapper.appendChild(this._svgTextarea);
+
+    content.appendChild(svgWrapper);
 
     // Animation section
     const animLabel = document.createElement("label");
@@ -406,10 +419,19 @@ export class GveHintDesigner extends HTMLElement {
     content.appendChild(animControls);
 
     // JS textarea with syntax highlighting
+    const jsWrapper = document.createElement("div");
+    jsWrapper.className = "code-editor-wrapper";
+
+    this._jsHighlightContainer = document.createElement("div");
+    this._jsHighlightContainer.className = "code-highlight";
+    jsWrapper.appendChild(this._jsHighlightContainer);
+
     this._jsTextarea = document.createElement("textarea");
     this._jsTextarea.className = "code-textarea";
     this._jsTextarea.spellcheck = false;
-    content.appendChild(this._jsTextarea);
+    jsWrapper.appendChild(this._jsTextarea);
+
+    content.appendChild(jsWrapper);
 
     panel.appendChild(content);
 
@@ -622,9 +644,11 @@ export class GveHintDesigner extends HTMLElement {
     // Syntax highlighting on textareas
     if (this._svgTextarea) {
       this._svgTextarea.addEventListener("input", () => this.highlightSvg());
+      this._svgTextarea.addEventListener("scroll", () => this.syncSvgScroll());
     }
     if (this._jsTextarea) {
       this._jsTextarea.addEventListener("input", () => this.highlightJs());
+      this._jsTextarea.addEventListener("scroll", () => this.syncJsScroll());
     }
 
     // Pan with mouse drag on SVG display
@@ -1430,17 +1454,78 @@ export class GveHintDesigner extends HTMLElement {
    * Apply syntax highlighting to SVG textarea.
    */
   private highlightSvg(): void {
-    // Note: For simplicity, we'll skip live syntax highlighting
-    // and just use the textarea directly. Full highlighting would
-    // require a more sophisticated setup with overlays.
+    if (!this._svgTextarea || !this._svgHighlightContainer) {
+      this._logger.debug("Component", "Cannot highlight SVG - missing elements", {
+        hasTextarea: !!this._svgTextarea,
+        hasContainer: !!this._svgHighlightContainer
+      });
+      return;
+    }
+
+    const code = this._svgTextarea.value;
+    this._logger.debug("Component", "Highlighting SVG", { codeLength: code.length });
+
+    try {
+      // Highlight as XML
+      const highlighted = hljs.highlight(code, { language: 'xml' }).value;
+      this._svgHighlightContainer.innerHTML = highlighted + '\n';
+      this._logger.debug("Component", "SVG highlighted successfully");
+    } catch (err) {
+      this._logger.error("Failed to highlight SVG", err);
+      // Fallback to plain text
+      this._svgHighlightContainer.textContent = code;
+    }
+
+    // Sync scroll position
+    this.syncSvgScroll();
   }
 
   /**
    * Apply syntax highlighting to JS textarea.
    */
   private highlightJs(): void {
-    // Note: For simplicity, we'll skip live syntax highlighting
-    // and just use the textarea directly.
+    if (!this._jsTextarea || !this._jsHighlightContainer) {
+      this._logger.debug("Component", "Cannot highlight JS - missing elements", {
+        hasTextarea: !!this._jsTextarea,
+        hasContainer: !!this._jsHighlightContainer
+      });
+      return;
+    }
+
+    const code = this._jsTextarea.value;
+    this._logger.debug("Component", "Highlighting JS", { codeLength: code.length });
+
+    try {
+      // Highlight as JavaScript
+      const highlighted = hljs.highlight(code, { language: 'javascript' }).value;
+      this._jsHighlightContainer.innerHTML = highlighted + '\n';
+      this._logger.debug("Component", "JS highlighted successfully");
+    } catch (err) {
+      this._logger.error("Failed to highlight JavaScript", err);
+      // Fallback to plain text
+      this._jsHighlightContainer.textContent = code;
+    }
+
+    // Sync scroll position
+    this.syncJsScroll();
+  }
+
+  /**
+   * Sync scroll position for SVG textarea and highlight container.
+   */
+  private syncSvgScroll(): void {
+    if (!this._svgTextarea || !this._svgHighlightContainer) return;
+    this._svgHighlightContainer.scrollTop = this._svgTextarea.scrollTop;
+    this._svgHighlightContainer.scrollLeft = this._svgTextarea.scrollLeft;
+  }
+
+  /**
+   * Sync scroll position for JS textarea and highlight container.
+   */
+  private syncJsScroll(): void {
+    if (!this._jsTextarea || !this._jsHighlightContainer) return;
+    this._jsHighlightContainer.scrollTop = this._jsTextarea.scrollTop;
+    this._jsHighlightContainer.scrollLeft = this._jsTextarea.scrollLeft;
   }
 
   /**
@@ -1666,15 +1751,110 @@ export class GveHintDesigner extends HTMLElement {
         font-size: 13px;
       }
 
-      .code-textarea {
+      /* Code Editor with Syntax Highlighting */
+      .code-editor-wrapper {
+        position: relative;
         width: 100%;
         min-height: 150px;
-        padding: 0.5rem;
+        background: #f5f5f5;
         border: 1px solid #ccc;
+        border-radius: 3px;
+      }
+
+      .code-highlight {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 0.5rem;
+        margin: 0;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        line-height: 1.5;
+        overflow: hidden;
+        white-space: pre;
+        word-wrap: normal;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .code-textarea {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        min-height: 150px;
+        padding: 0.5rem;
+        margin: 0;
+        border: none;
         border-radius: 3px;
         font-family: 'Courier New', monospace;
         font-size: 12px;
+        line-height: 1.5;
         resize: vertical;
+        background: transparent;
+        color: transparent;
+        caret-color: #333;
+        z-index: 2;
+        overflow: auto;
+        white-space: pre;
+        word-wrap: normal;
+        box-sizing: border-box;
+      }
+
+      .code-textarea::selection {
+        background: rgba(0, 123, 255, 0.3);
+      }
+
+      /* Highlight.js syntax highlighting colors */
+      .code-highlight .hljs-tag {
+        color: #000080;
+      }
+
+      .code-highlight .hljs-name {
+        color: #800000;
+      }
+
+      .code-highlight .hljs-attr {
+        color: #ff0000;
+      }
+
+      .code-highlight .hljs-string {
+        color: #0000ff;
+      }
+
+      .code-highlight .hljs-keyword {
+        color: #0000ff;
+        font-weight: bold;
+      }
+
+      .code-highlight .hljs-built_in {
+        color: #0086b3;
+      }
+
+      .code-highlight .hljs-literal {
+        color: #008080;
+      }
+
+      .code-highlight .hljs-number {
+        color: #008080;
+      }
+
+      .code-highlight .hljs-comment {
+        color: #008000;
+        font-style: italic;
+      }
+
+      .code-highlight .hljs-function {
+        color: #795e26;
+      }
+
+      .code-highlight .hljs-params {
+        color: #001080;
       }
 
       .anim-controls {
