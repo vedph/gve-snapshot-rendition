@@ -11,6 +11,14 @@ import hljs from "highlight.js";
 import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 
 /**
+ * Template for new animation JS code.
+ */
+const NEW_ANIMATION_TEMPLATE = `return new Promise(resolve => {
+  // targetEl is the animation's target element
+  // gsap is the GSAP object
+});`;
+
+/**
  * GVE Hint Designer Web Component.
  * A minimalist editing environment to design hints and test their animations.
  */
@@ -43,6 +51,7 @@ export class GveHintDesigner extends HTMLElement {
   private _hintsDropdown?: HTMLSelectElement;
   private _animationsDropdown?: HTMLSelectElement;
   private _embeddedJsCheckbox?: HTMLInputElement;
+  private _newAnimationCheckbox?: HTMLInputElement;
   private _positionSelect?: HTMLSelectElement;
   private _offsetXInput?: HTMLInputElement;
   private _offsetYInput?: HTMLInputElement;
@@ -400,7 +409,7 @@ export class GveHintDesigner extends HTMLElement {
     animLabel.className = "textarea-label";
     content.appendChild(animLabel);
 
-    // Embedded JS checkbox and animation dropdown
+    // Embedded JS checkbox, new animation checkbox, and animation dropdown
     const animControls = document.createElement("div");
     animControls.className = "anim-controls";
 
@@ -414,6 +423,18 @@ export class GveHintDesigner extends HTMLElement {
 
     animControls.appendChild(this._embeddedJsCheckbox);
     animControls.appendChild(embeddedLabel);
+
+    // New animation checkbox
+    this._newAnimationCheckbox = document.createElement("input");
+    this._newAnimationCheckbox.type = "checkbox";
+    this._newAnimationCheckbox.id = "new-animation";
+
+    const newAnimLabel = document.createElement("label");
+    newAnimLabel.htmlFor = "new-animation";
+    newAnimLabel.textContent = "new animation";
+
+    animControls.appendChild(this._newAnimationCheckbox);
+    animControls.appendChild(newAnimLabel);
 
     // Animation dropdown
     this._animationsDropdown = document.createElement("select");
@@ -798,6 +819,9 @@ export class GveHintDesigner extends HTMLElement {
    * Load a hint for editing.
    */
   private loadHint(hintId: string | undefined): void {
+    // Clear message pane when loading a new hint
+    this.showMessage("", "");
+
     // Clear any existing animation timeline
     if (this._currentTimeline) {
       this._currentTimeline.kill();
@@ -845,7 +869,9 @@ export class GveHintDesigner extends HTMLElement {
         if (this._embeddedJsCheckbox) this._embeddedJsCheckbox.checked = false;
         if (this._animationsDropdown) this._animationsDropdown.value = animId;
         if (this._jsTextarea) {
-          this._jsTextarea.value = this._data.animations[animId] || "";
+          // If the ID is not found, use the template; otherwise use empty string
+          const animCode = this._data.animations[animId];
+          this._jsTextarea.value = animCode !== undefined ? animCode : NEW_ANIMATION_TEMPLATE;
           this.highlightJs();
         }
       } else {
@@ -935,7 +961,7 @@ export class GveHintDesigner extends HTMLElement {
 
     // Validate SVG and JS
     const svgCode = this._svgTextarea?.value || "";
-    const jsCode = this._jsTextarea?.value || "";
+    const animationValue = this._jsTextarea?.value || "";
 
     try {
       // Validate SVG (basic check)
@@ -943,11 +969,10 @@ export class GveHintDesigner extends HTMLElement {
         throw new Error("SVG must start with <g> element");
       }
 
-      // Validate JS if embedded or animation selected
-      const isEmbedded = this._embeddedJsCheckbox?.checked || false;
-      if (jsCode && (isEmbedded || this._animationsDropdown?.value)) {
+      // Validate JS syntax if present (we'll do more specific validation below)
+      if (animationValue && !animationValue.trim().startsWith("#")) {
         // Try to create a function to validate syntax
-        new Function("gsap", "targetEl", "rootEl", jsCode);
+        new Function("gsap", "targetEl", "rootEl", animationValue);
       }
     } catch (err) {
       this.showMessage(`Validation error: ${err}`, "error");
@@ -967,34 +992,86 @@ export class GveHintDesigner extends HTMLElement {
       displacedRefSpan: this._displacedRefSpanInput?.value || undefined,
     };
 
-    // Handle animation
+    // Handle animation based on "embedded JS" option
     const isEmbedded = this._embeddedJsCheckbox?.checked || false;
+    const isNewAnimation = this._newAnimationCheckbox?.checked || false;
+
     if (isEmbedded) {
-      // Embedded JS
-      hint.animation = jsCode;
+      // ===== EMBEDDED JS MODE =====
+      if (animationValue.startsWith("#")) {
+        this.showMessage(
+          "Error: Animation value cannot start with # when 'embedded JS' is checked. Remove the # or uncheck 'embedded JS'.",
+          "error"
+        );
+        return;
+      }
+      // Save JS code directly to hint's animation property
+      hint.animation = animationValue || undefined;
     } else {
-      // Referenced animation
-      const animId = this._animationsDropdown?.value;
-      if (animId) {
-        // Prompt before overwriting animation
-        if (
-          this._data.animations[animId] &&
-          this._data.animations[animId] !== jsCode
-        ) {
-          const confirm = window.confirm(
-            `This will overwrite the animation "${animId}" which might be used by other hints. Continue?`
-          );
-          if (!confirm) {
-            this.showMessage("Save cancelled", "info");
+      // ===== CATALOG ANIMATION MODE (not embedded) =====
+      if (!animationValue.startsWith("#")) {
+        // Animation value is JS code - we want to save it to the catalog
+        if (isNewAnimation) {
+          // Case (b): New animation - prompt for ID
+          const newAnimId = prompt("Enter ID for the new animation:");
+          if (!newAnimId) {
+            this.showMessage("Save cancelled - no animation ID provided", "info");
             return;
           }
+          if (!newAnimId.trim()) {
+            this.showMessage("Error: Animation ID cannot be empty", "error");
+            return;
+          }
+          // Check if it already exists
+          if (this._data.animations[newAnimId]) {
+            const confirmOverwrite = window.confirm(
+              `Animation "${newAnimId}" already exists. Overwrite it?`
+            );
+            if (!confirmOverwrite) {
+              this.showMessage("Save cancelled", "info");
+              return;
+            }
+          }
+          // Save to catalog
+          this._data.animations[newAnimId] = animationValue;
+          hint.animation = `#${newAnimId}`;
+          this.refreshAnimationsDropdown();
+        } else {
+          // Case (a): Update existing animation from dropdown
+          const selectedAnimId = this._animationsDropdown?.value;
+          if (!selectedAnimId) {
+            this.showMessage(
+              "Error: No animation selected. Please select an animation from the dropdown, OR check 'embedded JS', OR check 'new animation'.",
+              "error"
+            );
+            return;
+          }
+          // Prompt for confirmation before overwriting
+          if (this._data.animations[selectedAnimId]) {
+            const confirm = window.confirm(
+              `This will update the animation "${selectedAnimId}" in the catalog, which might be used by other hints. Continue?`
+            );
+            if (!confirm) {
+              this.showMessage("Save cancelled", "info");
+              return;
+            }
+          }
+          // Save to catalog
+          this._data.animations[selectedAnimId] = animationValue;
+          hint.animation = `#${selectedAnimId}`;
         }
-
-        // Save to animations catalog
-        this._data.animations[animId] = jsCode;
-        hint.animation = `#${animId}`;
       } else {
-        hint.animation = undefined;
+        // Animation value is a reference (starts with #)
+        const animId = animationValue.substring(1).trim();
+        if (!animId) {
+          this.showMessage(
+            "Error: Animation reference must have an identifier after #. Add an identifier (e.g., #myAnimation).",
+            "error"
+          );
+          return;
+        }
+        // Save as reference
+        hint.animation = animationValue.trim();
       }
     }
 
