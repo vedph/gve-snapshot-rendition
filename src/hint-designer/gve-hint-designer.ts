@@ -1279,22 +1279,40 @@ export class GveHintDesigner extends HTMLElement {
 
         // For each captured tween, we need to recreate it in our timeline
         capturedTweens.forEach((tween, index) => {
+          // Get the total duration including any stagger
+          const totalDuration = tween.totalDuration();
+          const duration = tween.duration();
+
           this._logger.debug("Animation", `Processing tween ${index}`, {
-            duration: tween.duration(),
+            duration: duration,
+            totalDuration: totalDuration,
             targets: tween.targets(),
             vars: tween.vars
           });
 
-          // Kill the original tween
-          tween.kill();
-
-          // Recreate the tween in our timeline
-          // The tween has targets and vars properties we can use
+          // Get the animation method that was used (to, from, fromTo)
           const targets = tween.targets();
           const vars = { ...tween.vars };
 
-          // Add to our timeline
-          this._currentTimeline.to(targets, vars, 0);
+          // Get the initial values if this was a fromTo or from tween
+          const isFromTo = tween._from !== undefined;
+          const isFrom = !isFromTo && tween.vars.hasOwnProperty('startAt');
+
+          // Kill the original tween to stop it from playing
+          tween.kill();
+
+          // Recreate the tween in our timeline using the appropriate method
+          if (isFromTo) {
+            // This was a fromTo tween - need to preserve the from values
+            const fromVars = tween._from || {};
+            this._currentTimeline.fromTo(targets, fromVars, vars, 0);
+          } else if (isFrom) {
+            // This was a from tween
+            this._currentTimeline.from(targets, vars, 0);
+          } else {
+            // Standard to tween
+            this._currentTimeline.to(targets, vars, 0);
+          }
         });
 
         this._logger.debug("Animation", "Timeline built from tweens", {
@@ -1320,11 +1338,21 @@ export class GveHintDesigner extends HTMLElement {
 
       // Set up timeline callbacks
       this._currentTimeline.eventCallback("onComplete", () => {
-        this._logger.debug("Animation", "Animation completed callback");
+        this._logger.debug("Animation", "Animation completed callback", {
+          finalProgress: this._currentTimeline.progress(),
+          finalTime: this._currentTimeline.time(),
+          duration: this._currentTimeline.duration()
+        });
         this._isPlaying = false;
         if (this._playButton) this._playButton.disabled = false;
         if (this._pauseButton) this._pauseButton.disabled = true;
         this.stopProgressUpdate();
+
+        // Ensure progress bar is at 100%
+        if (this._progressBar) {
+          this._progressBar.value = "1000";
+          this._logger.debug("Animation", "Progress bar set to 1000 (100%)");
+        }
       });
 
       this.showMessage("", "");
