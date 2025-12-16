@@ -18,9 +18,36 @@ document.addEventListener("DOMContentLoaded", () => {
   // Set initial data with sample hints and animations
   designer.data = {
     hints: {
-      "diagonal-stroke": {
+      "diagonal-stroke-down": {
         svg: `<g>
   <line x1="0" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        solid: false,
+        animation: "#wipe-right",
+      },
+      "diagonal-stroke-up": {
+        svg: `<g>
+  <line x1="0" y1="100" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="2" />
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        solid: false,
+        animation: "#wipe-right",
+      },
+      "cross-stroke": {
+        svg: `<g>
+  <line x1="0" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="0" y1="100" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="2" />
 </g>`,
         position: "o",
         offsetX: 0,
@@ -165,7 +192,7 @@ return new Promise(resolve => {
   ];
 
   // Select the first hint
-  designer.hintId = "diagonal-stroke";
+  designer.hintId = "diagonal-stroke-down";
 
   // Listen for events
   designer.addEventListener("dataChange", (e) => {
