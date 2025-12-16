@@ -9,6 +9,7 @@ import { RelativePosition } from "../core/gve-snapshot-rendition";
 import { Logger } from "../core/logger";
 import hljs from "highlight.js";
 import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
+import * as feather from "feather-icons";
 
 /**
  * Template for new animation JS code.
@@ -212,11 +213,11 @@ export class GveHintDesigner extends HTMLElement {
     toolbar.className = "toolbar";
 
     // Refresh button
-    const refreshBtn = this.createButton("refresh-svg", "↻", "Refresh SVG display");
+    const refreshBtn = this.createButton("refresh-svg", "refresh-cw", "Refresh SVG display");
     toolbar.appendChild(refreshBtn);
 
     // Add button
-    const addBtn = this.createButton("add-hint", "+", "Add new hint");
+    const addBtn = this.createButton("add-hint", "plus", "Add new hint");
     toolbar.appendChild(addBtn);
 
     // Hints dropdown
@@ -226,20 +227,20 @@ export class GveHintDesigner extends HTMLElement {
     toolbar.appendChild(this._hintsDropdown);
 
     // Save button
-    const saveBtn = this.createButton("save-hint", "💾", "Save hint");
+    const saveBtn = this.createButton("save-hint", "save", "Save hint");
     toolbar.appendChild(saveBtn);
 
     // Delete button
-    const deleteBtn = this.createButton("delete-hint", "🗑️", "Delete hint");
+    const deleteBtn = this.createButton("delete-hint", "trash-2", "Delete hint");
     toolbar.appendChild(deleteBtn);
 
     // Zoom controls (grouped)
     const zoomGroup = document.createElement("div");
     zoomGroup.className = "toolbar-group";
 
-    const zoomInBtn = this.createButton("zoom-in", "+", "Zoom in");
-    const zoomOutBtn = this.createButton("zoom-out", "−", "Zoom out");
-    const zoomResetBtn = this.createButton("zoom-reset", "⊡", "Reset zoom");
+    const zoomInBtn = this.createButton("zoom-in", "zoom-in", "Zoom in");
+    const zoomOutBtn = this.createButton("zoom-out", "zoom-out", "Zoom out");
+    const zoomResetBtn = this.createButton("zoom-reset", "maximize", "Reset zoom");
 
     zoomGroup.appendChild(zoomInBtn);
     zoomGroup.appendChild(zoomOutBtn);
@@ -250,9 +251,9 @@ export class GveHintDesigner extends HTMLElement {
     const dataGroup = document.createElement("div");
     dataGroup.className = "toolbar-group";
 
-    const saveDataBtn = this.createButton("save-data", "📥", "Save data to file");
-    const loadDataBtn = this.createButton("load-data", "📤", "Load data from file");
-    const clearDataBtn = this.createButton("clear-data", "🗑️", "Clear all data");
+    const saveDataBtn = this.createButton("save-data", "download", "Save data to file");
+    const loadDataBtn = this.createButton("load-data", "upload", "Load data from file");
+    const clearDataBtn = this.createButton("clear-data", "x-circle", "Clear all data");
 
     dataGroup.appendChild(saveDataBtn);
     dataGroup.appendChild(loadDataBtn);
@@ -434,9 +435,9 @@ export class GveHintDesigner extends HTMLElement {
     player.className = "timeline-player";
 
     // Buttons
-    this._playButton = this.createButton("play", "▶", "Play animation");
-    this._pauseButton = this.createButton("pause", "⏸", "Pause animation");
-    this._restartButton = this.createButton("restart", "⏮", "Restart animation");
+    this._playButton = this.createButton("play", "play", "Play animation");
+    this._pauseButton = this.createButton("pause", "pause", "Pause animation");
+    this._restartButton = this.createButton("restart", "skip-back", "Restart animation");
 
     // Initially disable pause (nothing playing)
     this._pauseButton.disabled = true;
@@ -586,7 +587,7 @@ export class GveHintDesigner extends HTMLElement {
     animControls.appendChild(this._animationsDropdown);
 
     // Load button
-    const loadAnimBtn = this.createButton("load-animation", "⬇", "Load animation code");
+    const loadAnimBtn = this.createButton("load-animation", "download-cloud", "Load animation code");
     animControls.appendChild(loadAnimBtn);
 
     content.appendChild(animControls);
@@ -635,10 +636,10 @@ export class GveHintDesigner extends HTMLElement {
     const toolbar = document.createElement("div");
     toolbar.className = "panel-toolbar";
 
-    const addVarBtn = this.createButton("add-variable", "+", "Add new variable");
+    const addVarBtn = this.createButton("add-variable", "plus-circle", "Add new variable");
     toolbar.appendChild(addVarBtn);
 
-    const deleteAllBtn = this.createButton("delete-all-vars", "🗑️", "Delete all variables");
+    const deleteAllBtn = this.createButton("delete-all-vars", "trash-2", "Delete all variables");
     toolbar.appendChild(deleteAllBtn);
 
     panel.appendChild(toolbar);
@@ -663,14 +664,23 @@ export class GveHintDesigner extends HTMLElement {
   // ==================== HELPER METHODS ====================
 
   /**
-   * Create a button element.
+   * Create a button element with a Feather icon.
    */
-  private createButton(id: string, text: string, tooltip: string): HTMLButtonElement {
+  private createButton(id: string, iconName: string, tooltip: string): HTMLButtonElement {
     const btn = document.createElement("button");
     btn.className = "toolbar-btn";
     btn.id = id;
-    btn.textContent = text;
     btn.title = tooltip;
+
+    // Use feather.icons to get the SVG directly (for Shadow DOM compatibility)
+    const icon = (feather.icons as any)[iconName];
+    if (icon) {
+      btn.innerHTML = icon.toSvg({ class: 'feather-icon', width: 16, height: 16, 'stroke-width': 2 });
+    } else {
+      this._logger.warn("Feather icon not found:", iconName);
+      btn.textContent = iconName;
+    }
+
     return btn;
   }
 
@@ -1968,12 +1978,12 @@ export class GveHintDesigner extends HTMLElement {
       // Actions cell
       const actionsCell = row.insertCell();
 
-      const editBtn = this.createButton(`edit-var-${index}`, "✏️", "Edit variable");
+      const editBtn = this.createButton(`edit-var-${index}`, "edit-2", "Edit variable");
       editBtn.onclick = () => this.editVariable(index);
 
       const deleteBtn = this.createButton(
         `delete-var-${index}`,
-        "🗑️",
+        "trash-2",
         "Delete variable"
       );
       deleteBtn.onclick = () => this.deleteVariable(index);
@@ -2147,6 +2157,9 @@ export class GveHintDesigner extends HTMLElement {
         cursor: pointer;
         font-size: 14px;
         transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .toolbar-btn:hover:not(:disabled) {
@@ -2157,6 +2170,15 @@ export class GveHintDesigner extends HTMLElement {
       .toolbar-btn:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+      }
+
+      /* Feather icons in buttons */
+      .toolbar-btn svg,
+      .panel-toolbar button svg,
+      .variables-table button svg {
+        width: 16px;
+        height: 16px;
+        stroke-width: 2;
       }
 
       .hints-dropdown,
