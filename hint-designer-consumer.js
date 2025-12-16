@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
     },
     animations: {
-      "fade-in": `
+      "fade-in": `// Fade in using GSAP
 return new Promise(resolve => {
   gsap.fromTo(targetEl,
     { opacity: 0 },
@@ -67,7 +67,7 @@ return new Promise(resolve => {
   );
 });
 `,
-      "scale-in": `
+      "scale-in": `// Scale in using GSAP
 return new Promise(resolve => {
   gsap.fromTo(targetEl,
     { opacity: 0, scale: 0.5 },
@@ -75,8 +75,67 @@ return new Promise(resolve => {
   );
 });
 `,
-      "wipe-right": `
-// Simple wipe-right effect using GSAP DrawSVGPlugin
+      "wipe-left": `// Wipe from right to left using GSAP DrawSVGPlugin
+return new Promise(resolve => {
+  // Set initial state
+  targetEl.style.opacity = '1';
+
+  // Find all drawable elements (line, path, polyline, polygon, circle, rect, ellipse)
+  const drawables = targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse');
+
+  gsap.fromTo(drawables,
+    { drawSVG: '100% 100%' },
+    {
+      drawSVG: '0% 100%',
+      duration: 0.8,
+      ease: 'power2.out',
+      stagger: 0.1,
+      onComplete: resolve
+    }
+  );
+});
+`,
+      "wipe-right": `// Wipe from left to right using GSAP DrawSVGPlugin
+return new Promise(resolve => {
+  // Set initial state
+  targetEl.style.opacity = '1';
+
+  // Find all drawable elements (line, path, polyline, polygon, circle, rect, ellipse)
+  const drawables = targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse');
+
+  gsap.fromTo(drawables,
+    { drawSVG: '0%' },
+    {
+      drawSVG: '100%',
+      duration: 0.8,
+      ease: 'power2.out',
+      stagger: 0.1,
+      onComplete: resolve
+    }
+  );
+});
+`,
+      "wipe-up": `// Wipe from bottom to top using GSAP DrawSVGPlugin
+return new Promise(resolve => {
+  // Set initial state
+  targetEl.style.opacity = '1';
+
+  // Find all drawable elements (line, path, polyline, polygon, circle, rect, ellipse)
+  const drawables = targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse');
+
+  gsap.fromTo(drawables,
+    { drawSVG: '100%' },
+    {
+      drawSVG: '0%',
+      duration: 0.8,
+      ease: 'power2.out',
+      stagger: 0.1,
+      onComplete: resolve
+    }
+  );
+});
+`,
+      "wipe-down": `// Wipe from top to bottom using GSAP DrawSVGPlugin
 return new Promise(resolve => {
   // Set initial state
   targetEl.style.opacity = '1';

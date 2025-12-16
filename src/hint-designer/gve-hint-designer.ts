@@ -410,7 +410,7 @@ export class GveHintDesigner extends HTMLElement {
 
     const embeddedLabel = document.createElement("label");
     embeddedLabel.htmlFor = "embedded-js";
-    embeddedLabel.textContent = "Embedded JS";
+    embeddedLabel.textContent = "embedded JS";
 
     animControls.appendChild(this._embeddedJsCheckbox);
     animControls.appendChild(embeddedLabel);
