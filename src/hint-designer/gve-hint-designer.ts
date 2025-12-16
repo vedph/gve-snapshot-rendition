@@ -2064,8 +2064,8 @@ export class GveHintDesigner extends HTMLElement {
 
       /* Properties Form */
       .properties-form {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 0.5rem;
         margin-bottom: 1rem;
       }
@@ -2077,7 +2077,7 @@ export class GveHintDesigner extends HTMLElement {
       }
 
       .form-row label {
-        min-width: 120px;
+        white-space: nowrap;
         font-size: 13px;
         font-weight: 500;
       }
@@ -2085,9 +2085,15 @@ export class GveHintDesigner extends HTMLElement {
       .form-row input,
       .form-row select {
         flex: 1;
+        min-width: 60px;
         padding: 0.3rem;
         border: 1px solid #ccc;
         border-radius: 3px;
+      }
+
+      .form-row input[type="checkbox"] {
+        flex: 0;
+        min-width: auto;
       }
 
       .textarea-label {
@@ -2212,6 +2218,15 @@ export class GveHintDesigner extends HTMLElement {
         flex-wrap: wrap;
       }
 
+      .anim-controls input[type="checkbox"] {
+        margin: 0;
+      }
+
+      .anim-controls label {
+        margin: 0;
+        white-space: nowrap;
+      }
+
       /* Variables Table */
       .variables-table {
         width: 100%;
@@ -2281,38 +2296,77 @@ export class GveHintDesigner extends HTMLElement {
       }
 
       /* Responsive layout */
-      @media (min-width: 1024px) {
+      @media (min-width: 900px) {
         .properties-panel .panel-content {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: auto 1fr 1fr;
+          grid-template-rows: auto auto 1fr;
           gap: 1rem;
+          align-items: start;
         }
 
         .properties-form {
-          grid-column: 1 / -1;
+          grid-column: 1;
+          grid-row: 1 / -1;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
         }
 
+        .form-row {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .form-row label {
+          min-width: auto;
+        }
+
+        .form-row input,
+        .form-row select {
+          width: 120px;
+          flex: 0 0 auto;
+        }
+
+        /* SVG column */
         .textarea-label:nth-of-type(1) {
-          grid-column: 1;
-        }
-
-        .code-textarea:nth-of-type(2) {
-          grid-column: 1;
-        }
-
-        .textarea-label:nth-of-type(2) {
           grid-column: 2;
-          grid-row: 2;
+          grid-row: 1;
+        }
+
+        .code-editor-wrapper:nth-of-type(1) {
+          grid-column: 2;
+          grid-row: 2 / -1;
+        }
+
+        /* Animation column */
+        .textarea-label:nth-of-type(2) {
+          grid-column: 3;
+          grid-row: 1;
         }
 
         .anim-controls {
-          grid-column: 2;
-          grid-row: 3;
+          grid-column: 3;
+          grid-row: 2;
+          margin: 0;
         }
 
-        .code-textarea:nth-of-type(4) {
-          grid-column: 2;
-          grid-row: 4;
+        .code-editor-wrapper:nth-of-type(2) {
+          grid-column: 3;
+          grid-row: 3;
+        }
+      }
+
+      /* Even wider layout - three columns side by side */
+      @media (min-width: 1400px) {
+        .properties-panel .panel-content {
+          grid-template-columns: minmax(200px, auto) 1fr 1fr;
+        }
+
+        .form-row input,
+        .form-row select {
+          width: 140px;
         }
       }
     `;
