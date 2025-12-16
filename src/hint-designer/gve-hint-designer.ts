@@ -1215,42 +1215,95 @@ export class GveHintDesigner extends HTMLElement {
       }
       this._logger.debug("Animation", "GSAP available");
 
-      // Execute the animation function directly - it should return a tween/timeline
+      // We need to intercept GSAP calls to capture the tweens/timeline
+      // Create a wrapper that tracks all tweens created
+      const capturedTweens: any[] = [];
+      const originalTo = gsap.to;
+      const originalFromTo = gsap.fromTo;
+      const originalFrom = gsap.from;
+      const originalTimeline = gsap.timeline;
+
+      // Wrap GSAP methods to capture tweens
+      gsap.to = function(...args: any[]) {
+        const tween = originalTo.apply(gsap, args);
+        capturedTweens.push(tween);
+        return tween;
+      };
+      gsap.fromTo = function(...args: any[]) {
+        const tween = originalFromTo.apply(gsap, args);
+        capturedTweens.push(tween);
+        return tween;
+      };
+      gsap.from = function(...args: any[]) {
+        const tween = originalFrom.apply(gsap, args);
+        capturedTweens.push(tween);
+        return tween;
+      };
+
+      // Execute the animation function
       const animFn = new Function("gsap", "targetEl", "rootEl", jsCode);
-      const result = animFn(gsap, hintEl, this._svgDisplay);
+      let result;
+      try {
+        result = animFn(gsap, hintEl, this._svgDisplay);
+      } finally {
+        // Restore original GSAP methods
+        gsap.to = originalTo;
+        gsap.fromTo = originalFromTo;
+        gsap.from = originalFrom;
+      }
 
       this._logger.debug("Animation", "Animation function executed", {
         resultType: typeof result,
+        isPromise: result && typeof result.then === 'function',
         isTimeline: result && typeof result.progress === 'function',
-        isTween: result && typeof result.play === 'function'
+        capturedTweensCount: capturedTweens.length
       });
 
-      // If the animation function returns a timeline or tween, use it
+      // Check what was returned
       if (result && typeof result.progress === 'function') {
+        // Direct timeline/tween return
         this._currentTimeline = result;
-        // Make sure it's paused
         this._currentTimeline.pause();
-        this._logger.debug("Animation", "Using returned timeline/tween");
-      } else {
-        // If it doesn't return anything, we need to wrap it in a timeline
-        // This handles animations that directly call gsap.to() without returning
-        this._logger.debug("Animation", "Animation doesn't return timeline, creating wrapper");
+        this._logger.debug("Animation", "Using returned timeline/tween directly");
+      } else if (capturedTweens.length > 0) {
+        // Animation called gsap methods - create timeline with captured tweens
+        this._logger.debug("Animation", "Creating timeline from captured tweens", {
+          tweenCount: capturedTweens.length,
+          tweenDurations: capturedTweens.map(t => t.duration())
+        });
 
-        // Reset the element
-        (hintEl as SVGGElement).style.opacity = "0";
-
-        // Create a timeline and add the animation to it
+        // The tweens have already started playing, so we need to:
+        // 1. Kill them to stop auto-playing
+        // 2. Recreate them in a controlled timeline
         this._currentTimeline = gsap.timeline({ paused: true });
 
-        // Execute the function again, this time capturing global tweens
-        const beforeTweenCount = gsap.globalTimeline.getChildren().length;
-        animFn(gsap, hintEl, this._svgDisplay);
-        const afterTweenCount = gsap.globalTimeline.getChildren().length;
+        // For each captured tween, we need to recreate it in our timeline
+        capturedTweens.forEach((tween, index) => {
+          this._logger.debug("Animation", `Processing tween ${index}`, {
+            duration: tween.duration(),
+            targets: tween.targets(),
+            vars: tween.vars
+          });
 
-        this._logger.debug("Animation", "Tween count difference", {
-          before: beforeTweenCount,
-          after: afterTweenCount
+          // Kill the original tween
+          tween.kill();
+
+          // Recreate the tween in our timeline
+          // The tween has targets and vars properties we can use
+          const targets = tween.targets();
+          const vars = { ...tween.vars };
+
+          // Add to our timeline
+          this._currentTimeline.to(targets, vars, 0);
         });
+
+        this._logger.debug("Animation", "Timeline built from tweens", {
+          timelineDuration: this._currentTimeline.duration()
+        });
+      } else {
+        // No tweens captured - animation has no effect
+        this._logger.warn("Animation", "No tweens captured - creating empty timeline");
+        this._currentTimeline = gsap.timeline({ paused: true });
       }
 
       this._logger.debug("Animation", "Timeline created", {
