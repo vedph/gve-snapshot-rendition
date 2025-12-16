@@ -629,9 +629,15 @@ export class GveHintDesigner extends HTMLElement {
     this.addClickListener("pause", () => this.pauseAnimation());
     this.addClickListener("restart", () => this.restartAnimation());
 
-    // Progress bar
+    // Progress bar - handle both input (dragging) and change (clicking)
     if (this._progressBar) {
       this._progressBar.addEventListener("input", () => this.seekAnimation());
+      this._progressBar.addEventListener("change", () => this.seekAnimation());
+
+      // Prevent the progress bar from updating while user is interacting with it
+      this._progressBar.addEventListener("mousedown", () => {
+        this.stopProgressUpdate();
+      });
     }
 
     // Hints dropdown
@@ -798,6 +804,7 @@ export class GveHintDesigner extends HTMLElement {
       this._currentTimeline = undefined;
     }
     this.stopProgressUpdate();
+    this._isPlaying = false;
     if (this._progressBar) {
       this._progressBar.value = "0";
     }
@@ -1117,8 +1124,14 @@ export class GveHintDesigner extends HTMLElement {
    * Play animation.
    */
   private playAnimation(): void {
+    this._logger.debug("Animation", "playAnimation called", {
+      hasTimeline: !!this._currentTimeline,
+      isPlaying: this._isPlaying
+    });
+
     if (this._currentTimeline) {
       // If timeline exists, just play it
+      this._logger.debug("Animation", "Playing existing timeline");
       this._currentTimeline.play();
       this._isPlaying = true;
       if (this._playButton) this._playButton.disabled = true;
@@ -1127,8 +1140,35 @@ export class GveHintDesigner extends HTMLElement {
       return;
     }
 
+    // Create the timeline if it doesn't exist
+    this._logger.debug("Animation", "Creating new timeline");
+    this.createTimeline();
+
+    // If timeline was successfully created, play it
+    if (this._currentTimeline) {
+      this._logger.debug("Animation", "Timeline created, now playing");
+      this._currentTimeline.play();
+      this._isPlaying = true;
+      if (this._playButton) this._playButton.disabled = true;
+      if (this._pauseButton) this._pauseButton.disabled = false;
+      this.startProgressUpdate();
+    } else {
+      this._logger.error("Animation", "Failed to create timeline");
+    }
+  }
+
+  /**
+   * Create the GSAP timeline for the current hint.
+   */
+  private createTimeline(): void {
+    this._logger.debug("Animation", "createTimeline called", {
+      hasSvgDisplay: !!this._svgDisplay,
+      hintId: this._hintId
+    });
+
     if (!this._svgDisplay || !this._hintId || !this._data.hints[this._hintId]) {
       this.showMessage("No hint to animate!", "error");
+      this._logger.error("Animation", "Cannot create timeline - missing prerequisites");
       return;
     }
 
@@ -1140,18 +1180,22 @@ export class GveHintDesigner extends HTMLElement {
       if (hint.animation.startsWith("#")) {
         const animId = hint.animation.substring(1);
         jsCode = this._data.animations[animId] || "";
+        this._logger.debug("Animation", "Using referenced animation", { animId, hasCode: !!jsCode });
       } else {
         jsCode = hint.animation;
+        this._logger.debug("Animation", "Using embedded animation", { codeLength: jsCode.length });
       }
     }
 
     if (!jsCode) {
       this.showMessage("No animation defined!", "error");
+      this._logger.error("Animation", "No animation code available");
       return;
     }
 
     try {
       // Refresh display first
+      this._logger.debug("Animation", "Refreshing SVG display");
       this.refreshSvgDisplay();
 
       // Get the hint element
@@ -1159,6 +1203,7 @@ export class GveHintDesigner extends HTMLElement {
       if (!hintEl) {
         throw new Error("No <g> element found in SVG");
       }
+      this._logger.debug("Animation", "Found hint element", { tagName: hintEl.tagName });
 
       // Set initial opacity to 0 (on style attribute)
       (hintEl as SVGGElement).style.opacity = "0";
@@ -1168,61 +1213,74 @@ export class GveHintDesigner extends HTMLElement {
       if (!gsap) {
         throw new Error("GSAP not available");
       }
+      this._logger.debug("Animation", "GSAP available");
 
-      // Create a wrapper function that returns a timeline instead of a promise
-      const timelineWrapperCode = `
-        const tl = gsap.timeline({ paused: true });
-        const originalCode = ${JSON.stringify(jsCode)};
-        const animFn = new Function("gsap", "targetEl", "rootEl", originalCode);
+      // Execute the animation function directly - it should return a tween/timeline
+      const animFn = new Function("gsap", "targetEl", "rootEl", jsCode);
+      const result = animFn(gsap, hintEl, this._svgDisplay);
 
-        // Execute the animation function and capture any tweens it creates
-        const result = animFn(gsap, targetEl, rootEl);
+      this._logger.debug("Animation", "Animation function executed", {
+        resultType: typeof result,
+        isTimeline: result && typeof result.progress === 'function',
+        isTween: result && typeof result.play === 'function'
+      });
 
-        // If it returns a promise, we need to handle it differently
-        if (result && typeof result.then === 'function') {
-          // For promise-based animations, we'll need to create a timeline manually
-          // This is a workaround - ideally animations should add to timeline
-          result.then(() => {
-            if (tl.onComplete) tl.onComplete();
-          });
-        }
+      // If the animation function returns a timeline or tween, use it
+      if (result && typeof result.progress === 'function') {
+        this._currentTimeline = result;
+        // Make sure it's paused
+        this._currentTimeline.pause();
+        this._logger.debug("Animation", "Using returned timeline/tween");
+      } else {
+        // If it doesn't return anything, we need to wrap it in a timeline
+        // This handles animations that directly call gsap.to() without returning
+        this._logger.debug("Animation", "Animation doesn't return timeline, creating wrapper");
 
-        return tl;
-      `;
+        // Reset the element
+        (hintEl as SVGGElement).style.opacity = "0";
 
-      const createTimeline = new Function(
-        "gsap",
-        "targetEl",
-        "rootEl",
-        timelineWrapperCode
-      );
+        // Create a timeline and add the animation to it
+        this._currentTimeline = gsap.timeline({ paused: true });
 
-      // Create timeline
-      this._currentTimeline = createTimeline(gsap, hintEl, this._svgDisplay);
+        // Execute the function again, this time capturing global tweens
+        const beforeTweenCount = gsap.globalTimeline.getChildren().length;
+        animFn(gsap, hintEl, this._svgDisplay);
+        const afterTweenCount = gsap.globalTimeline.getChildren().length;
+
+        this._logger.debug("Animation", "Tween count difference", {
+          before: beforeTweenCount,
+          after: afterTweenCount
+        });
+      }
+
+      this._logger.debug("Animation", "Timeline created", {
+        duration: this._currentTimeline.duration(),
+        progress: this._currentTimeline.progress(),
+        paused: this._currentTimeline.paused()
+      });
+
+      // Check if timeline has duration
+      if (this._currentTimeline.duration() === 0) {
+        this._logger.warn("Animation", "Timeline has zero duration - animation may not work correctly");
+        this.showMessage("Warning: Animation has zero duration. Check your animation code.", "info");
+      }
 
       // Set up timeline callbacks
       this._currentTimeline.eventCallback("onComplete", () => {
-        this._logger.debug("Component", "Animation completed");
+        this._logger.debug("Animation", "Animation completed callback");
         this._isPlaying = false;
         if (this._playButton) this._playButton.disabled = false;
         if (this._pauseButton) this._pauseButton.disabled = true;
         this.stopProgressUpdate();
       });
 
-      // Play the timeline
-      this._currentTimeline.play();
-      this._isPlaying = true;
-      if (this._playButton) this._playButton.disabled = true;
-      if (this._pauseButton) this._pauseButton.disabled = false;
-
-      // Start updating progress bar
-      this.startProgressUpdate();
-
       this.showMessage("", "");
-      this._logger.info("Animation started");
+      this._logger.info("Animation", "Timeline created successfully", {
+        duration: this._currentTimeline.duration()
+      });
     } catch (err) {
       this.showMessage(`Animation Error: ${err}`, "error");
-      this._logger.error("Failed to play animation", err);
+      this._logger.error("Animation", "Failed to create timeline", err);
       this._isPlaying = false;
       if (this._playButton) this._playButton.disabled = false;
       if (this._pauseButton) this._pauseButton.disabled = true;
@@ -1233,13 +1291,20 @@ export class GveHintDesigner extends HTMLElement {
    * Pause animation.
    */
   private pauseAnimation(): void {
+    this._logger.debug("Animation", "pauseAnimation called", {
+      hasTimeline: !!this._currentTimeline,
+      isPlaying: this._isPlaying
+    });
+
     if (this._currentTimeline) {
       this._currentTimeline.pause();
       this._isPlaying = false;
       if (this._playButton) this._playButton.disabled = false;
       if (this._pauseButton) this._pauseButton.disabled = true;
       this.stopProgressUpdate();
-      this._logger.debug("Component", "Animation paused");
+      this._logger.debug("Animation", "Animation paused", {
+        progress: this._currentTimeline.progress()
+      });
     }
   }
 
@@ -1247,13 +1312,21 @@ export class GveHintDesigner extends HTMLElement {
    * Restart animation.
    */
   private restartAnimation(): void {
+    this._logger.debug("Animation", "restartAnimation called", {
+      hasTimeline: !!this._currentTimeline,
+      isPlaying: this._isPlaying
+    });
+
     if (this._currentTimeline) {
+      this._logger.debug("Animation", "Restarting existing timeline");
       this._currentTimeline.restart();
       this._isPlaying = true;
       if (this._playButton) this._playButton.disabled = true;
       if (this._pauseButton) this._pauseButton.disabled = false;
       this.startProgressUpdate();
+      this._logger.debug("Animation", "Timeline restarted");
     } else {
+      this._logger.debug("Animation", "No timeline, calling playAnimation");
       this.playAnimation();
     }
   }
@@ -1262,21 +1335,58 @@ export class GveHintDesigner extends HTMLElement {
    * Seek animation (timeline scrubbing).
    */
   private seekAnimation(): void {
-    if (this._currentTimeline && this._progressBar) {
-      const progress = parseFloat(this._progressBar.value) / 1000;
-      this._currentTimeline.progress(progress);
+    this._logger.debug("Animation", "seekAnimation called", {
+      hasProgressBar: !!this._progressBar,
+      hasTimeline: !!this._currentTimeline,
+      progressBarValue: this._progressBar?.value
+    });
 
-      // If not playing, update one frame to show the scrubbed position
-      if (!this._isPlaying) {
-        this._currentTimeline.pause();
+    if (!this._progressBar) return;
+
+    // Create timeline if it doesn't exist yet
+    if (!this._currentTimeline) {
+      this._logger.debug("Animation", "No timeline, creating one");
+      this.createTimeline();
+      if (!this._currentTimeline) {
+        this._logger.error("Animation", "Failed to create timeline for seeking");
+        return; // Failed to create
       }
     }
+
+    const progress = parseFloat(this._progressBar.value) / 1000;
+    this._logger.debug("Animation", "Seeking to progress", {
+      progressBarValue: this._progressBar.value,
+      calculatedProgress: progress,
+      wasPlaying: this._isPlaying,
+      timelineDuration: this._currentTimeline.duration()
+    });
+
+    // Pause the timeline to prevent it from continuing to play
+    const wasPlaying = this._isPlaying;
+    this._currentTimeline.pause();
+
+    // Seek to the desired position
+    this._currentTimeline.progress(progress);
+
+    this._logger.debug("Animation", "Seek completed", {
+      newProgress: this._currentTimeline.progress(),
+      timelinePaused: this._currentTimeline.paused()
+    });
+
+    // Update playing state
+    this._isPlaying = false;
+    if (this._playButton) this._playButton.disabled = false;
+    if (this._pauseButton) this._pauseButton.disabled = true;
+
+    // Stop the progress update to prevent the bar from jumping back
+    this.stopProgressUpdate();
   }
 
   /**
    * Start updating progress bar.
    */
   private startProgressUpdate(): void {
+    this._logger.debug("Animation", "startProgressUpdate called");
     this.stopProgressUpdate();
     this._progressUpdateInterval = window.setInterval(() => {
       if (this._currentTimeline && this._progressBar) {
@@ -1284,6 +1394,9 @@ export class GveHintDesigner extends HTMLElement {
         this._progressBar.value = (progress * 1000).toString();
       }
     }, 50); // Update every 50ms
+    this._logger.debug("Animation", "Progress update started", {
+      intervalId: this._progressUpdateInterval
+    });
   }
 
   /**
@@ -1291,6 +1404,9 @@ export class GveHintDesigner extends HTMLElement {
    */
   private stopProgressUpdate(): void {
     if (this._progressUpdateInterval) {
+      this._logger.debug("Animation", "Stopping progress update", {
+        intervalId: this._progressUpdateInterval
+      });
       clearInterval(this._progressUpdateInterval);
       this._progressUpdateInterval = undefined;
     }
