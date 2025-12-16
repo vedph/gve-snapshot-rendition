@@ -2181,6 +2181,13 @@ export class GveHintDesigner extends HTMLElement {
         stroke-width: 2;
       }
 
+      /* Delete hint button */
+      .toolbar-btn#delete-hint {
+        background: #ffebee;
+        border-color: #f44336;
+        color: #c62828;
+      }
+
       .hints-dropdown,
       .animations-dropdown {
         padding: 0.4rem;
