@@ -278,9 +278,152 @@ export class GveHintDesigner extends HTMLElement {
       `0 0 ${this._settings.hintDesignWidth} ${this._settings.hintDesignHeight}`
     );
 
+    // Add grid and rulers as background
+    this.addGridAndRulers(this._svgDisplay);
+
     panel.appendChild(this._svgDisplay);
 
     return panel;
+  }
+
+  /**
+   * Add grid and rulers to the SVG display as background.
+   */
+  private addGridAndRulers(svg: SVGSVGElement): void {
+    const width = this._settings.hintDesignWidth;
+    const height = this._settings.hintDesignHeight;
+    const gridSize = 10; // Grid cell size in pixels
+    const rulerSize = 20; // Ruler width/height in pixels
+
+    // Create defs section for the grid pattern
+    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+
+    // Define grid pattern
+    const pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+    pattern.setAttribute("id", "grid");
+    pattern.setAttribute("width", gridSize.toString());
+    pattern.setAttribute("height", gridSize.toString());
+    pattern.setAttribute("patternUnits", "userSpaceOnUse");
+
+    // Add small grid lines
+    const gridPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    gridPath.setAttribute("d", `M ${gridSize} 0 L 0 0 0 ${gridSize}`);
+    gridPath.setAttribute("fill", "none");
+    gridPath.setAttribute("stroke", "#e0e0e0");
+    gridPath.setAttribute("stroke-width", "0.5");
+    pattern.appendChild(gridPath);
+
+    defs.appendChild(pattern);
+    svg.appendChild(defs);
+
+    // Create main group for grid and rulers (will be behind hint content)
+    const backgroundGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    backgroundGroup.setAttribute("id", "grid-and-rulers");
+
+    // Add grid background rectangle
+    const gridRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    gridRect.setAttribute("x", rulerSize.toString());
+    gridRect.setAttribute("y", rulerSize.toString());
+    gridRect.setAttribute("width", (width - rulerSize).toString());
+    gridRect.setAttribute("height", (height - rulerSize).toString());
+    gridRect.setAttribute("fill", "url(#grid)");
+    backgroundGroup.appendChild(gridRect);
+
+    // Add horizontal ruler (top)
+    const hRuler = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    hRuler.setAttribute("x", rulerSize.toString());
+    hRuler.setAttribute("y", "0");
+    hRuler.setAttribute("width", (width - rulerSize).toString());
+    hRuler.setAttribute("height", rulerSize.toString());
+    hRuler.setAttribute("fill", "#f5f5f5");
+    hRuler.setAttribute("stroke", "#ccc");
+    hRuler.setAttribute("stroke-width", "1");
+    backgroundGroup.appendChild(hRuler);
+
+    // Add vertical ruler (left)
+    const vRuler = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    vRuler.setAttribute("x", "0");
+    vRuler.setAttribute("y", rulerSize.toString());
+    vRuler.setAttribute("width", rulerSize.toString());
+    vRuler.setAttribute("height", (height - rulerSize).toString());
+    vRuler.setAttribute("fill", "#f5f5f5");
+    vRuler.setAttribute("stroke", "#ccc");
+    vRuler.setAttribute("stroke-width", "1");
+    backgroundGroup.appendChild(vRuler);
+
+    // Add corner square
+    const corner = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    corner.setAttribute("x", "0");
+    corner.setAttribute("y", "0");
+    corner.setAttribute("width", rulerSize.toString());
+    corner.setAttribute("height", rulerSize.toString());
+    corner.setAttribute("fill", "#e8e8e8");
+    corner.setAttribute("stroke", "#ccc");
+    corner.setAttribute("stroke-width", "1");
+    backgroundGroup.appendChild(corner);
+
+    // Add ruler tick marks and labels (horizontal)
+    const tickInterval = 50; // Major tick every 50 pixels
+    const minorTickInterval = 10; // Minor tick every 10 pixels
+
+    for (let x = 0; x <= width - rulerSize; x += minorTickInterval) {
+      const isMajorTick = x % tickInterval === 0;
+      const tickHeight = isMajorTick ? 8 : 4;
+
+      const tick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      tick.setAttribute("x1", (rulerSize + x).toString());
+      tick.setAttribute("y1", (rulerSize - tickHeight).toString());
+      tick.setAttribute("x2", (rulerSize + x).toString());
+      tick.setAttribute("y2", rulerSize.toString());
+      tick.setAttribute("stroke", "#666");
+      tick.setAttribute("stroke-width", "1");
+      backgroundGroup.appendChild(tick);
+
+      // Add label for major ticks
+      if (isMajorTick && x > 0) {
+        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        label.setAttribute("x", (rulerSize + x).toString());
+        label.setAttribute("y", "12");
+        label.setAttribute("font-size", "9");
+        label.setAttribute("font-family", "Arial, sans-serif");
+        label.setAttribute("fill", "#333");
+        label.setAttribute("text-anchor", "middle");
+        label.textContent = x.toString();
+        backgroundGroup.appendChild(label);
+      }
+    }
+
+    // Add ruler tick marks and labels (vertical)
+    for (let y = 0; y <= height - rulerSize; y += minorTickInterval) {
+      const isMajorTick = y % tickInterval === 0;
+      const tickWidth = isMajorTick ? 8 : 4;
+
+      const tick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      tick.setAttribute("x1", (rulerSize - tickWidth).toString());
+      tick.setAttribute("y1", (rulerSize + y).toString());
+      tick.setAttribute("x2", rulerSize.toString());
+      tick.setAttribute("y2", (rulerSize + y).toString());
+      tick.setAttribute("stroke", "#666");
+      tick.setAttribute("stroke-width", "1");
+      backgroundGroup.appendChild(tick);
+
+      // Add label for major ticks
+      if (isMajorTick && y > 0) {
+        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        label.setAttribute("x", "10");
+        label.setAttribute("y", (rulerSize + y + 3).toString());
+        label.setAttribute("font-size", "9");
+        label.setAttribute("font-family", "Arial, sans-serif");
+        label.setAttribute("fill", "#333");
+        label.setAttribute("text-anchor", "middle");
+        label.textContent = y.toString();
+        backgroundGroup.appendChild(label);
+      }
+    }
+
+    svg.appendChild(backgroundGroup);
+
+    this._logger.debug("Component", "Grid and rulers added to SVG");
   }
 
   /**
@@ -689,6 +832,9 @@ export class GveHintDesigner extends HTMLElement {
     // Pan with mouse drag on SVG display
     this.initializePanning();
 
+    // Zoom with mouse wheel on SVG display
+    this.initializeWheelZoom();
+
     this._logger.debug("Component", "Event listeners initialized");
   }
 
@@ -732,6 +878,30 @@ export class GveHintDesigner extends HTMLElement {
 
     // Set initial cursor
     (panel as HTMLElement).style.cursor = 'grab';
+  }
+
+  /**
+   * Initialize zooming with mouse wheel.
+   */
+  private initializeWheelZoom(): void {
+    const panel = this._shadow.querySelector('.svg-display-panel');
+    if (!panel) return;
+
+    panel.addEventListener('wheel', (e: Event) => {
+      const wheelEvent = e as WheelEvent;
+      wheelEvent.preventDefault();
+
+      // Determine zoom direction based on wheel delta
+      if (wheelEvent.deltaY < 0) {
+        // Scroll up - zoom in
+        this.zoomIn();
+      } else if (wheelEvent.deltaY > 0) {
+        // Scroll down - zoom out
+        this.zoomOut();
+      }
+    });
+
+    this._logger.debug("Component", "Wheel zoom initialized");
   }
 
   /**
@@ -1126,8 +1296,27 @@ export class GveHintDesigner extends HTMLElement {
   private refreshSvgDisplay(): void {
     if (!this._svgDisplay) return;
 
-    // Clear existing content
-    this._svgDisplay.innerHTML = "";
+    // Clear existing hint content but preserve grid and rulers
+    // Remove all child nodes except defs and the grid-and-rulers group
+    const nodesToRemove: Node[] = [];
+    for (let i = 0; i < this._svgDisplay.childNodes.length; i++) {
+      const node = this._svgDisplay.childNodes[i];
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node as Element;
+        const tagName = element.tagName.toLowerCase();
+        const id = element.getAttribute('id');
+        // Keep defs and grid-and-rulers, remove everything else
+        if (tagName !== 'defs' && id !== 'grid-and-rulers') {
+          nodesToRemove.push(node);
+        }
+      }
+    }
+    nodesToRemove.forEach(node => this._svgDisplay!.removeChild(node));
+
+    // If grid and rulers don't exist yet, add them
+    if (!this._svgDisplay.querySelector('#grid-and-rulers')) {
+      this.addGridAndRulers(this._svgDisplay);
+    }
 
     if (!this._hintId || !this._data.hints[this._hintId]) {
       return;
@@ -1275,12 +1464,12 @@ export class GveHintDesigner extends HTMLElement {
       this._logger.debug("Animation", "Refreshing SVG display");
       this.refreshSvgDisplay();
 
-      // Get the hint element
-      const hintEl = this._svgDisplay.querySelector("g");
+      // Get the hint element (not the grid-and-rulers group)
+      const hintEl = this._svgDisplay.querySelector("g:not(#grid-and-rulers)");
       if (!hintEl) {
-        throw new Error("No <g> element found in SVG");
+        throw new Error("No hint <g> element found in SVG");
       }
-      this._logger.debug("Animation", "Found hint element", { tagName: hintEl.tagName });
+      this._logger.debug("Animation", "Found hint element", { tagName: hintEl.tagName, id: hintEl.getAttribute('id') });
 
       // Set initial opacity to 0 (on style attribute)
       (hintEl as SVGGElement).style.opacity = "0";
