@@ -106,7 +106,7 @@ Check that your package is available:
 npm view @myrmidon/gve-snapshot-rendition
 ```
 
-Or visit: https://www.npmjs.com/package/@myrmidon/gve-snapshot-rendition
+Or visit: <https://www.npmjs.com/package/@myrmidon/gve-snapshot-rendition>
 
 The following files/directories are included in the package (defined in `package.json` `files` field):
 
