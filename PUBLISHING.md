@@ -9,6 +9,14 @@ The `@myrmidon/gve-snapshot-rendition` package provides two custom web component
 1. **gve-snapshot-rendition** - Main component for rendering interactive text transformations.
 2. **gve-hint-designer** - Component for designing and testing operation hints.
 
+## Documentation
+
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - How to publish to NPM
+- **[INTEGRATION-VANILLA.md](INTEGRATION-VANILLA.md)** - Integration without frameworks
+- **[INTEGRATION-ANGULAR.md](INTEGRATION-ANGULAR.md)** - Integration with Angular 21
+- **[TYPESCRIPT-INTEGRATION.md](TYPESCRIPT-INTEGRATION.md)** - TypeScript types reference
+- **[QUICK-REFERENCE.md](QUICK-REFERENCE.md)** - Quick reference card
+
 ## Quick Start
 
 (1) install in your project:
@@ -268,5 +276,5 @@ pnpm build
 
 - **Package Issues**: [GitHub Issues URL]
 - **Documentation**: See individual integration guides
-- **NPM Package**: https://www.npmjs.com/package/@myrmidon/gve-snapshot-rendition
+- **NPM Package**: <https://www.npmjs.com/package/@myrmidon/gve-snapshot-rendition>
 - **Examples**: Check the integration guides for complete examples

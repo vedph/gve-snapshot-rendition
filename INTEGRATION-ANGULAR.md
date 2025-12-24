@@ -7,10 +7,11 @@ This guide shows how to integrate the `@myrmidon/gve-snapshot-rendition` web com
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Configuration](#configuration)
+- [TypeScript Types and Interfaces](#typescript-types-and-interfaces)
 - [Basic Usage](#basic-usage)
 - [Standalone Component Pattern](#standalone-component-pattern)
 - [Using in NgModule-based Apps](#using-in-ngmodule-based-apps)
-- [TypeScript Integration](#typescript-integration)
+- [TypeScript Integration with Services](#typescript-integration-with-services)
 - [Complete Examples](#complete-examples)
 - [Best Practices](#best-practices)
 - [Troubleshooting](#troubleshooting)
@@ -98,6 +99,292 @@ import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 export class AppComponent {}
 ```
 
+## TypeScript Types and Interfaces
+
+The package exports comprehensive TypeScript types for type-safe integration. Always import types using `import type` to avoid runtime overhead.
+
+### Core Component Types
+
+```typescript
+import type {
+  GveSnapshotRendition,
+  GveHintDesigner
+} from '@myrmidon/gve-snapshot-rendition';
+
+// Use for ElementRef typing
+@ViewChild('rendition') renditionRef!: ElementRef<GveSnapshotRendition>;
+@ViewChild('designer') designerRef!: ElementRef<GveHintDesigner>;
+```
+
+### Data Model Types
+
+```typescript
+import type {
+  // Main data structure for the snapshot rendition
+  CharChainResult,
+
+  // Individual nodes (characters)
+  CharNode,
+
+  // Operation execution steps
+  ChainOperationContextStep,
+
+  // Operation metadata
+  CharChainOperation,
+
+  // Chain structure (for diagnostics)
+  CharChain,
+  CharChainNode,
+  CharChainLink,
+  ChainOperationTags
+} from '@myrmidon/gve-snapshot-rendition';
+
+// Example: CharChainResult is the main data structure
+const data: CharChainResult = {
+  text: 'Hello world',              // Base text (string or CharNode[])
+  steps: [],                         // Array of ChainOperationContextStep
+  chainDump: 'v0',                   // Text representation of chain
+  chainTags: ['v0'],                 // All version tags
+  taggedNodes: {                     // Nodes for each version
+    v0: []                           // CharNode[]
+  }
+};
+```
+
+### Settings Types
+
+```typescript
+import type {
+  GveRenditionSettings,
+  CustomButtonSettings
+} from '@myrmidon/gve-snapshot-rendition';
+
+const settings: Partial<GveRenditionSettings> = {
+  // Display
+  fontSize: 16,
+  fontFamily: 'Arial, sans-serif',
+  foreColor: '#000000',
+  backColor: '#FFFFFF',
+
+  // Spacing
+  charSpacing: 1,
+  lineHeight: 1.5,
+  lineSpacing: 0,
+
+  // Margins
+  marginTop: 20,
+  marginLeft: 20,
+  marginRight: 20,
+  marginBottom: 20,
+
+  // Viewport
+  initialZoom: 1,
+  minZoom: 0.1,
+  maxZoom: 10,
+  zoomStep: 0.1,
+
+  // Animation
+  spreadTime: 500,
+  backwardFadeOutTime: 300,
+  prologDuration: 500,
+
+  // Hints
+  hints: {},
+  hintMargin: 5,
+  hintDesignWidth: 300,
+  hintDesignHeight: 100,
+
+  // Hilites
+  hilitePadding: 2,
+  hiliteFadeTime: 200
+};
+```
+
+### Operation Types
+
+```typescript
+import type {
+  OperationType,
+  OperationFeature,
+  OperationSource,
+  OperationDiplomatics,
+  OperationMetadata
+} from '@myrmidon/gve-snapshot-rendition';
+import { OperationType } from '@myrmidon/gve-snapshot-rendition';
+
+// OperationType is an enum
+const operation: CharChainOperation = {
+  type: OperationType.replace,  // or .delete, .addBefore, .addAfter, etc.
+  id: 'op1',
+  at: 5,
+  run: 1,
+  value: 'new text',
+  inputTag: 'v0',
+  outputTag: 'v1'
+};
+
+// Available operation types:
+// - OperationType.replace
+// - OperationType.delete
+// - OperationType.addBefore
+// - OperationType.addAfter
+// - OperationType.moveBefore
+// - OperationType.moveAfter
+// - OperationType.swap
+// - OperationType.annotate
+```
+
+### Feature Types
+
+```typescript
+import type {
+  Feature,
+  OperationFeature,
+  FeatureSetPolicy
+} from '@myrmidon/gve-snapshot-rendition';
+import { FeatureSetPolicy } from '@myrmidon/gve-snapshot-rendition';
+
+const feature: OperationFeature = {
+  name: 'author',
+  value: 'John Doe',
+  setPolicy: FeatureSetPolicy.single,
+  isNegated: false,
+  isGlobal: true,
+  isShortLived: false
+};
+
+// Available policies:
+// - FeatureSetPolicy.multiple
+// - FeatureSetPolicy.single
+// - FeatureSetPolicy.singleFirst
+```
+
+### Hint Types
+
+```typescript
+import type {
+  OperationHint,
+  RelativePosition
+} from '@myrmidon/gve-snapshot-rendition';
+
+const hint: OperationHint = {
+  svg: '<g><rect width="100" height="50" fill="red"/></g>',
+  position: 'e',           // RelativePosition
+  offsetX: 0,              // number or string like '0.5th'
+  offsetY: 0,
+  scaleX: 1,
+  scaleY: 1,
+  rotation: 0,
+  solid: false,
+  animation: '#fadeIn'     // Reference to animation catalog
+};
+
+// Available RelativePosition values:
+// 'n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw' (outside)
+// 'inw', 'ine', 'isw', 'ise' (inside corners)
+// 'o' (origin/center)
+```
+
+### Hint Designer Types
+
+```typescript
+import type {
+  GveHintDesigner,
+  HintDesignerData,
+  HintDesignerSettings,
+  StringPair
+} from '@myrmidon/gve-snapshot-rendition';
+
+const designerData: HintDesignerData = {
+  hints: {
+    'hint1': {
+      svg: '<g><circle r="20"/></g>',
+      position: 'e',
+      offsetX: 0,
+      offsetY: 0,
+      scaleX: 1,
+      scaleY: 1,
+      rotation: 0
+    }
+  },
+  animations: {
+    'fadeIn': 'return gsap.from(hintEl, { opacity: 0, duration: 0.5 });'
+  }
+};
+
+const designerSettings: HintDesignerSettings = {
+  hintDesignWidth: 300,
+  hintDesignHeight: 100,
+  debug: false
+};
+```
+
+### Event Detail Types
+
+```typescript
+// For operation-selected event
+interface OperationSelectedDetail {
+  operation: ChainOperationContextStep | null;
+  versionTag: string;
+}
+
+// For version-changed event
+interface VersionChangedDetail {
+  versionTag: string;
+  index: number;
+}
+
+// Usage with typed event listeners
+rendition.addEventListener('operation-selected', (event: CustomEvent<OperationSelectedDetail>) => {
+  const operation = event.detail.operation;
+  const versionTag = event.detail.versionTag;
+});
+```
+
+### Complete Type Import Example
+
+```typescript
+import type {
+  // Components
+  GveSnapshotRendition,
+  GveHintDesigner,
+
+  // Data Models
+  CharChainResult,
+  CharNode,
+  ChainOperationContextStep,
+  CharChainOperation,
+
+  // Settings
+  GveRenditionSettings,
+  CustomButtonSettings,
+  HintDesignerSettings,
+
+  // Operations
+  OperationType,
+  OperationFeature,
+  OperationMetadata,
+
+  // Features
+  Feature,
+  FeatureSetPolicy,
+
+  // Hints
+  OperationHint,
+  RelativePosition,
+  HintDesignerData,
+
+  // Utility
+  StringPair
+} from '@myrmidon/gve-snapshot-rendition';
+
+// Import enums as values (not types)
+import {
+  OperationType,
+  FeatureSetPolicy
+} from '@myrmidon/gve-snapshot-rendition';
+```
+
 ## Basic Usage
 
 ### Standalone Component with Template Reference
@@ -111,6 +398,11 @@ import {
   AfterViewInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import type {
+  GveSnapshotRendition,
+  CharChainResult,
+  GveRenditionSettings
+} from '@myrmidon/gve-snapshot-rendition';
 
 @Component({
   selector: 'app-snapshot-viewer',
@@ -141,37 +433,31 @@ import { CommonModule } from '@angular/common';
 })
 export class SnapshotViewerComponent implements AfterViewInit {
   @ViewChild('rendition', { static: false })
-  renditionRef!: ElementRef<any>;
+  renditionRef!: ElementRef<GveSnapshotRendition>;
 
   ngAfterViewInit() {
     // Access the web component
     const rendition = this.renditionRef.nativeElement;
 
-    // Set data
-    rendition.data = {
-      sources: [
-        {
-          id: 'v1',
-          label: 'Version 1',
-          text: 'Hello world'
-        },
-        {
-          id: 'v2',
-          label: 'Version 2',
-          text: 'Hello wonderful world'
-        }
-      ],
-      operations: []
+    // Set data - CharChainResult format
+    const data: CharChainResult = {
+      text: 'Hello world',
+      steps: [],
+      chainDump: '',
+      chainTags: ['v0'],
+      taggedNodes: {}
     };
+    rendition.data = data;
 
-    // Set settings
-    rendition.settings = {
-      showToolbar: true,
-      enableAnimation: true
+    // Set settings with proper typing
+    const settings: Partial<GveRenditionSettings> = {
+      fontSize: 16,
+      lineHeight: 1.5
     };
+    rendition.settings = settings;
 
-    // Listen to events
-    rendition.addEventListener('operation-selected', (event: any) => {
+    // Listen to events with proper typing
+    rendition.addEventListener('operation-selected', (event: CustomEvent) => {
       console.log('Operation selected:', event.detail);
     });
   }
@@ -190,11 +476,14 @@ import {
   signal,
   effect
 } from '@angular/core';
-
-interface SnapshotData {
-  sources: Array<{ id: string; label: string; text: string }>;
-  operations: Array<any>;
-}
+import type {
+  GveSnapshotRendition,
+  CharChainResult,
+  CharNode,
+  ChainOperationContextStep,
+  CharChainOperation,
+  OperationType
+} from '@myrmidon/gve-snapshot-rendition';
 
 @Component({
   selector: 'app-snapshot-signals',
@@ -211,10 +500,10 @@ interface SnapshotData {
 })
 export class SnapshotSignalsComponent implements AfterViewInit {
   @ViewChild('rendition', { static: false })
-  renditionRef!: ElementRef<any>;
+  renditionRef!: ElementRef<GveSnapshotRendition>;
 
-  // Use signals for reactive data
-  snapshotData = signal<SnapshotData | null>(null);
+  // Use signals for reactive data with proper typing
+  snapshotData = signal<CharChainResult | null>(null);
 
   constructor() {
     // Effect to update component when signal changes
@@ -232,29 +521,58 @@ export class SnapshotSignalsComponent implements AfterViewInit {
   }
 
   loadExample1() {
-    this.snapshotData.set({
-      sources: [
-        { id: 'v1', label: 'Version 1', text: 'Hello world' }
-      ],
-      operations: []
-    });
+    const data: CharChainResult = {
+      text: 'Hello world',
+      steps: [],
+      chainDump: 'v0',
+      chainTags: ['v0'],
+      taggedNodes: {
+        v0: this.stringToNodes('Hello world')
+      }
+    };
+    this.snapshotData.set(data);
   }
 
   loadExample2() {
-    this.snapshotData.set({
-      sources: [
-        { id: 'v1', label: 'Version 1', text: 'Hello world' },
-        { id: 'v2', label: 'Version 2', text: 'Hello wonderful world' }
-      ],
-      operations: [
-        {
-          type: 'insert',
-          sourceId: 'v2',
-          position: 6,
-          text: 'wonderful '
-        }
-      ]
-    });
+    const operation: CharChainOperation = {
+      type: OperationType.addAfter,
+      id: 'op1',
+      at: 5,
+      run: 1,
+      value: ' wonderful',
+      inputTag: 'v0',
+      outputTag: 'v1'
+    };
+
+    const step: ChainOperationContextStep = {
+      operation,
+      inputTag: 'v0',
+      outputTag: 'v1',
+      result: 'Hello wonderful world',
+      featureSet: { features: [], nodeFeatures: {} },
+      refNodeIds: [5]
+    };
+
+    const data: CharChainResult = {
+      text: 'Hello world',
+      steps: [step],
+      chainDump: 'v0 -> v1',
+      chainTags: ['v0', 'v1'],
+      taggedNodes: {
+        v0: this.stringToNodes('Hello world'),
+        v1: this.stringToNodes('Hello wonderful world')
+      }
+    };
+    this.snapshotData.set(data);
+  }
+
+  private stringToNodes(text: string): CharNode[] {
+    return Array.from(text).map((char, index) => ({
+      id: index,
+      index,
+      label: `${index}`,
+      data: char
+    }));
   }
 }
 ```
@@ -512,7 +830,7 @@ platformBrowserDynamic()
   .catch(err => console.error(err));
 ```
 
-## TypeScript Integration
+## TypeScript Integration with Services
 
 Create a type-safe wrapper service for better Angular integration:
 
@@ -522,49 +840,30 @@ Create a type-safe wrapper service for better Angular integration:
 import { Injectable, signal } from '@angular/core';
 import type {
   GveRenditionSettings,
-  CharChainResult
+  CharChainResult,
+  CharNode,
+  ChainOperationContextStep,
+  CharChainOperation,
+  OperationType
 } from '@myrmidon/gve-snapshot-rendition';
-
-export interface SnapshotSource {
-  id: string;
-  label: string;
-  text: string;
-}
-
-export interface SnapshotOperation {
-  type: 'insert' | 'delete' | 'replace';
-  sourceId: string;
-  position: number;
-  text?: string;
-  length?: number;
-  metadata?: {
-    author?: string;
-    timestamp?: string;
-    comment?: string;
-  };
-}
-
-export interface SnapshotData {
-  sources: SnapshotSource[];
-  operations: SnapshotOperation[];
-}
+import { DEFAULT_SETTINGS } from '@myrmidon/gve-snapshot-rendition';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SnapshotRenditionService {
-  private currentData = signal<SnapshotData | null>(null);
+  private currentData = signal<CharChainResult | null>(null);
 
   readonly data = this.currentData.asReadonly();
 
-  setData(data: SnapshotData) {
+  setData(data: CharChainResult) {
     this.currentData.set(data);
   }
 
-  async loadFromApi(id: string): Promise<SnapshotData> {
+  async loadFromApi(id: string): Promise<CharChainResult> {
     // Implement your API call here
     const response = await fetch(`/api/snapshots/${id}`);
-    const data = await response.json();
+    const data: CharChainResult = await response.json();
     this.setData(data);
     return data;
   }
@@ -576,10 +875,36 @@ export class SnapshotRenditionService {
 
   getDefaultSettings(): Partial<GveRenditionSettings> {
     return {
-      showToolbar: true,
-      enableAnimation: true,
+      ...DEFAULT_SETTINGS,
       fontSize: 16,
       lineHeight: 1.5
+    };
+  }
+
+  /**
+   * Helper to convert a string to CharNode array
+   */
+  stringToNodes(text: string): CharNode[] {
+    return Array.from(text).map((char, index) => ({
+      id: index,
+      index,
+      label: `${index}`,
+      data: char
+    }));
+  }
+
+  /**
+   * Create a simple CharChainResult from text
+   */
+  createSimpleData(text: string, tag: string = 'v0'): CharChainResult {
+    return {
+      text,
+      steps: [],
+      chainDump: tag,
+      chainTags: [tag],
+      taggedNodes: {
+        [tag]: this.stringToNodes(text)
+      }
     };
   }
 }
@@ -588,7 +913,14 @@ export class SnapshotRenditionService {
 **Use the service in a component:**
 
 ```typescript
-import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ViewChild,
+  ElementRef,
+  AfterViewInit
+} from '@angular/core';
+import type { GveSnapshotRendition } from '@myrmidon/gve-snapshot-rendition';
 import { SnapshotRenditionService } from './snapshot-rendition.service';
 
 @Component({
@@ -600,7 +932,7 @@ import { SnapshotRenditionService } from './snapshot-rendition.service';
   `
 })
 export class SnapshotWithServiceComponent implements AfterViewInit {
-  @ViewChild('rendition') renditionRef!: ElementRef;
+  @ViewChild('rendition') renditionRef!: ElementRef<GveSnapshotRendition>;
 
   constructor(private snapshotService: SnapshotRenditionService) {}
 
@@ -608,7 +940,7 @@ export class SnapshotWithServiceComponent implements AfterViewInit {
     // Load data from service
     const data = await this.snapshotService.loadFromApi('123');
 
-    // Apply to component
+    // Apply to component with proper typing
     const rendition = this.renditionRef.nativeElement;
     rendition.data = data;
     rendition.settings = this.snapshotService.getDefaultSettings();
@@ -667,6 +999,13 @@ import {
   AfterViewInit,
   signal
 } from '@angular/core';
+import type {
+  GveHintDesigner,
+  HintDesignerData,
+  HintDesignerSettings,
+  OperationHint
+} from '@myrmidon/gve-snapshot-rendition';
+import { DEFAULT_HINT_DESIGNER_SETTINGS } from '@myrmidon/gve-snapshot-rendition';
 
 @Component({
   selector: 'app-hint-designer',
@@ -679,6 +1018,7 @@ import {
       <div class="controls">
         <button (click)="saveHints()">Save Hints</button>
         <button (click)="loadHints()">Load Hints</button>
+        <button (click)="addNewHint()">Add New Hint</button>
       </div>
 
       <gve-hint-designer
@@ -702,6 +1042,21 @@ import {
 
     .controls {
       margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .controls button {
+      padding: 8px 16px;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .controls button:hover {
+      background: #1565c0;
     }
 
     gve-hint-designer {
@@ -719,49 +1074,94 @@ import {
       pre {
         max-height: 300px;
         overflow-y: auto;
+        background: white;
+        padding: 10px;
+        border-radius: 4px;
       }
     }
   `]
 })
 export class HintDesignerComponent implements AfterViewInit {
   @ViewChild('designer', { static: false })
-  designerRef!: ElementRef<any>;
+  designerRef!: ElementRef<GveHintDesigner>;
 
-  savedHints = signal<any>(null);
+  savedHints = signal<Record<string, OperationHint> | null>(null);
 
   ngAfterViewInit() {
-    // Initialize with empty data
     const designer = this.designerRef.nativeElement;
-    designer.data = {
-      hints: {},
-      animations: {}
-    };
 
-    // Listen to hint updates
-    designer.addEventListener('hint-updated', (event: any) => {
+    // Initialize with empty data and settings
+    const initialData: HintDesignerData = {
+      hints: {},
+      animations: {
+        'fadeIn': 'return gsap.from(hintEl, { opacity: 0, duration: 0.5 });',
+        'slideIn': 'return gsap.from(hintEl, { x: -50, opacity: 0, duration: 0.5 });'
+      }
+    };
+    designer.data = initialData;
+
+    const settings: HintDesignerSettings = {
+      ...DEFAULT_HINT_DESIGNER_SETTINGS,
+      hintDesignWidth: 400,
+      hintDesignHeight: 150
+    };
+    designer.settings = settings;
+
+    // Listen to hint updates with proper typing
+    designer.addEventListener('hint-updated', (event: CustomEvent) => {
       console.log('Hint updated:', event.detail);
     });
   }
 
   saveHints() {
     const designer = this.designerRef.nativeElement;
-    const hints = designer.data.hints;
-    this.savedHints.set(hints);
-    console.log('Hints saved:', hints);
+    const data: HintDesignerData = designer.data;
+    this.savedHints.set(data.hints);
+    console.log('Hints saved:', data.hints);
 
     // Optionally save to backend
-    // await this.http.post('/api/hints', hints).toPromise();
+    // await this.http.post<void>('/api/hints', data.hints).toPromise();
   }
 
   loadHints() {
-    // Load from saved state or backend
     const hints = this.savedHints();
     if (hints) {
-      this.designerRef.nativeElement.data = {
-        hints,
-        animations: {}
+      const designer = this.designerRef.nativeElement;
+      const currentData: HintDesignerData = designer.data;
+
+      const newData: HintDesignerData = {
+        ...currentData,
+        hints
       };
+      designer.data = newData;
     }
+  }
+
+  addNewHint() {
+    const designer = this.designerRef.nativeElement;
+    const currentData: HintDesignerData = designer.data;
+
+    const newHintId = `hint_${Date.now()}`;
+    const newHint: OperationHint = {
+      svg: '<g><rect width="100" height="50" fill="#4CAF50" rx="5"/></g>',
+      position: 'e',
+      offsetX: 0,
+      offsetY: 0,
+      scaleX: 1,
+      scaleY: 1,
+      rotation: 0,
+      solid: false,
+      animation: '#fadeIn'
+    };
+
+    const updatedData: HintDesignerData = {
+      ...currentData,
+      hints: {
+        ...currentData.hints,
+        [newHintId]: newHint
+      }
+    };
+    designer.data = updatedData;
   }
 }
 ```
@@ -771,9 +1171,23 @@ export class HintDesignerComponent implements AfterViewInit {
 **snapshot-http.component.ts:**
 
 ```typescript
-import { Component, ViewChild, ElementRef, AfterViewInit, signal } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  signal,
+  inject
+} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { firstValueFrom } from 'rxjs';
+import type {
+  GveSnapshotRendition,
+  CharChainResult,
+  GveRenditionSettings
+} from '@myrmidon/gve-snapshot-rendition';
 
 @Component({
   selector: 'app-snapshot-http',
@@ -781,41 +1195,141 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
-    <div>
+    <div class="http-container">
       @if (loading()) {
-        <div class="loading">Loading snapshot data...</div>
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Loading snapshot data...</p>
+        </div>
       } @else if (error()) {
-        <div class="error">Error: {{ error() }}</div>
+        <div class="error">
+          <h3>Error Loading Data</h3>
+          <p>{{ error() }}</p>
+          <button (click)="retry()">Retry</button>
+        </div>
       } @else {
-        <gve-snapshot-rendition #rendition></gve-snapshot-rendition>
+        <gve-snapshot-rendition
+          #rendition
+          [style.width.%]="100"
+          [style.height.px]="600">
+        </gve-snapshot-rendition>
       }
     </div>
-  `
+  `,
+  styles: [`
+    .http-container {
+      padding: 20px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1976d2;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .error {
+      padding: 20px;
+      background: #ffebee;
+      border: 1px solid #ef5350;
+      border-radius: 4px;
+      color: #c62828;
+    }
+
+    .error h3 {
+      margin-top: 0;
+    }
+
+    .error button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    gve-snapshot-rendition {
+      display: block;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+    }
+  `]
 })
 export class SnapshotHttpComponent implements AfterViewInit {
-  @ViewChild('rendition') renditionRef!: ElementRef;
+  private http = inject(HttpClient);
+
+  @ViewChild('rendition') renditionRef!: ElementRef<GveSnapshotRendition>;
 
   loading = signal(true);
   error = signal<string | null>(null);
 
-  constructor(private http: HttpClient) {}
+  ngAfterViewInit() {
+    this.loadData();
+  }
 
-  async ngAfterViewInit() {
+  async loadData() {
+    this.loading.set(true);
+    this.error.set(null);
+
     try {
-      // Fetch data from API
-      const data = await this.http
-        .get<any>('/api/snapshots/latest')
-        .toPromise();
+      // Fetch data from API with proper typing
+      const data = await firstValueFrom(
+        this.http.get<CharChainResult>('/api/snapshots/latest')
+      );
 
       // Apply to component
-      this.renditionRef.nativeElement.data = data;
+      const rendition = this.renditionRef.nativeElement;
+      rendition.data = data;
+
+      // Configure settings
+      const settings: Partial<GveRenditionSettings> = {
+        fontSize: 16,
+        lineHeight: 1.5,
+        spreadTime: 500
+      };
+      rendition.settings = settings;
+
       this.loading.set(false);
     } catch (err: any) {
-      this.error.set(err.message);
+      this.error.set(err.message || 'Failed to load snapshot data');
       this.loading.set(false);
+      console.error('Error loading snapshot:', err);
     }
   }
+
+  retry() {
+    this.loadData();
+  }
 }
+```
+
+**Note:** Don't forget to provide `HttpClient` in your app configuration:
+
+```typescript
+// app.config.ts (Angular 21 standalone)
+import { ApplicationConfig } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideHttpClient()
+  ]
+};
 ```
 
 ## Best Practices
