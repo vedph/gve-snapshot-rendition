@@ -91,5 +91,45 @@ This component requires the following packages:
 
 This is only a reminder.
 
-- add settings and support for CodePen hint designer.
 - consider simplifying logic by drawing node features from tagged nodes rather than from steps.
+
+## Deployment
+
+You must be logged into NPM with your account (verify with `npm whoami`, login with `npm login` if required).
+
+1. ensure that tests pass (`pnpm test`) and be sure to build (`pnpm build`).
+2. publish via `pnpm run publish:public` or directly via `npm publish --access=public`.
+
+Check that your package is available:
+
+```bash
+npm view @myrmidon/gve-snapshot-rendition
+```
+
+Or visit: https://www.npmjs.com/package/@myrmidon/gve-snapshot-rendition
+
+The following files/directories are included in the package (defined in `package.json` `files` field):
+
+- `dist/` - Compiled JavaScript and TypeScript declarations
+- `README.md` - Package documentation
+- `LICENSE` - License file
+
+The package includes these automated scripts:
+
+- **prepublishOnly**: Runs before `npm publish` - executes tests and build
+- **prepack**: Runs before creating a tarball - executes build
+- **publish:public**: Custom script to publish with public access
+
+To unpublish a specific version:
+
+```bash
+npm unpublish @myrmidon/gve-snapshot-rendition@0.0.1
+```
+
+To unpublish the entire package (only allowed within 72 hours):
+
+```bash
+npm unpublish @myrmidon/gve-snapshot-rendition --force
+```
+
+>⚠️ Unpublishing can break projects that depend on your package. Only do this for critical security issues or accidental publications.
