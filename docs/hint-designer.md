@@ -97,6 +97,29 @@ All the panels (except toolbar, timeline player and SVG display) are resizable w
 
 As for the main component, CSS are used variables where applicable to support theming.
 
+The main elements in the component's layout are:
+
+- `div.hint-designer-container` (grid layout root)
+  - `div.top-panels-wrapper` (grid area=`top`, nested grid)
+    - `div.toolbar` (grid area=`toolbar`)
+    - `div.svg-display-panel` (grid area=`svg-display`)
+    - `div.timeline-player` (grid area=`timeline`)
+    - `div.message-panel` (grid area=`message`)
+  - `div.properties-panel.resizable-panel` (grid area=`properties`)
+    - `div.panel-header`
+    - `div.panel-content`
+      - column 1: `form.properties-form`
+      - column 2:
+        - `div.textarea-header`
+        - `div#svg-wrapper.code-editor-wrapper`
+      - column 3:
+        - `div.textarea-header`
+        - `div.anim-controls`
+        - `div#js-wrapper.code-editor-wrapper`
+  - `div.variables-panel.resizable-panel` (grid area=`variables`)
+
+The main 3 rows under the root container `div` are resizable panels. Each is a CSS grid with its own layout.
+
 #### Toolbar
 
 This panel is not user-resizable.

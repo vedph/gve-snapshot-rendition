@@ -50,6 +50,8 @@ export class GveHintDesigner extends HTMLElement {
   private _svgHighlightContainer?: HTMLDivElement;
   private _jsHighlightContainer?: HTMLDivElement;
   private _hintsDropdown?: HTMLSelectElement;
+  private _svgWordWrapEnabled: boolean = false;
+  private _jsWordWrapEnabled: boolean = false;
   private _animationsDropdown?: HTMLSelectElement;
   private _embeddedJsCheckbox?: HTMLInputElement;
   private _newAnimationCheckbox?: HTMLInputElement;
@@ -182,17 +184,16 @@ export class GveHintDesigner extends HTMLElement {
     const container = document.createElement("div");
     container.className = "hint-designer-container";
 
-    // Toolbar
-    container.appendChild(this.createToolbar());
+    // Top panels wrapper (toolbar, svg-display, timeline, message)
+    const topWrapper = document.createElement("div");
+    topWrapper.className = "top-panels-wrapper";
 
-    // SVG Display (takes all available space)
-    container.appendChild(this.createSvgDisplay());
+    topWrapper.appendChild(this.createToolbar());
+    topWrapper.appendChild(this.createSvgDisplay());
+    topWrapper.appendChild(this.createTimelinePlayer());
+    topWrapper.appendChild(this.createMessagePanel());
 
-    // Timeline Player
-    container.appendChild(this.createTimelinePlayer());
-
-    // Message Panel
-    container.appendChild(this.createMessagePanel());
+    container.appendChild(topWrapper);
 
     // Hint Properties Editor
     container.appendChild(this.createHintPropertiesEditor());
@@ -241,10 +242,12 @@ export class GveHintDesigner extends HTMLElement {
     const zoomInBtn = this.createButton("zoom-in", "zoom-in", "Zoom in");
     const zoomOutBtn = this.createButton("zoom-out", "zoom-out", "Zoom out");
     const zoomResetBtn = this.createButton("zoom-reset", "maximize", "Reset zoom");
+    const sizeToFitBtn = this.createButton("size-to-fit", "maximize-2", "Size to fit");
 
     zoomGroup.appendChild(zoomInBtn);
     zoomGroup.appendChild(zoomOutBtn);
     zoomGroup.appendChild(zoomResetBtn);
+    zoomGroup.appendChild(sizeToFitBtn);
     toolbar.appendChild(zoomGroup);
 
     // Data controls (grouped)
@@ -484,11 +487,14 @@ export class GveHintDesigner extends HTMLElement {
     resizeHandle.className = "resize-handle";
     header.appendChild(resizeHandle);
 
-    // Content
+    // Content with 3-column layout
     const content = document.createElement("div");
     content.className = "panel-content";
 
-    // Create form for hint properties
+    // Column 1: Properties form wrapper
+    const col1 = document.createElement("div");
+    col1.className = "column-wrapper column-properties";
+
     const form = document.createElement("form");
     form.className = "properties-form";
 
@@ -524,17 +530,31 @@ export class GveHintDesigner extends HTMLElement {
     this._displacedRefSpanInput = this.createInput("text", "");
     form.appendChild(this.createFormRow("Displaced Ref Span:", this._displacedRefSpanInput));
 
-    content.appendChild(form);
+    col1.appendChild(form);
+    content.appendChild(col1);
 
-    // SVG textarea with syntax highlighting
+    // Column 2: SVG wrapper
+    const col2 = document.createElement("div");
+    col2.className = "column-wrapper column-svg";
+
+    const svgHeader = document.createElement("div");
+    svgHeader.className = "textarea-header";
+
     const svgLabel = document.createElement("label");
     svgLabel.textContent = "SVG:";
     svgLabel.className = "textarea-label";
-    content.appendChild(svgLabel);
+    svgHeader.appendChild(svgLabel);
+
+    const svgWrapBtn = this.createButton("toggle-svg-wrap", "align-left", "Toggle word wrap");
+    svgWrapBtn.className = "toolbar-btn wrap-toggle-btn";
+    svgHeader.appendChild(svgWrapBtn);
+
+    col2.appendChild(svgHeader);
 
     // Create wrapper for textarea with highlighting
     const svgWrapper = document.createElement("div");
     svgWrapper.className = "code-editor-wrapper";
+    svgWrapper.id = "svg-wrapper";
 
     this._svgHighlightContainer = document.createElement("div");
     this._svgHighlightContainer.className = "code-highlight";
@@ -545,13 +565,26 @@ export class GveHintDesigner extends HTMLElement {
     this._svgTextarea.spellcheck = false;
     svgWrapper.appendChild(this._svgTextarea);
 
-    content.appendChild(svgWrapper);
+    col2.appendChild(svgWrapper);
+    content.appendChild(col2);
 
-    // Animation section
+    // Column 3: Animation wrapper
+    const col3 = document.createElement("div");
+    col3.className = "column-wrapper column-animation";
+
+    const animHeader = document.createElement("div");
+    animHeader.className = "textarea-header";
+
     const animLabel = document.createElement("label");
     animLabel.textContent = "Animation:";
     animLabel.className = "textarea-label";
-    content.appendChild(animLabel);
+    animHeader.appendChild(animLabel);
+
+    const jsWrapBtn = this.createButton("toggle-js-wrap", "align-left", "Toggle word wrap");
+    jsWrapBtn.className = "toolbar-btn wrap-toggle-btn";
+    animHeader.appendChild(jsWrapBtn);
+
+    col3.appendChild(animHeader);
 
     // Embedded JS checkbox, new animation checkbox, and animation dropdown
     const animControls = document.createElement("div");
@@ -590,11 +623,12 @@ export class GveHintDesigner extends HTMLElement {
     const loadAnimBtn = this.createButton("load-animation", "download-cloud", "Load animation code");
     animControls.appendChild(loadAnimBtn);
 
-    content.appendChild(animControls);
+    col3.appendChild(animControls);
 
     // JS textarea with syntax highlighting
     const jsWrapper = document.createElement("div");
     jsWrapper.className = "code-editor-wrapper";
+    jsWrapper.id = "js-wrapper";
 
     this._jsHighlightContainer = document.createElement("div");
     this._jsHighlightContainer.className = "code-highlight";
@@ -605,7 +639,8 @@ export class GveHintDesigner extends HTMLElement {
     this._jsTextarea.spellcheck = false;
     jsWrapper.appendChild(this._jsTextarea);
 
-    content.appendChild(jsWrapper);
+    col3.appendChild(jsWrapper);
+    content.appendChild(col3);
 
     panel.appendChild(content);
 
@@ -746,7 +781,7 @@ export class GveHintDesigner extends HTMLElement {
   }
 
   /**
-   * Make a panel resizable.
+   * Make a panel resizable by adjusting grid rows.
    */
   private makeResizable(
     panel: HTMLElement,
@@ -755,10 +790,29 @@ export class GveHintDesigner extends HTMLElement {
   ): void {
     let startY = 0;
     let startHeight = 0;
+    let adjacentStartHeight = 0;
+    let isPropertiesPanel = false;
 
     const onMouseDown = (e: MouseEvent) => {
       startY = e.clientY;
       startHeight = panel.offsetHeight;
+
+      // Determine which panel this is and get the adjacent panel
+      isPropertiesPanel = panel.classList.contains('properties-panel');
+
+      let adjacentPanel: HTMLElement | null = null;
+      if (isPropertiesPanel) {
+        // Properties panel - adjacent is top-panels-wrapper above
+        adjacentPanel = this._shadow.querySelector('.top-panels-wrapper') as HTMLElement;
+      } else {
+        // Variables panel - adjacent is properties-panel above
+        adjacentPanel = this._shadow.querySelector('.properties-panel') as HTMLElement;
+      }
+
+      if (adjacentPanel) {
+        adjacentStartHeight = adjacentPanel.offsetHeight;
+      }
+
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
       e.preventDefault();
@@ -766,8 +820,22 @@ export class GveHintDesigner extends HTMLElement {
 
     const onMouseMove = (e: MouseEvent) => {
       const delta = e.clientY - startY;
-      const newHeight = Math.max(minHeight, startHeight + delta);
-      panel.style.height = `${newHeight}px`;
+      const newPanelHeight = Math.max(minHeight, startHeight + delta);
+
+      // The adjacent panel shrinks/grows inversely
+      const newAdjacentHeight = Math.max(300, adjacentStartHeight - delta);
+
+      // Update grid template rows on the container
+      const container = this._shadow.querySelector('.hint-designer-container') as HTMLElement;
+      if (container) {
+        if (isPropertiesPanel) {
+          // Resizing properties: adjust top-wrapper and properties heights
+          container.style.gridTemplateRows = `${newAdjacentHeight}px ${newPanelHeight}px minmax(200px, 1fr)`;
+        } else {
+          // Resizing variables: adjust properties and variables heights
+          container.style.gridTemplateRows = `minmax(300px, 1fr) ${newAdjacentHeight}px ${newPanelHeight}px`;
+        }
+      }
     };
 
     const onMouseUp = () => {
@@ -792,6 +860,7 @@ export class GveHintDesigner extends HTMLElement {
     this.addClickListener("zoom-in", () => this.zoomIn());
     this.addClickListener("zoom-out", () => this.zoomOut());
     this.addClickListener("zoom-reset", () => this.resetZoom());
+    this.addClickListener("size-to-fit", () => this.sizeToFit());
 
     // Data controls
     this.addClickListener("save-data", () => this.saveData());
@@ -828,6 +897,10 @@ export class GveHintDesigner extends HTMLElement {
     // Variables panel
     this.addClickListener("delete-all-vars", () => this.deleteAllVariables());
     this.addClickListener("add-variable", () => this.addVariable());
+
+    // Word wrap toggles
+    this.addClickListener("toggle-svg-wrap", () => this.toggleSvgWordWrap());
+    this.addClickListener("toggle-js-wrap", () => this.toggleJsWordWrap());
 
     // Syntax highlighting on textareas
     if (this._svgTextarea) {
@@ -960,12 +1033,16 @@ export class GveHintDesigner extends HTMLElement {
     const currentValue = this._hintsDropdown.value;
     this._hintsDropdown.innerHTML = '<option value="">-- Select Hint --</option>';
 
-    Object.keys(this._data.hints).forEach((hintId) => {
+    const hintIds = Object.keys(this._data.hints);
+    hintIds.forEach((hintId) => {
       const option = document.createElement("option");
       option.value = hintId;
       option.textContent = hintId;
       this._hintsDropdown!.appendChild(option);
     });
+
+    // Disable dropdown when no hints are present
+    this._hintsDropdown.disabled = hintIds.length === 0;
 
     // Restore selection
     if (currentValue && this._data.hints[currentValue]) {
@@ -1789,9 +1866,25 @@ export class GveHintDesigner extends HTMLElement {
    * Reset zoom.
    */
   private resetZoom(): void {
-    this._zoomLevel = 1;
-    this._panX = 0;
-    this._panY = 0;
+    if (!this._svgDisplay) return;
+
+    // Get panel size to center the SVG
+    const panel = this._shadow.querySelector('.svg-display-panel') as HTMLElement;
+    if (panel) {
+      const panelWidth = panel.clientWidth;
+      const panelHeight = panel.clientHeight;
+      const svgWidth = this._settings.hintDesignWidth;
+      const svgHeight = this._settings.hintDesignHeight;
+
+      // Center the SVG at zoom level 1
+      this._zoomLevel = 1;
+      this._panX = (panelWidth - svgWidth) / 2;
+      this._panY = (panelHeight - svgHeight) / 2;
+    } else {
+      this._zoomLevel = 1;
+      this._panX = 0;
+      this._panY = 0;
+    }
     this.updateSvgTransform();
   }
 
@@ -1801,8 +1894,32 @@ export class GveHintDesigner extends HTMLElement {
   private updateSvgTransform(): void {
     if (!this._svgDisplay) return;
 
+    const transformString = `translate(${this._panX}px, ${this._panY}px) scale(${this._zoomLevel})`;
+
+    const svgBoundingRect = this._svgDisplay.getBoundingClientRect();
+
+    this._logger.debug("Component", "Applying SVG transform", {
+      panX: this._panX,
+      panY: this._panY,
+      zoomLevel: this._zoomLevel,
+      transformString,
+      svgWidth: this._svgDisplay.getAttribute('width'),
+      svgHeight: this._svgDisplay.getAttribute('height'),
+      svgBBox: this._svgDisplay.getBBox(),
+      svgBoundingClientRect: {
+        x: svgBoundingRect.x,
+        y: svgBoundingRect.y,
+        width: svgBoundingRect.width,
+        height: svgBoundingRect.height,
+        top: svgBoundingRect.top,
+        left: svgBoundingRect.left,
+        right: svgBoundingRect.right,
+        bottom: svgBoundingRect.bottom
+      }
+    });
+
     // Apply transform: translate first, then scale from the SVG's own center
-    this._svgDisplay.style.transform = `translate(${this._panX}px, ${this._panY}px) scale(${this._zoomLevel})`;
+    this._svgDisplay.style.transform = transformString;
     this._svgDisplay.style.transformOrigin = '0 0';
 
     // Only apply transition during zoom, not during pan (to avoid sluggishness)
@@ -1811,6 +1928,106 @@ export class GveHintDesigner extends HTMLElement {
     } else {
       this._svgDisplay.style.transition = 'none';
     }
+  }
+
+  /**
+   * Size to fit the SVG content.
+   */
+  private sizeToFit(): void {
+    if (!this._svgDisplay) return;
+
+    // Get the SVG content (not the grid-and-rulers)
+    const hintContent = this._svgDisplay.querySelector("g:not(#grid-and-rulers)");
+    if (!hintContent) {
+      // If no hint content, just reset zoom
+      this.resetZoom();
+      return;
+    }
+
+    try {
+      // Get the bounding box of the hint content
+      const bbox = (hintContent as SVGGraphicsElement).getBBox();
+
+      // Get the SVG display panel size
+      const panel = this._shadow.querySelector('.svg-display-panel') as HTMLElement;
+      if (!panel) return;
+
+      const panelWidth = panel.clientWidth;
+      const panelHeight = panel.clientHeight;
+
+      // The SVG has a fixed viewBox based on design dimensions
+      const designWidth = this._settings.hintDesignWidth;
+      const designHeight = this._settings.hintDesignHeight;
+
+      // Calculate zoom to fit with some padding (90% of available space)
+      const padding = 0.9;
+      const scaleX = (panelWidth * padding) / bbox.width;
+      const scaleY = (panelHeight * padding) / bbox.height;
+      const scale = Math.min(scaleX, scaleY, 10); // Cap at max zoom
+
+      // Calculate center of the bbox
+      const bboxCenterX = bbox.x + bbox.width / 2;
+      const bboxCenterY = bbox.y + bbox.height / 2;
+
+      // After scaling, the bbox center will be at (bboxCenterX * scale, bboxCenterY * scale)
+      // in screen coordinates (since transform-origin is 0,0)
+      // We want this to be at the center of the panel: (panelWidth/2, panelHeight/2)
+      // So: panX + (bboxCenterX * scale) = panelWidth / 2
+      //     panY + (bboxCenterY * scale) = panelHeight / 2
+      const panX = (panelWidth / 2) - (bboxCenterX * scale);
+      const panY = (panelHeight / 2) - (bboxCenterY * scale);
+
+      this._zoomLevel = scale;
+      this._panX = panX;
+      this._panY = panY;
+      this.updateSvgTransform();
+
+      this._logger.debug("Component", "Size to fit", {
+        scale,
+        panX,
+        panY,
+        bbox,
+        bboxCenterX,
+        bboxCenterY,
+        panelWidth,
+        panelHeight
+      });
+    } catch (err) {
+      this._logger.error("Failed to size to fit", err);
+      this.resetZoom();
+    }
+  }
+
+  /**
+   * Toggle word wrap for SVG textarea.
+   */
+  private toggleSvgWordWrap(): void {
+    this._svgWordWrapEnabled = !this._svgWordWrapEnabled;
+    const wrapper = this._shadow.getElementById('svg-wrapper');
+    if (wrapper) {
+      if (this._svgWordWrapEnabled) {
+        wrapper.classList.add('word-wrap-enabled');
+      } else {
+        wrapper.classList.remove('word-wrap-enabled');
+      }
+    }
+    this._logger.debug("Component", "SVG word wrap toggled", this._svgWordWrapEnabled);
+  }
+
+  /**
+   * Toggle word wrap for JS textarea.
+   */
+  private toggleJsWordWrap(): void {
+    this._jsWordWrapEnabled = !this._jsWordWrapEnabled;
+    const wrapper = this._shadow.getElementById('js-wrapper');
+    if (wrapper) {
+      if (this._jsWordWrapEnabled) {
+        wrapper.classList.add('word-wrap-enabled');
+      } else {
+        wrapper.classList.remove('word-wrap-enabled');
+      }
+    }
+    this._logger.debug("Component", "JS word wrap toggled", this._jsWordWrapEnabled);
   }
 
   /**
@@ -2117,12 +2334,9 @@ export class GveHintDesigner extends HTMLElement {
 
       .hint-designer-container {
         display: grid;
-        grid-template-rows: auto 1fr auto auto auto auto;
+        grid-template-rows: minmax(300px, 1fr) minmax(300px, 1fr) minmax(200px, 1fr);
         grid-template-areas:
-          "toolbar"
-          "svg-display"
-          "timeline"
-          "message"
+          "top"
           "properties"
           "variables";
         width: 100%;
@@ -2130,6 +2344,20 @@ export class GveHintDesigner extends HTMLElement {
         overflow-y: auto;
         overflow-x: hidden;
         background: var(--hint-designer-bg, #fafafa);
+      }
+
+      /* Top panels wrapper - nested grid */
+      .top-panels-wrapper {
+        grid-area: top;
+        display: grid;
+        grid-template-rows: auto minmax(300px, 1fr) auto auto;
+        grid-template-areas:
+          "toolbar"
+          "svg-display"
+          "timeline"
+          "message";
+        overflow: hidden;
+        min-height: 0;
       }
 
       /* Toolbar */
@@ -2200,19 +2428,15 @@ export class GveHintDesigner extends HTMLElement {
       /* SVG Display */
       .svg-display-panel {
         grid-area: svg-display;
-        min-height: 300px;
-        max-height: 500px;
+        min-height: 0;
         background: var(--hint-designer-svg-bg, white);
         border-bottom: 1px solid var(--hint-designer-border, #ddd);
         overflow: auto;
         position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
       }
 
       .svg-display {
-        display: block;
+        position: absolute;
         border: 1px solid #ddd;
       }
 
@@ -2355,6 +2579,7 @@ export class GveHintDesigner extends HTMLElement {
         flex: 1;
         overflow: auto;
         padding: 0.5rem;
+        min-height: 0;
       }
 
       /* Properties Form */
@@ -2391,22 +2616,34 @@ export class GveHintDesigner extends HTMLElement {
         min-width: auto;
       }
 
-      .textarea-label {
-        display: block;
+      .textarea-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-top: 1rem;
         margin-bottom: 0.3rem;
+      }
+
+      .textarea-label {
         font-weight: bold;
         font-size: 13px;
+        margin: 0;
+      }
+
+      .wrap-toggle-btn {
+        padding: 0.2rem 0.4rem !important;
+        font-size: 12px;
       }
 
       /* Code Editor with Syntax Highlighting */
       .code-editor-wrapper {
         position: relative;
         width: 100%;
-        min-height: 150px;
+        min-height: 200px;
         background: #f5f5f5;
         border: 1px solid #ccc;
         border-radius: 3px;
+        overflow: auto;
       }
 
       .code-highlight {
@@ -2425,6 +2662,7 @@ export class GveHintDesigner extends HTMLElement {
         word-wrap: normal;
         pointer-events: none;
         z-index: 1;
+        box-sizing: border-box;
       }
 
       .code-textarea {
@@ -2435,7 +2673,6 @@ export class GveHintDesigner extends HTMLElement {
         bottom: 0;
         width: 100%;
         height: 100%;
-        min-height: 150px;
         padding: 0.5rem;
         margin: 0;
         border: none;
@@ -2443,7 +2680,7 @@ export class GveHintDesigner extends HTMLElement {
         font-family: 'Courier New', monospace;
         font-size: 12px;
         line-height: 1.5;
-        resize: vertical;
+        resize: none;
         background: transparent;
         color: transparent;
         caret-color: #333;
@@ -2452,6 +2689,13 @@ export class GveHintDesigner extends HTMLElement {
         white-space: pre;
         word-wrap: normal;
         box-sizing: border-box;
+      }
+
+      /* Word wrap enabled */
+      .code-editor-wrapper.word-wrap-enabled .code-textarea,
+      .code-editor-wrapper.word-wrap-enabled .code-highlight {
+        white-space: pre-wrap;
+        word-wrap: break-word;
       }
 
       .code-textarea::selection {
@@ -2590,19 +2834,28 @@ export class GveHintDesigner extends HTMLElement {
         background: #ffcdd2;
       }
 
-      /* Responsive layout */
+      /* Responsive layout - use nested grids for each column */
       @media (min-width: 900px) {
         .properties-panel .panel-content {
           display: grid;
           grid-template-columns: auto 1fr 1fr;
-          grid-template-rows: auto auto 1fr;
           gap: 1rem;
-          align-items: start;
+          align-items: stretch;
+        }
+
+        /* All column wrappers use nested grid */
+        .column-wrapper {
+          display: grid;
+          gap: 0.5rem;
+          min-height: 0;
+        }
+
+        /* Column 1: Properties - single row filling height */
+        .column-properties {
+          grid-template-rows: 1fr;
         }
 
         .properties-form {
-          grid-column: 1;
-          grid-row: 1 / -1;
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
@@ -2624,32 +2877,26 @@ export class GveHintDesigner extends HTMLElement {
           flex: 0 0 auto;
         }
 
-        /* SVG column */
-        .textarea-label:nth-of-type(1) {
-          grid-column: 2;
-          grid-row: 1;
+        /* Column 2: SVG - header (auto) + textarea (1fr) */
+        .column-svg {
+          grid-template-rows: auto minmax(200px, 1fr);
         }
 
-        .code-editor-wrapper:nth-of-type(1) {
-          grid-column: 2;
-          grid-row: 2 / -1;
+        .column-svg .code-editor-wrapper {
+          min-height: 0 !important;
         }
 
-        /* Animation column */
-        .textarea-label:nth-of-type(2) {
-          grid-column: 3;
-          grid-row: 1;
+        /* Column 3: Animation - header (auto) + controls (auto) + textarea (1fr) */
+        .column-animation {
+          grid-template-rows: auto auto minmax(200px, 1fr);
         }
 
-        .anim-controls {
-          grid-column: 3;
-          grid-row: 2;
+        .column-animation .anim-controls {
           margin: 0;
         }
 
-        .code-editor-wrapper:nth-of-type(2) {
-          grid-column: 3;
-          grid-row: 3;
+        .column-animation .code-editor-wrapper {
+          min-height: 0 !important;
         }
       }
 
