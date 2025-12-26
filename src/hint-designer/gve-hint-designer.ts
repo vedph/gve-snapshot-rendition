@@ -195,13 +195,29 @@ export class GveHintDesigner extends HTMLElement {
 
     container.appendChild(topWrapper);
 
+    // Splitter 1: between top and properties
+    const splitter1 = document.createElement("div");
+    splitter1.className = "splitter";
+    container.appendChild(splitter1);
+
     // Hint Properties Editor
-    container.appendChild(this.createHintPropertiesEditor());
+    const propertiesPanel = this.createHintPropertiesEditor();
+    container.appendChild(propertiesPanel);
+
+    // Splitter 2: between properties and variables
+    const splitter2 = document.createElement("div");
+    splitter2.className = "splitter";
+    container.appendChild(splitter2);
 
     // Hint Variables List
-    container.appendChild(this.createHintVariablesList());
+    const variablesPanel = this.createHintVariablesList();
+    container.appendChild(variablesPanel);
 
     this._shadow.appendChild(container);
+
+    // Setup resize handlers for splitters
+    this.makeResizable(topWrapper, propertiesPanel, splitter1);
+    this.makeResizable(propertiesPanel, variablesPanel, splitter2);
 
     this._logger.debug("Component", "UI rendered");
   }
@@ -477,15 +493,11 @@ export class GveHintDesigner extends HTMLElement {
     const panel = document.createElement("div");
     panel.className = "properties-panel resizable-panel";
 
-    // Header with resize handle
+    // Header
     const header = document.createElement("div");
     header.className = "panel-header";
     header.textContent = "Hint Properties";
     panel.appendChild(header);
-
-    const resizeHandle = document.createElement("div");
-    resizeHandle.className = "resize-handle";
-    header.appendChild(resizeHandle);
 
     // Content with 3-column layout
     const content = document.createElement("div");
@@ -644,9 +656,6 @@ export class GveHintDesigner extends HTMLElement {
 
     panel.appendChild(content);
 
-    // Make resizable
-    this.makeResizable(panel, resizeHandle, 200);
-
     return panel;
   }
 
@@ -657,15 +666,11 @@ export class GveHintDesigner extends HTMLElement {
     const panel = document.createElement("div");
     panel.className = "variables-panel resizable-panel";
 
-    // Header with resize handle
+    // Header
     const header = document.createElement("div");
     header.className = "panel-header";
     header.textContent = "Hint Variables";
     panel.appendChild(header);
-
-    const resizeHandle = document.createElement("div");
-    resizeHandle.className = "resize-handle";
-    header.appendChild(resizeHandle);
 
     // Toolbar
     const toolbar = document.createElement("div");
@@ -689,9 +694,6 @@ export class GveHintDesigner extends HTMLElement {
     content.appendChild(this._variablesTable);
 
     panel.appendChild(content);
-
-    // Make resizable
-    this.makeResizable(panel, resizeHandle, 150);
 
     return panel;
   }
@@ -781,31 +783,40 @@ export class GveHintDesigner extends HTMLElement {
   }
 
   /**
-   * Make a panel resizable by adjusting grid rows.
+   * Make a splitter resizable between two panels.
+   * @param panelAbove The panel above the splitter
+   * @param _panelBelow The panel below the splitter (unused but kept for API clarity)
+   * @param splitter The splitter element between them
    */
   private makeResizable(
-    panel: HTMLElement,
-    handle: HTMLElement,
-    minHeight: number
+    panelAbove: HTMLElement,
+    _panelBelow: HTMLElement,
+    splitter: HTMLElement
   ): void {
-    handle.addEventListener("pointerdown", (e: PointerEvent) => {
+    splitter.addEventListener("pointerdown", (e: PointerEvent) => {
       const startY = e.clientY;
-      const startHeight = panel.offsetHeight;
+      const startHeightAbove = panelAbove.offsetHeight;
       const container = this._shadow.querySelector('.hint-designer-container') as HTMLElement;
       if (!container) return;
 
-      const isPropertiesPanel = panel.classList.contains('properties-panel');
-
       const onMove = (moveEvent: PointerEvent) => {
         const delta = moveEvent.clientY - startY;
-        const newHeight = Math.max(minHeight, startHeight + delta);
+        const newHeightAbove = Math.max(300, startHeightAbove + delta);
 
-        if (isPropertiesPanel) {
-          // Resizing properties panel: set fixed height, let variables take remaining space
-          container.style.gridTemplateRows = `minmax(300px, 1fr) ${newHeight}px minmax(200px, 1fr)`;
+        // Determine which splitter this is based on the panel above
+        const isTopSplitter = panelAbove.classList.contains('top-panels-wrapper');
+
+        if (isTopSplitter) {
+          // Splitter 1: between top and properties
+          // Set top height, let properties and variables share remaining space
+          container.style.gridTemplateRows = `${newHeightAbove}px 6px minmax(300px, 1fr) 6px minmax(200px, 1fr)`;
         } else {
-          // Resizing variables panel: set fixed height, let properties take remaining space
-          container.style.gridTemplateRows = `minmax(300px, 1fr) minmax(300px, 1fr) ${newHeight}px`;
+          // Splitter 2: between properties and variables
+          // Get top panel height and keep it fixed
+          const topPanel = this._shadow.querySelector('.top-panels-wrapper') as HTMLElement;
+          const topHeight = topPanel ? topPanel.offsetHeight : 300;
+          // Set top and properties heights, let variables fill remaining
+          container.style.gridTemplateRows = `${topHeight}px 6px ${newHeightAbove}px 6px minmax(200px, 1fr)`;
         }
       };
 
@@ -2308,11 +2319,7 @@ export class GveHintDesigner extends HTMLElement {
 
       .hint-designer-container {
         display: grid;
-        grid-template-rows: minmax(300px, 1fr) minmax(300px, 1fr) minmax(200px, 1fr);
-        grid-template-areas:
-          "top"
-          "properties"
-          "variables";
+        grid-template-rows: minmax(300px, 1fr) 6px minmax(300px, 1fr) 6px minmax(200px, 1fr);
         width: 100%;
         height: 100%;
         overflow-y: auto;
@@ -2320,9 +2327,22 @@ export class GveHintDesigner extends HTMLElement {
         background: var(--hint-designer-bg, #fafafa);
       }
 
+      /* Splitter */
+      .splitter {
+        cursor: row-resize;
+        background: var(--hint-designer-splitter-bg, #ddd);
+        border-top: 1px solid var(--hint-designer-border, #ccc);
+        border-bottom: 1px solid var(--hint-designer-border, #ccc);
+        min-height: 6px;
+        height: 6px;
+      }
+
+      .splitter:hover {
+        background: var(--hint-designer-splitter-hover-bg, #999);
+      }
+
       /* Top panels wrapper - nested grid */
       .top-panels-wrapper {
-        grid-area: top;
         display: grid;
         grid-template-rows: auto minmax(300px, 1fr) auto auto;
         grid-template-areas:
@@ -2468,11 +2488,11 @@ export class GveHintDesigner extends HTMLElement {
       }
 
       .properties-panel {
-        grid-area: properties;
+        /* No grid-area needed - positioned by grid row order */
       }
 
       .variables-panel {
-        grid-area: variables;
+        /* No grid-area needed - positioned by grid row order */
       }
 
       .panel-header {
