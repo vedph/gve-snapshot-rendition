@@ -118,6 +118,19 @@ interface HintDesignerData {
 
 See [TYPESCRIPT-INTEGRATION.md](TYPESCRIPT-INTEGRATION.md) for complete type reference.
 
+### Component Events
+
+**GveSnapshotRendition** fires:
+
+- `versionTagChanging` - Before version changes (detail: `{ from, to }`)
+- `versionTagChange` - After version changes (detail: `{ from, to }`)
+
+**GveHintDesigner** fires:
+
+- `dataChange` - When hint data changes (detail: `{ data }`)
+- `hintIdChange` - When selected hint changes (detail: `{ hintId }`)
+- `hintVariablesChange` - When hint variables change (detail: `{ hintVariables }`)
+
 ## Example: Snapshot Rendition Component
 
 Minimal example showing how to wire up the snapshot rendition component with data binding and events.
@@ -138,7 +151,6 @@ import type {
   GveSnapshotRendition,
   CharChainResult,
   GveRenditionSettings,
-  ChainOperationContextStep,
 } from "@myrmidon/gve-snapshot-rendition";
 import { DEFAULT_SETTINGS } from "@myrmidon/gve-snapshot-rendition";
 
@@ -155,10 +167,6 @@ import { DEFAULT_SETTINGS } from "@myrmidon/gve-snapshot-rendition";
 
       <gve-snapshot-rendition #rendition class="rendition">
       </gve-snapshot-rendition>
-
-      @if (selectedOperation()) {
-      <div class="info">Selected: {{ selectedOperation()?.operation.id }}</div>
-      }
     </div>
   `,
   styles: [
@@ -193,7 +201,6 @@ export class SnapshotViewerComponent implements AfterViewInit {
     fontSize: 16,
     lineHeight: 1.5,
   });
-  selectedOperation = signal<ChainOperationContextStep | null>(null);
 
   constructor() {
     // Auto-update component when data changes
@@ -216,15 +223,10 @@ export class SnapshotViewerComponent implements AfterViewInit {
   ngAfterViewInit() {
     const rendition = this.renditionRef.nativeElement;
 
-    // Listen to events
-    rendition.addEventListener("operation-selected", (event: Event) => {
+    // Listen to version change events
+    rendition.addEventListener("versionTagChange", (event: Event) => {
       const customEvent = event as CustomEvent;
-      this.selectedOperation.set(customEvent.detail.operation);
-    });
-
-    rendition.addEventListener("version-changed", (event: Event) => {
-      const customEvent = event as CustomEvent;
-      console.log("Version changed:", customEvent.detail.versionTag);
+      console.log("Version changed:", customEvent.detail);
     });
 
     // Load initial data
@@ -348,10 +350,12 @@ export class HintDesignerComponent implements AfterViewInit {
   ngAfterViewInit() {
     const designer = this.designerRef.nativeElement;
 
-    // Listen to hint updates
-    designer.addEventListener("hint-updated", (event: Event) => {
+    // Listen to data changes (fired when hints are modified)
+    designer.addEventListener("dataChange", (event: Event) => {
       const customEvent = event as CustomEvent;
-      console.log("Hint updated:", customEvent.detail);
+      console.log("Data changed:", customEvent.detail.data);
+      // Optionally sync back to signal
+      // this.data.set(customEvent.detail.data);
     });
   }
 
