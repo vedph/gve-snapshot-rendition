@@ -788,62 +788,36 @@ export class GveHintDesigner extends HTMLElement {
     handle: HTMLElement,
     minHeight: number
   ): void {
-    let startY = 0;
-    let startHeight = 0;
-    let adjacentStartHeight = 0;
-    let isPropertiesPanel = false;
-
-    const onMouseDown = (e: MouseEvent) => {
-      startY = e.clientY;
-      startHeight = panel.offsetHeight;
-
-      // Determine which panel this is and get the adjacent panel
-      isPropertiesPanel = panel.classList.contains('properties-panel');
-
-      let adjacentPanel: HTMLElement | null = null;
-      if (isPropertiesPanel) {
-        // Properties panel - adjacent is top-panels-wrapper above
-        adjacentPanel = this._shadow.querySelector('.top-panels-wrapper') as HTMLElement;
-      } else {
-        // Variables panel - adjacent is properties-panel above
-        adjacentPanel = this._shadow.querySelector('.properties-panel') as HTMLElement;
-      }
-
-      if (adjacentPanel) {
-        adjacentStartHeight = adjacentPanel.offsetHeight;
-      }
-
-      document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("mouseup", onMouseUp);
-      e.preventDefault();
-    };
-
-    const onMouseMove = (e: MouseEvent) => {
-      const delta = e.clientY - startY;
-      const newPanelHeight = Math.max(minHeight, startHeight + delta);
-
-      // The adjacent panel shrinks/grows inversely
-      const newAdjacentHeight = Math.max(300, adjacentStartHeight - delta);
-
-      // Update grid template rows on the container
+    handle.addEventListener("pointerdown", (e: PointerEvent) => {
+      const startY = e.clientY;
+      const startHeight = panel.offsetHeight;
       const container = this._shadow.querySelector('.hint-designer-container') as HTMLElement;
-      if (container) {
+      if (!container) return;
+
+      const isPropertiesPanel = panel.classList.contains('properties-panel');
+
+      const onMove = (moveEvent: PointerEvent) => {
+        const delta = moveEvent.clientY - startY;
+        const newHeight = Math.max(minHeight, startHeight + delta);
+
         if (isPropertiesPanel) {
-          // Resizing properties: adjust top-wrapper and properties heights
-          container.style.gridTemplateRows = `${newAdjacentHeight}px ${newPanelHeight}px minmax(200px, 1fr)`;
+          // Resizing properties panel: set fixed height, let variables take remaining space
+          container.style.gridTemplateRows = `minmax(300px, 1fr) ${newHeight}px minmax(200px, 1fr)`;
         } else {
-          // Resizing variables: adjust properties and variables heights
-          container.style.gridTemplateRows = `minmax(300px, 1fr) ${newAdjacentHeight}px ${newPanelHeight}px`;
+          // Resizing variables panel: set fixed height, let properties take remaining space
+          container.style.gridTemplateRows = `minmax(300px, 1fr) minmax(300px, 1fr) ${newHeight}px`;
         }
-      }
-    };
+      };
 
-    const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-    };
+      const onUp = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+      };
 
-    handle.addEventListener("mousedown", onMouseDown);
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      e.preventDefault();
+    });
   }
 
   /**
