@@ -1,18 +1,5 @@
 # Quick Reference Card
 
-## Publishing to NPM
-
-```bash
-# 1. Test and build
-pnpm test && pnpm build
-
-# 2. Update version
-npm version patch
-
-# 3. Publish
-pnpm run publish:public
-```
-
 ## Installation
 
 ```bash
@@ -44,8 +31,7 @@ npm install @myrmidon/gve-snapshot-rendition
 
 ## Angular 21
 
-```typescript
-// Component
+```ts
 import { Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild, ElementRef } from '@angular/core';
 
 @Component({
@@ -69,12 +55,14 @@ export class DemoComponent {
 ## Common Operations
 
 ### Set Data
-```javascript
+
+```js
 rendition.data = { sources: [...], operations: [...] };
 ```
 
 ### Configure Settings
-```javascript
+
+```js
 rendition.settings = {
   showToolbar: true,
   enableAnimation: true,
@@ -83,25 +71,28 @@ rendition.settings = {
 ```
 
 ### Listen to Events
-```javascript
+
+```js
 rendition.addEventListener('operation-selected', (event) => {
   console.log(event.detail.operation);
 });
 ```
 
 ### Export SVG
-```javascript
+
+```js
 const svg = rendition.exportSVG();
 ```
 
 ### Reset View
-```javascript
+
+```js
 rendition.resetView();
 ```
 
 ## TypeScript
 
-```typescript
+```ts
 import type {
   GveRenditionSettings,
   OperationHint
@@ -114,7 +105,7 @@ const settings: Partial<GveRenditionSettings> = {
 
 ## Package Scripts
 
-```bash
+```sh
 pnpm build              # Build for production
 pnpm test               # Run tests
 pnpm watch              # Watch mode

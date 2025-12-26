@@ -2,16 +2,10 @@
 
 This guide shows how to integrate the `@myrmidon/gve-snapshot-rendition` web components into an Angular 21 application.
 
-## Table of Contents
-
 - [Integration Guide: Angular 21](#integration-guide-angular-21)
-  - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
-  - [Configuration](#configuration)
-  - [TypeScript Types](#typescript-types)
-    - [Key Types](#key-types)
-  - [Example: Snapshot Rendition Component](#example-snapshot-rendition-component)
-  - [Example: Hint Designer Component](#example-hint-designer-component)
+  - [Snapshot Rendition Component](#snapshot-rendition-component)
+  - [Hints Designer Component](#hints-designer-component)
   - [Troubleshooting](#troubleshooting)
     - ["Custom element not recognized"](#custom-element-not-recognized)
     - ["Property 'data' does not exist on type 'ElementRef'"](#property-data-does-not-exist-on-type-elementref)
@@ -28,116 +22,17 @@ npm install @myrmidon/gve-snapshot-rendition
 pnpm add @myrmidon/gve-snapshot-rendition
 ```
 
-## Configuration
+---
 
-Add `CUSTOM_ELEMENTS_SCHEMA` to your component to allow custom elements:
+## Snapshot Rendition Component
 
-```typescript
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
+- 🔥 **events**:
+  - `versionTagChanging`: fired before version changes (detail: `{ from, to }`).
+  - `versionTagChange`: fired after version changes (detail: `{ from, to }`).
 
-@Component({
-  selector: "app-root",
-  standalone: true,
-  schemas: [CUSTOM_ELEMENTS_SCHEMA], // Required
-  template: `<gve-snapshot-rendition></gve-snapshot-rendition>`,
-})
-export class AppComponent {}
-```
+Example:
 
-## TypeScript Types
-
-Import types for type-safe integration:
-
-```typescript
-// Import types (no runtime overhead)
-import type {
-  // Components
-  GveSnapshotRendition,
-  GveHintDesigner,
-
-  // Data models
-  CharChainResult,
-  CharNode,
-  ChainOperationContextStep,
-  CharChainOperation,
-
-  // Settings
-  GveRenditionSettings,
-  HintDesignerSettings,
-  HintDesignerData,
-
-  // Hints
-  OperationHint,
-  RelativePosition,
-} from "@myrmidon/gve-snapshot-rendition";
-
-// Import enums as values (exist at runtime)
-import {
-  OperationType,
-  FeatureSetPolicy,
-  DEFAULT_SETTINGS,
-  DEFAULT_HINT_DESIGNER_SETTINGS,
-} from "@myrmidon/gve-snapshot-rendition";
-```
-
-### Key Types
-
-**CharChainResult** - Main data structure for the snapshot rendition:
-
-```typescript
-interface CharChainResult {
-  text?: CharNode[] | string;
-  steps: ChainOperationContextStep[];
-  chainDump: string;
-  chainTags: string[];
-  taggedNodes: { [key: string]: CharNode[] };
-}
-```
-
-**GveRenditionSettings** - Component settings (use `Partial<GveRenditionSettings>` for optional config):
-
-```typescript
-interface GveRenditionSettings {
-  fontSize: number;
-  lineHeight: number;
-  charSpacing: number;
-  spreadTime: number;
-  hints: Record<string, OperationHint>;
-  // ... many more properties
-}
-```
-
-**HintDesignerData** - Data for hint designer:
-
-```typescript
-interface HintDesignerData {
-  hints: Record<string, OperationHint>;
-  animations: Record<string, string>;
-}
-```
-
-See [TYPESCRIPT-INTEGRATION.md](TYPESCRIPT-INTEGRATION.md) for complete type reference.
-
-### Component Events
-
-**GveSnapshotRendition** fires:
-
-- `versionTagChanging` - Before version changes (detail: `{ from, to }`)
-- `versionTagChange` - After version changes (detail: `{ from, to }`)
-
-**GveHintDesigner** fires:
-
-- `dataChange` - When hint data changes (detail: `{ data }`)
-- `hintIdChange` - When selected hint changes (detail: `{ hintId }`)
-- `hintVariablesChange` - When hint variables change (detail: `{ hintVariables }`)
-
-## Example: Snapshot Rendition Component
-
-Minimal example showing how to wire up the snapshot rendition component with data binding and events.
-
-**app-snapshot-viewer.component.ts:**
-
-```typescript
+```ts
 import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
@@ -157,7 +52,7 @@ import { DEFAULT_SETTINGS } from "@myrmidon/gve-snapshot-rendition";
 @Component({
   selector: "app-snapshot-viewer",
   standalone: true,
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA], // required!
   template: `
     <div class="viewer-container">
       <div class="controls">
@@ -191,19 +86,20 @@ import { DEFAULT_SETTINGS } from "@myrmidon/gve-snapshot-rendition";
   ],
 })
 export class SnapshotViewerComponent implements AfterViewInit {
+  // reference to rendition
   @ViewChild("rendition", { static: false })
-  renditionRef!: ElementRef<GveSnapshotRendition>;
+  public renditionRef!: ElementRef<GveSnapshotRendition>;
 
-  // Reactive state with signals
-  data = signal<CharChainResult | null>(null);
-  settings = signal<Partial<GveRenditionSettings>>({
+  // reactive state
+  public readonly data = signal<CharChainResult | null>(null);
+  public readonly settings = signal<Partial<GveRenditionSettings>>({
     ...DEFAULT_SETTINGS,
     fontSize: 16,
     lineHeight: 1.5,
   });
 
   constructor() {
-    // Auto-update component when data changes
+    // auto-update component when data changes
     effect(() => {
       const rendition = this.renditionRef?.nativeElement;
       if (rendition && this.data()) {
@@ -211,7 +107,7 @@ export class SnapshotViewerComponent implements AfterViewInit {
       }
     });
 
-    // Auto-update settings
+    // auto-update settings when settings change
     effect(() => {
       const rendition = this.renditionRef?.nativeElement;
       if (rendition) {
@@ -220,21 +116,21 @@ export class SnapshotViewerComponent implements AfterViewInit {
     });
   }
 
-  ngAfterViewInit() {
+  public ngAfterViewInit() {
     const rendition = this.renditionRef.nativeElement;
 
-    // Listen to version change events
+    // listen to version change events
     rendition.addEventListener("versionTagChange", (event: Event) => {
       const customEvent = event as CustomEvent;
       console.log("Version changed:", customEvent.detail);
     });
 
-    // Load initial data
+    // load initial data
     this.loadData();
   }
 
   loadData() {
-    // TODO: Fetch from service
+    // TODO: fetch from service
     const mockData: CharChainResult = {
       text: "Sample text",
       steps: [],
@@ -251,13 +147,18 @@ export class SnapshotViewerComponent implements AfterViewInit {
 }
 ```
 
-## Example: Hint Designer Component
+---
 
-Minimal example showing how to wire up the hint designer component.
+## Hints Designer Component
 
-**app-hint-designer.component.ts:**
+- 🔥 **events**:
+  - `dataChange`: fired when hint data changes (detail: `{ data }`).
+  - `hintIdChange`: fired when selected hint changes (detail: `{ hintId }`).
+  - `hintVariablesChange`: fired when hint variables change (detail: `{ hintVariables }`).
 
-```typescript
+Example:
+
+```ts
 import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
@@ -315,22 +216,22 @@ export class HintDesignerComponent implements AfterViewInit {
   @ViewChild("designer", { static: false })
   designerRef!: ElementRef<GveHintDesigner>;
 
-  // Reactive state
-  data = signal<HintDesignerData>({
+  // reactive state
+  public readonly data = signal<HintDesignerData>({
     hints: {},
     animations: {
       fadeIn: "return gsap.from(hintEl, { opacity: 0, duration: 0.5 });",
     },
   });
 
-  settings = signal<HintDesignerSettings>({
+  public readonly settings = signal<HintDesignerSettings>({
     ...DEFAULT_HINT_DESIGNER_SETTINGS,
     hintDesignWidth: 400,
     hintDesignHeight: 150,
   });
 
   constructor() {
-    // Auto-update component when data changes
+    // auto-update component when data changes
     effect(() => {
       const designer = this.designerRef?.nativeElement;
       if (designer) {
@@ -338,7 +239,7 @@ export class HintDesignerComponent implements AfterViewInit {
       }
     });
 
-    // Auto-update settings
+    // auto-update settings when settings change
     effect(() => {
       const designer = this.designerRef?.nativeElement;
       if (designer) {
@@ -347,20 +248,22 @@ export class HintDesignerComponent implements AfterViewInit {
     });
   }
 
-  ngAfterViewInit() {
+  public ngAfterViewInit() {
     const designer = this.designerRef.nativeElement;
 
-    // Listen to data changes (fired when hints are modified)
+    // listen to data changes (fired when hints are modified)
     designer.addEventListener("dataChange", (event: Event) => {
       const customEvent = event as CustomEvent;
       console.log("Data changed:", customEvent.detail.data);
-      // Optionally sync back to signal
+      // optionally sync back to signal
       // this.data.set(customEvent.detail.data);
     });
+
+    this.loadHints();
   }
 
   loadHints() {
-    // TODO: Load from service
+    // TODO: load from service
     const loadedData: HintDesignerData = {
       hints: {
         hint1: {
@@ -379,7 +282,7 @@ export class HintDesignerComponent implements AfterViewInit {
   }
 
   saveHints() {
-    // TODO: Save to service
+    // TODO: save to service
     const currentData = this.designerRef.nativeElement.data;
     console.log("Saving hints:", currentData.hints);
   }
@@ -392,6 +295,8 @@ export class HintDesignerComponent implements AfterViewInit {
   }
 }
 ```
+
+---
 
 ## Troubleshooting
 
