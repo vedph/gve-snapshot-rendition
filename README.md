@@ -16,6 +16,11 @@ Operations also inject metadata, in form of features (essentially name=value pai
 
 Both hints and animations are part of the settings for the component. The component is found under [src/core/gve-snapshot-rendition.ts](src/core/gve-snapshot-rendition.ts), and most of its logic is properly encapsulated in its own set of classes, following a systematic separation of concerns to ensure flexibility, extendibility, and easy maintenance.
 
+## Usage Guide
+
+- [Angular integration](docs/dev/angular-integration.md)
+- [vanilla integration](docs/dev/vanilla-integration.md)
+
 ## Documentation
 
 Conceptual documentation and sample data:
@@ -133,3 +138,16 @@ npm unpublish @myrmidon/gve-snapshot-rendition --force
 ```
 
 >⚠️ Unpublishing can break projects that depend on your package. Only do this for critical security issues or accidental publications.
+
+Package structure:
+
+```txt
+@myrmidon/gve-snapshot-rendition/
+├── dist/
+│   ├── index.js              # ES Module bundle
+│   ├── index.d.ts            # TypeScript declarations
+│   ├── index.cjs.min.js      # CommonJS bundle (minified)
+│   └── ...
+├── README.md
+└── LICENSE
+```

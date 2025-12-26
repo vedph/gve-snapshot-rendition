@@ -1,8 +1,8 @@
-# Integration Guide: Angular 21
+# Angular Integration
 
 This guide shows how to integrate the `@myrmidon/gve-snapshot-rendition` web components into an Angular 21 application.
 
-- [Integration Guide: Angular 21](#integration-guide-angular-21)
+- [Angular Integration](#angular-integration)
   - [Installation](#installation)
   - [Snapshot Rendition Component](#snapshot-rendition-component)
   - [Hints Designer Component](#hints-designer-component)

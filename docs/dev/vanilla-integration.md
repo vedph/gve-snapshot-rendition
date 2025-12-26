@@ -1,8 +1,8 @@
-# Integration Guide: Vanilla HTML + JavaScript
+# Vanilla HTML + JavaScript Integration
 
 This guide shows how to integrate the `@myrmidon/gve-snapshot-rendition` web components into a vanilla HTML and JavaScript project.
 
-- [Integration Guide: Vanilla HTML + JavaScript](#integration-guide-vanilla-html--javascript)
+- [Vanilla HTML + JavaScript Integration](#vanilla-html--javascript-integration)
   - [Installation](#installation)
     - [Option 1: NPM/PNPM (with bundler)](#option-1-npmpnpm-with-bundler)
     - [Option 2: CDN (no build step)](#option-2-cdn-no-build-step)
