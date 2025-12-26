@@ -233,8 +233,9 @@ export class GveHintDesigner extends HTMLElement {
     const refreshBtn = this.createButton("refresh-svg", "refresh-cw", "Refresh SVG display");
     toolbar.appendChild(refreshBtn);
 
-    // Add button
+    // Add button (primary)
     const addBtn = this.createButton("add-hint", "plus", "Add new hint");
+    addBtn.classList.add("btn-primary");
     toolbar.appendChild(addBtn);
 
     // Hints dropdown
@@ -243,12 +244,14 @@ export class GveHintDesigner extends HTMLElement {
     this._hintsDropdown.innerHTML = '<option value="">-- Select Hint --</option>';
     toolbar.appendChild(this._hintsDropdown);
 
-    // Save button
+    // Save button (accent)
     const saveBtn = this.createButton("save-hint", "save", "Save hint");
+    saveBtn.classList.add("btn-accent");
     toolbar.appendChild(saveBtn);
 
-    // Delete button
+    // Delete button (danger)
     const deleteBtn = this.createButton("delete-hint", "trash-2", "Delete hint");
+    deleteBtn.classList.add("btn-danger");
     toolbar.appendChild(deleteBtn);
 
     // Zoom controls (grouped)
@@ -273,6 +276,7 @@ export class GveHintDesigner extends HTMLElement {
     const saveDataBtn = this.createButton("save-data", "download", "Save data to file");
     const loadDataBtn = this.createButton("load-data", "upload", "Load data from file");
     const clearDataBtn = this.createButton("clear-data", "x-circle", "Clear all data");
+    clearDataBtn.classList.add("btn-danger");
 
     dataGroup.appendChild(saveDataBtn);
     dataGroup.appendChild(loadDataBtn);
@@ -677,9 +681,11 @@ export class GveHintDesigner extends HTMLElement {
     toolbar.className = "panel-toolbar";
 
     const addVarBtn = this.createButton("add-variable", "plus-circle", "Add new variable");
+    addVarBtn.classList.add("btn-primary");
     toolbar.appendChild(addVarBtn);
 
     const deleteAllBtn = this.createButton("delete-all-vars", "trash-2", "Delete all variables");
+    deleteAllBtn.classList.add("btn-danger");
     toolbar.appendChild(deleteAllBtn);
 
     panel.appendChild(toolbar);
@@ -2188,6 +2194,7 @@ export class GveHintDesigner extends HTMLElement {
         "trash-2",
         "Delete variable"
       );
+      deleteBtn.classList.add("btn-danger");
       deleteBtn.onclick = () => this.deleteVariable(index);
 
       actionsCell.appendChild(editBtn);
@@ -2282,8 +2289,9 @@ export class GveHintDesigner extends HTMLElement {
    */
   private syncSvgScroll(): void {
     if (!this._svgTextarea || !this._svgHighlightContainer) return;
-    this._svgHighlightContainer.scrollTop = this._svgTextarea.scrollTop;
-    this._svgHighlightContainer.scrollLeft = this._svgTextarea.scrollLeft;
+    const scrollTop = this._svgTextarea.scrollTop;
+    const scrollLeft = this._svgTextarea.scrollLeft;
+    this._svgHighlightContainer.style.transform = `translate(-${scrollLeft}px, -${scrollTop}px)`;
   }
 
   /**
@@ -2291,8 +2299,9 @@ export class GveHintDesigner extends HTMLElement {
    */
   private syncJsScroll(): void {
     if (!this._jsTextarea || !this._jsHighlightContainer) return;
-    this._jsHighlightContainer.scrollTop = this._jsTextarea.scrollTop;
-    this._jsHighlightContainer.scrollLeft = this._jsTextarea.scrollLeft;
+    const scrollTop = this._jsTextarea.scrollTop;
+    const scrollLeft = this._jsTextarea.scrollLeft;
+    this._jsHighlightContainer.style.transform = `translate(-${scrollLeft}px, -${scrollTop}px)`;
   }
 
   /**
@@ -2403,11 +2412,46 @@ export class GveHintDesigner extends HTMLElement {
         stroke-width: 2;
       }
 
-      /* Delete hint button */
-      .toolbar-btn#delete-hint {
-        background: #ffebee;
-        border-color: #f44336;
-        color: #c62828;
+      /* Button variants */
+      .toolbar-btn.btn-primary,
+      .panel-toolbar button.btn-primary {
+        background: var(--hint-designer-btn-primary-bg, #e3f2fd);
+        border-color: var(--hint-designer-btn-primary-border, #2196f3);
+        color: var(--hint-designer-btn-primary-color, #1976d2);
+      }
+
+      .toolbar-btn.btn-primary:hover:not(:disabled),
+      .panel-toolbar button.btn-primary:hover:not(:disabled) {
+        background: var(--hint-designer-btn-primary-hover-bg, #bbdefb);
+        border-color: var(--hint-designer-btn-primary-hover-border, #1976d2);
+      }
+
+      .toolbar-btn.btn-accent,
+      .panel-toolbar button.btn-accent {
+        background: var(--hint-designer-btn-accent-bg, #e8f5e9);
+        border-color: var(--hint-designer-btn-accent-border, #4caf50);
+        color: var(--hint-designer-btn-accent-color, #388e3c);
+      }
+
+      .toolbar-btn.btn-accent:hover:not(:disabled),
+      .panel-toolbar button.btn-accent:hover:not(:disabled) {
+        background: var(--hint-designer-btn-accent-hover-bg, #c8e6c9);
+        border-color: var(--hint-designer-btn-accent-hover-border, #388e3c);
+      }
+
+      .toolbar-btn.btn-danger,
+      .panel-toolbar button.btn-danger,
+      .variables-table button.btn-danger {
+        background: var(--hint-designer-btn-danger-bg, #ffebee);
+        border-color: var(--hint-designer-btn-danger-border, #f44336);
+        color: var(--hint-designer-btn-danger-color, #c62828);
+      }
+
+      .toolbar-btn.btn-danger:hover:not(:disabled),
+      .panel-toolbar button.btn-danger:hover:not(:disabled),
+      .variables-table button.btn-danger:hover:not(:disabled) {
+        background: var(--hint-designer-btn-danger-hover-bg, #ffcdd2);
+        border-color: var(--hint-designer-btn-danger-hover-border, #c62828);
       }
 
       .hints-dropdown,
@@ -2637,26 +2681,27 @@ export class GveHintDesigner extends HTMLElement {
         background: #f5f5f5;
         border: 1px solid #ccc;
         border-radius: 3px;
-        overflow: auto;
+        overflow: hidden;
       }
 
       .code-highlight {
         position: absolute;
         top: 0;
         left: 0;
-        right: 0;
-        bottom: 0;
+        width: 100%;
+        height: 100%;
         padding: 0.5rem;
         margin: 0;
         font-family: 'Courier New', monospace;
         font-size: 12px;
         line-height: 1.5;
-        overflow: hidden;
         white-space: pre;
         word-wrap: normal;
         pointer-events: none;
         z-index: 1;
         box-sizing: border-box;
+        color: #333;
+        overflow: hidden;
       }
 
       .code-textarea {
