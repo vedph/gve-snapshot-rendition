@@ -11,7 +11,6 @@ The `@myrmidon/gve-snapshot-rendition` package provides two custom web component
 
 ## Documentation
 
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - How to publish to NPM
 - **[INTEGRATION-VANILLA.md](INTEGRATION-VANILLA.md)** - Integration without frameworks
 - **[INTEGRATION-ANGULAR.md](INTEGRATION-ANGULAR.md)** - Integration with Angular 21
 - **[TYPESCRIPT-INTEGRATION.md](TYPESCRIPT-INTEGRATION.md)** - TypeScript types reference
