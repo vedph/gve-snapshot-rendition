@@ -32,7 +32,7 @@ The hint designer UI has these main panels (from top to bottom):
 
 In general:
 
-1. **start simple**: create a basic hint first, then add animations and placeholders.
+1. **start simple**: create a basic hint first, then add animations and placeholders. Remember that hints will be stretched to fit the RBR, so draw and configure them accordingly.
 2. **use the catalog**: create reusable animations for common effects (fade, slide, etc.).
 3. **test early**: use the timeline player frequently while developing animations.
 4. **save often**: use the Save data button to backup your work regularly.
@@ -221,13 +221,20 @@ The component saves/loads data in JSON format, e.g.:
 
 ## Integrating Designer in an HTML Page
 
+To use the designer, you can start as simple as using a static HTML page with its JS which imports the designer and configures it, like in the following templates.
+
 - 📁 **HTML**:
 
 ```html
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GVE Hints Designer</title>
+    <!-- replace the path to target the JS code of the designer web component -->
     <script type="module" src="./dist/index.js"></script>
+    <!-- required for animations -->
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   </head>
   <body>
@@ -239,70 +246,219 @@ The component saves/loads data in JSON format, e.g.:
 - 📁 **JS**:
 
 ```js
-const designer = document.getElementById('designer');
+// wait for DOM to be ready
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("Initializing GVE hints designer...");
 
-// set settings
-// interface HintDesignerSettings {
-//   hintDesignWidth: number; // Width of SVG design area
-//   hintDesignHeight: number; // Height of SVG design area
-//   debug: boolean; // Debug mode
-// }
-designer.settings = {
-  hintDesignWidth: 300,
-  hintDesignHeight: 100,
-  debug: true,
-};
+  // get the component
+  const designer = document.getElementById('designer');
 
-// set data (hints and animations)
-// interface HintDesignerData {
-//   hints: Record<string, OperationHint>;
-//   animations: Record<string, string>;
-// }
-designer.data = {
-  hints: {
-    "my-hint": {
-      svg: '<g><line x1="0" y1="0" x2="300" y2="100" stroke="red" /></g>',
-      position: "o",
-      offsetX: 0,
-      offsetY: 0,
-      scaleX: 1,
-      scaleY: 1,
-      rotation: 0,
-      solid: false,
-      animation: "#fade-in",
-    },
-  },
-  animations: {
-    "fade-in": `
-      return new Promise(resolve => {
-        gsap.fromTo(targetEl,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.5, onComplete: resolve }
-        );
-      });
-    `,
-  },
-};
+  // set settings
+  // interface HintDesignerSettings {
+  //   hintDesignWidth: number; // Width of SVG design area
+  //   hintDesignHeight: number; // Height of SVG design area
+  //   debug: boolean; // Debug mode
+  // }
+  designer.settings = {
+    hintDesignWidth: 300,
+    hintDesignHeight: 100,
+    debug: true,
+  };
 
-// set hint variables if required
-designer.hintVariables = [
-  { name: "r_fore-color", value: "red" },
-  { name: "note", value: "Test" },
-];
+  // set data (hints and animations)
+  // interface HintDesignerData {
+  //   hints: Record<string, OperationHint>;
+  //   animations: Record<string, string>;
+  // }
+    designer.data = {
+      hints: {
+        "diagonal-stroke-down": {
+          svg: `<g>
+    <line x1="0" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+  </g>`,
+          position: "o",
+          offsetX: 0,
+          offsetY: 0,
+          scaleX: 1,
+          scaleY: 1,
+          rotation: 0,
+          solid: false,
+          animation: "#wipe-right",
+        },
+        "diagonal-stroke-up": {
+          svg: `<g>
+    <line x1="0" y1="100" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="2" />
+  </g>`,
+          position: "o",
+          offsetX: 0,
+          offsetY: 0,
+          scaleX: 1,
+          scaleY: 1,
+          rotation: 0,
+          solid: false,
+          animation: "#wipe-right",
+        },
+        "cross-stroke": {
+          svg: `<g>
+    <line x1="0" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+    <line x1="0" y1="100" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="2" />
+  </g>`,
+          position: "o",
+          offsetX: 0,
+          offsetY: 0,
+          scaleX: 1,
+          scaleY: 1,
+          rotation: 0,
+          solid: false,
+          animation: "#wipe-right",
+        },
+        box: {
+          svg: `<g>
+    <rect x="0" y="0" width="300" height="100" fill="none" stroke="{{r_fore-color}}" stroke-width="2" />
+  </g>`,
+          position: "o",
+          offsetX: 0,
+          offsetY: 0,
+          scaleX: 1.1,
+          scaleY: 1.1,
+          rotation: 0,
+          solid: false,
+          animation: "#scale-in",
+        },
+        note: {
+          svg: `<g>
+    <text id="placeholder" x="150" y="50" text-anchor="middle" dominant-baseline="middle" fill="{{r_fore-color}}" font-size="24">{{note}}</text>
+  </g>`,
+          position: "n",
+          offsetX: 0,
+          offsetY: -10,
+          scaleX: 1,
+          scaleY: 1,
+          rotation: 0,
+          solid: false,
+          animation: "#fade-in",
+        },
+      },
+      animations: {
+        "fade-in": `// Fade in using GSAP
+  return new Promise(resolve => {
+    gsap.fromTo(targetEl,
+      { opacity: 0 },
+      { opacity: 1, duration: 2, onComplete: resolve }
+    );
+  });
+  `,
+        "scale-in": `// Scale in using GSAP
+  return new Promise(resolve => {
+    gsap.fromTo(targetEl,
+      { opacity: 0, scale: 0.5 },
+      { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.7)', onComplete: resolve }
+    );
+  });
+  `,
+        "wipe-left": `// Wipe from right to left using GSAP DrawSVGPlugin
+  return new Promise(resolve => {
+    // Set initial state
+    targetEl.style.opacity = '1';
 
-// you can select a hint to edit with:
-// designer.hintId = "my-hint";
+    // Find all drawable elements (line, path, polyline, polygon, circle, rect, ellipse)
+    const drawables = targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse');
 
-// listen for events
-designer.addEventListener("dataChange", (e) => {
-  console.log("Data changed:", e.detail.data);
-});
+    gsap.fromTo(drawables,
+      { drawSVG: '100% 100%' },
+      {
+        drawSVG: '0% 100%',
+        duration: 0.8,
+        ease: 'power2.out',
+        stagger: 0.1,
+        onComplete: resolve
+      }
+    );
+  });
+  `,
+        "wipe-right": `// Wipe from left to right using GSAP DrawSVGPlugin
+  return new Promise(resolve => {
+    // Set initial state
+    targetEl.style.opacity = '1';
 
-designer.addEventListener("hintIdChange", (e) => {
-  console.log("Selected hint:", e.detail.hintId);
-});
+    // Find all drawable elements (line, path, polyline, polygon, circle, rect, ellipse)
+    const drawables = targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse');
 
-designer.addEventListener("hintVariablesChange", (e) => {
-  console.log("Variables:", e.detail.hintVariables);
+    gsap.fromTo(drawables,
+      { drawSVG: '0%' },
+      {
+        drawSVG: '100%',
+        duration: 0.8,
+        ease: 'power2.out',
+        stagger: 0.1,
+        onComplete: resolve
+      }
+    );
+  });
+  `,
+        "wipe-up": `// Wipe from bottom to top using GSAP DrawSVGPlugin
+  return new Promise(resolve => {
+    // Set initial state
+    targetEl.style.opacity = '1';
+
+    // Find all drawable elements (line, path, polyline, polygon, circle, rect, ellipse)
+    const drawables = targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse');
+
+    gsap.fromTo(drawables,
+      { drawSVG: '100%' },
+      {
+        drawSVG: '0%',
+        duration: 0.8,
+        ease: 'power2.out',
+        stagger: 0.1,
+        onComplete: resolve
+      }
+    );
+  });
+  `,
+        "wipe-down": `// Wipe from top to bottom using GSAP DrawSVGPlugin
+  return new Promise(resolve => {
+    // Set initial state
+    targetEl.style.opacity = '1';
+
+    // Find all drawable elements (line, path, polyline, polygon, circle, rect, ellipse)
+    const drawables = targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse');
+
+    gsap.fromTo(drawables,
+      { drawSVG: '0%' },
+      {
+        drawSVG: '100%',
+        duration: 0.8,
+        ease: 'power2.out',
+        stagger: 0.1,
+        onComplete: resolve
+      }
+    );
+  });
+  `,
+      },
+    };
+
+  // set hint variables if required
+  designer.hintVariables = [
+    { name: "r_fore-color", value: "red" },
+    { name: "note", value: "Test" },
+  ];
+
+  // you can select a hint to edit with:
+  // designer.hintId = "my-hint";
+
+  // listen for events
+  designer.addEventListener("dataChange", (e) => {
+    console.log("Data changed:", e.detail.data);
+  });
+
+  designer.addEventListener("hintIdChange", (e) => {
+    console.log("Selected hint:", e.detail.hintId);
+  });
+
+  designer.addEventListener("hintVariablesChange", (e) => {
+    console.log("Variables:", e.detail.hintVariables);
+  });
 });
 ```
