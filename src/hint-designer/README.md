@@ -1,19 +1,218 @@
 # GVE Hint Designer Component
 
-A minimalist web component for designing and testing operation hints for the GVE Snapshot Rendition component.
-
-## Overview
+_A minimalist standard W3C custom web component for designing and testing operation hints for the GVE Snapshot Rendition component._
 
 The Hint Designer is a companion tool to the main `gve-snapshot-rendition` component that allows users to:
 
-- Design hints visually with SVG code
-- Create and test GSAP-based animations
-- Manage hint variables for placeholder resolution
-- Save/load hint data to/from JSON files
+- design hints visually with SVG code;
+- create and test GSAP-based animations;
+- manage hint variables for placeholder resolution;
+- save/load hint data to/from JSON files.
+
+You can use it [directly into your static HTML page](#integrating-designer-in-an-html-page), or embed it into more complex code.
 
 ## Usage
 
-### Basic Setup
+The hint designer UI has these main panels (from top to bottom):
+
+- **toolbar**: the main toolbar with all the most important controls for editing hints.
+- **SVG visualization**: the visualization of the SVG hint you are editing. You can zoom using the buttons in the toolbar, or the mouse wheel. You can pan by dragging with the mouse.
+- **animation timeline player**: use the play button to play the enter animation for the SVG being edited. You can use the slider next to it to look at the animation as it unwinds towards its end, going forward or backward and pausing at any point along it.
+- **hint properties**: the metadata of the hint, plus its SVG and JS code. This is where you effectively edit the hint.
+- **hint variables**: the variables you define for previewing hints. Many hints in their SVG code use placeholder variables between `{{` and `}}`, like in `<line x1="0" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />`; in this case, you can define the `r_fore-color` variable value in this panel. Typically you define here all the variables for all of your hints. This data is volatile, and is used only to allow displaying the hints in the SVG visualization. For instance, we will require to set `r_fore-color` to `red` to see the hint drawn.
+
+In general:
+
+1. **start simple**: create a basic hint first, then add animations and placeholders.
+2. **use the catalog**: create reusable animations for common effects (fade, slide, etc.).
+3. **test early**: use the timeline player frequently while developing animations.
+4. **save often**: use the Save data button to backup your work regularly.
+
+### Editing Hints
+
+In the hint properties, you edit all the properties of the hint being edited:
+
+- **position**: the relative position of the hint (default is `o`=origin).
+- **offset X** and **offset Y**: the optional offsets (positive or negative) to shift the hint's position accordingly. Default is 0.
+- **scale X** and **scale Y**: the optional scale ratio for resizing the hint. Default is 1 (=no scaling).
+- **rotation**: the optional rotation in degrees (positive or negative) for the hint. Default is 0 (=no rotation).
+- **solid**: enable solid behavior for the hint.
+- **displaced ref span**: a default reference span for displacing hints. This is rarely used, unless you want to always position a hint e.g. with reference with the initial character(s) of your base text.
+- **SVG**: the SVG code for your hint. This can be any SVG, provided that it is always included in a single, root `g` element. For instance:
+
+```xml
+<g>
+  <line x1="0" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+</g>
+```
+
+>This hint's SVG code wraps in a `g` element (required) a single line in a designer whose canvas size is 300x100. Thus it represents a diagonal line from the top left to the bottom right of the canvas rectangle.
+
+- **animation**: the animation panel contains the JS code fragment for the enter animation for the hint. Unless you are creating an ad-hoc animation for the hint being edited ("embedded JS"), this is usually drawn from a set of available animations.
+
+The JS code follows this template, where you can assume two variables are defined: `targetEl` is the target element of the animation, i.e. the root `g` element of the hint; `gsap` is the [GSAP](https://gsap.com) object used for animating it:
+
+```js
+return new Promise(resolve => {
+  // targetEl is the animation's target element
+  // gsap is the GSAP object
+});
+```
+
+For instance, this is a simple fade-in animation:
+
+```js
+return new Promise(resolve => {
+  gsap.fromTo(targetEl,
+    { opacity: 0 },
+    { opacity: 1, duration: 2, onComplete: resolve }
+  );
+});
+```
+
+>This code wraps the animation in a `Promise` object which is returned to the consumer code. This is required by the rendition engine architecture. Inside the promise, it uses `gsap` to animate the target element's opacity from 0 (=invisible) to 1 (=fully visible) in 2 seconds. Remember to call resolve on complete by adding `onComplete: resolve`.
+
+👉 This UI is designed so that it reflects the fact that animations depend on hints, i.e. are selected by them. Besides, you can't design and test an animation without having a hint to apply it to. So, this is the logic when you **save an animation**:
+
+- if `embedded JS` is checked, the JS code is saved as the embedded JS for that hint only.
+- otherwise:
+  - if the hint's animation control value does not start with `#` the animation's code is saved into the data's `animations` array with an ID equal to the selected animation in the animations list dropdown (when the "new animation" is off). If `new animation` is on, you will be prompted for a new ID for that animation's code.
+  - else, just save the animation control value into the hint's animation property as a reference (`#` followed by hint). Just ensure that `#` is followed by some identifier, else show an error in the messages pane asking to add an identifier after the `#`.
+
+So, in practice:
+
+- 💡 to **create a new catalog animation**:
+
+1. select or create a hint.
+2. **uncheck** "embedded JS".
+3. **check** "new animation".
+4. write your GSAP animation code in the JS textarea.
+5. click **Save**.
+6. when prompted, enter an ID for the new animation (e.g., `fade-in`).
+
+- 💡 to **update a catalog animation**:
+
+1. select or create a hint.
+2. **uncheck** "embedded JS".
+3. **uncheck** "new animation".
+4. select an animation from the dropdown.
+5. click the **Load animation code** button (⬇) to load its code.
+6. modify the animation code in the JS textarea.
+7. click **Save** and confirm.
+
+⚠️ Warning: updating a catalog animation affects all hints using it!
+
+- 💡 to **use a catalog animation** in a hint:
+
+1. select or create a hint.
+2. **uncheck** "embedded JS".
+3. in the JS textarea, type `#` followed by the animation ID (e.g. `#fade-in`).
+4. click **Save**.
+
+- 💡 to **copy animation code** between animations:
+
+1. select an animation from the dropdown.
+2. click the **load animation code** button (⬇).
+3. the code appears in the JS textarea.
+4. modify it as needed.
+5. either:
+   - **check "new animation"** and save with a new ID, OR
+   - **select a different animation** from the dropdown and save to update it.
+
+💡 **Tip**: The dropdown works even when "embedded JS" is checked, so you can copy animation code to use as embedded JS.
+
+### Using Placeholders in SVG
+
+Placeholders allow you to reuse hints with different values, derived from operation features with the same name, or set via the `r_hint-vars` rendition feature.
+
+1. In your SVG code, use `{{variable_name}}` syntax:
+
+   ```xml
+   <g>
+     <rect fill="{{r_fore-color}}" x="0" y="0" width="100" height="50"/>
+     <text x="50" y="25">{{note}}</text>
+   </g>
+   ```
+
+2. in the **Hint Variables** panel:
+   - click **Add** (➕).
+   - enter the variable name (e.g., `r_fore-color`).
+   - click **Edit** (✏️) to set its value (e.g., `red`).
+
+3. click **Refresh** to see the resolved SVG.
+
+### Drawing SVG
+
+The hint designer is not an SVG editor; it is rather a tool to integrate your SVG drawings into the GVE snapshot rendition engine by providing a development environment. While you can easily draw trivial hints like a diagonal line by directly coding them, in case of more elaborated drawings you should rather use an SVG editor.
+
+Here are some suggestions to use the popular freeware [InkScape](https://inkscape.org) SVG editor for drawing and then import SVG code into a hint:
+
+1. open `File/Document Properties` and set display units to `px` and a custom size equal to that of your hint (e.g. 300 x 100).
+2. draw your hint.
+3. optionally, convert everything into a group by selecting all (Ctrl+A) and grouping (Ctrl+G). Or you can just wrap the SVG code later into a single `g` element.
+4. open `File/Save As` and save as plain SVG.
+
+💡 If you want your drawing to exactly **fit** the canvas:
+
+1. select all (Ctrl+A).
+2. `Object/Align and Distribute` (Ctrl+Shift+A): in the Align section set relative to `Page` and click `Center on vertical axis` and `Center on horizontal axis`.
+3. with everything still selected, in the top toolbar set `W` and `H` fields to the size of your canvas (disable the lock icon to stretch and fix exactly if this is what you want).
+
+>The canvas size for all your hints is defined by the HTML page hosting the hint designer. In the above example, it is 300x100.
+
+### Testing Animations
+
+1. load or create a hint with an animation.
+2. use the **Timeline Player** controls:
+   - ▶ **Play**: Start the animation.
+   - ⏸ **Pause**: Pause at current position.
+   - ⏮ **Restart**: Reset and play from beginning.
+   - **Progress bar**: Click or drag to scrub through the animation.
+3. adjust your animation code as needed.
+4. click **Refresh** (↻) or **Save** to see changes.
+
+### Saving Locally
+
+At any moment, whether you are integrating the designer into a more complex UI and workflow or just using it directly, you can save or load your data using local files.
+
+To save:
+
+1. click the **Save data** button (📥) in the toolbar.
+2. a JSON file (`hint-designer-data.json`) will download. This file contains all hints and animations.
+
+To load:
+
+1. click the **Load data** button (📤) in the toolbar.
+2. select your JSON file. All hints and animations will be loaded.
+
+The component saves/loads data in JSON format, e.g.:
+
+```json
+{
+  "hints": {
+    "hint-id": {
+      "svg": "<g>...</g>",
+      "position": "o",
+      "offsetX": 0,
+      "offsetY": 0,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "solid": false,
+      "animation": "#animation-id"
+    }
+  },
+  "animations": {
+    "animation-id": "return new Promise(resolve => { ... });"
+  }
+}
+```
+
+---
+
+## Integrating Designer in an HTML Page
+
+- 📁 **HTML**:
 
 ```html
 <!DOCTYPE html>
@@ -23,24 +222,33 @@ The Hint Designer is a companion tool to the main `gve-snapshot-rendition` compo
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   </head>
   <body>
-    <gve-hint-designer></gve-hint-designer>
+    <gve-hint-designer id="designer"></gve-hint-designer>
   </body>
 </html>
 ```
 
-### JavaScript API
+- 📁 **JS**:
 
 ```js
-const designer = document.querySelector("gve-hint-designer");
+const designer = document.getElementById('designer');
 
-// Set settings
+// set settings
+// interface HintDesignerSettings {
+//   hintDesignWidth: number; // Width of SVG design area
+//   hintDesignHeight: number; // Height of SVG design area
+//   debug: boolean; // Debug mode
+// }
 designer.settings = {
   hintDesignWidth: 300,
   hintDesignHeight: 100,
   debug: true,
 };
 
-// Set data (hints and animations)
+// set data (hints and animations)
+// interface HintDesignerData {
+//   hints: Record<string, OperationHint>;
+//   animations: Record<string, string>;
+// }
 designer.data = {
   hints: {
     "my-hint": {
@@ -67,16 +275,16 @@ designer.data = {
   },
 };
 
-// Set hint variables
+// set hint variables if required
 designer.hintVariables = [
   { name: "r_fore-color", value: "red" },
   { name: "note", value: "Test" },
 ];
 
-// Select a hint to edit
-designer.hintId = "my-hint";
+// you can select a hint to edit with:
+// designer.hintId = "my-hint";
 
-// Listen for events
+// listen for events
 designer.addEventListener("dataChange", (e) => {
   console.log("Data changed:", e.detail.data);
 });
@@ -89,365 +297,3 @@ designer.addEventListener("hintVariablesChange", (e) => {
   console.log("Variables:", e.detail.hintVariables);
 });
 ```
-
-## Component Properties
-
-### `data` (HintDesignerData)
-
-Object containing hints and animations:
-
-```typescript
-interface HintDesignerData {
-  hints: Record<string, OperationHint>;
-  animations: Record<string, string>;
-}
-```
-
-### `settings` (HintDesignerSettings)
-
-Component settings:
-
-```typescript
-interface HintDesignerSettings {
-  hintDesignWidth: number; // Width of SVG design area
-  hintDesignHeight: number; // Height of SVG design area
-  debug: boolean; // Debug mode
-}
-```
-
-### `hintId` (string | undefined)
-
-ID of the currently selected hint for editing.
-
-### `hintVariables` (StringPair[])
-
-Array of variable definitions for resolving placeholders in hints:
-
-```typescript
-interface StringPair {
-  name: string;
-  value: string;
-}
-```
-
-## Events
-
-- **`dataChange`**: Fired when data changes (hint saved, data loaded/cleared).
-- **`hintIdChange`**: Fired when selected hint changes.
-- **`hintVariablesChange`**: Fired when hint variables change.
-
-## Features
-
-### Toolbar
-
-- **Refresh**: Redraw the SVG display.
-- **Add**: Create a new hint.
-- **Hints dropdown**: Select a hint to edit.
-- **Save**: Save the current hint.
-- **Delete**: Delete the selected hint.
-- **Zoom controls**: Zoom in/out/reset the SVG display.
-- **Data controls**: Save/load/clear all data.
-
-### SVG Display
-
-Visual preview of the current hint with zoom and pan support.
-
-### Timeline Player
-
-Controls for playing, pausing, and restarting hint animations:
-
-- Play button
-- Pause button
-- Restart button
-- Progress bar (seekable)
-
-### Message Panel
-
-Displays status messages and errors.
-
-### Hint Properties Editor
-
-Edit all hint properties:
-
-- Position (dropdown with all RelativePosition values)
-- Offset X/Y (numeric or proportional: "0.5th", "0.5tw")
-- Scale X/Y
-- Rotation
-- Solid (checkbox)
-- Displaced Ref Span
-- SVG code (textarea)
-- Animation (embedded JS or referenced from catalog)
-
-### Hint Variables
-
-Manage name-value pairs for resolving `{{placeholder}}` variables in SVG code.
-
-## How-To Guides
-
-### Creating Your First Hint
-
-1. Click the **Add** button (➕) in the toolbar
-2. Enter a unique ID for your hint (e.g., `diagonal-stroke`)
-3. Edit the hint properties in the properties panel
-4. Write your SVG code in the SVG textarea (must start with `<g>`)
-5. Click **Save** to save your hint
-6. The SVG will appear in the preview area
-
-**Example SVG for a diagonal line:**
-
-```xml
-<g>
-  <line x1="0" y1="0" x2="100" y2="50" stroke="red" stroke-width="2"/>
-</g>
-```
-
-### Working with Animations
-
-There are **three ways** to add animations to hints:
-
-#### Option 1: Embedded Animation (Hint-Specific)
-
-Use this when the animation is unique to this hint.
-
-1. Select or create a hint.
-2. **Check** the "embedded JS" checkbox.
-3. Write your GSAP animation code in the JS textarea.
-4. Click **Save**.
-
-**Example embedded animation:**
-
-```js
-return new Promise(resolve => {
-  gsap.fromTo(targetEl,
-    { opacity: 0, scale: 0.5 },
-    { opacity: 1, scale: 1, duration: 0.5, onComplete: resolve }
-  );
-});
-```
-
-#### Option 2: Create a New Catalog Animation
-
-Use this to create a reusable animation that can be shared across multiple hints.
-
-1. Select or create a hint.
-2. **Uncheck** "embedded JS".
-3. **Check** "new animation".
-4. Write your GSAP animation code in the JS textarea.
-5. Click **Save**.
-6. When prompted, enter an ID for the new animation (e.g., `fade-in`).
-7. The animation is saved to the catalog and can now be used by other hints.
-
-#### Option 3: Update an Existing Catalog Animation
-
-Use this to modify an animation that's already in the catalog.
-
-1. Select or create a hint.
-2. **Uncheck** "embedded JS".
-3. **Uncheck** "new animation".
-4. Select an animation from the dropdown.
-5. Click the **Load animation code** button (⬇) to load its code.
-6. Modify the animation code in the JS textarea.
-7. Click **Save**.
-8. Confirm when prompted that you want to update the catalog animation.
-
-⚠️ **Warning**: Updating a catalog animation affects all hints using it!
-
-### Using a Catalog Animation in a Hint
-
-1. Select or create a hint.
-2. **Uncheck** "embedded JS".
-3. In the JS textarea, type `#` followed by the animation ID.
-   - Example: `#fade-in`.
-4. Click **Save**.
-
-The hint will now use the animation from the catalog.
-
-### Testing Animations
-
-1. Load or create a hint with an animation.
-2. Use the **Timeline Player** controls:
-   - ▶ **Play**: Start the animation.
-   - ⏸ **Pause**: Pause at current position.
-   - ⏮ **Restart**: Reset and play from beginning.
-   - **Progress bar**: Click or drag to scrub through the animation.
-3. Adjust your animation code as needed.
-4. Click **Refresh** (↻) or **Save** to see changes.
-
-### Using Placeholders in SVG
-
-Placeholders allow you to reuse hints with different values.
-
-1. In your SVG code, use `{{variable_name}}` syntax:
-
-   ```xml
-   <g>
-     <rect fill="{{r_fore-color}}" x="0" y="0" width="100" height="50"/>
-     <text x="50" y="25">{{note}}</text>
-   </g>
-   ```
-
-2. In the **Hint Variables** panel:
-   - Click **Add** (➕).
-   - Enter the variable name (e.g., `r_fore-color`).
-   - Click **Edit** (✏️) to set its value (e.g., `red`).
-
-3. Click **Refresh** to see the resolved SVG.
-
-### Copying Animation Code Between Animations
-
-1. Select an animation from the dropdown.
-2. Click the **Load animation code** button (⬇).
-3. The code appears in the JS textarea.
-4. Modify it as needed.
-5. Either:
-   - **Check "new animation"** and save with a new ID, OR
-   - **Select a different animation** from the dropdown and save to update it.
-
-💡 **Tip**: The dropdown works even when "embedded JS" is checked, so you can copy animation code to use as embedded JS.
-
-### Loading and Saving Your Work
-
-#### Save to File
-
-1. Click the **Save data** button (📥) in the toolbar
-2. A JSON file (`hint-designer-data.json`) will download
-3. This file contains all hints and animations
-
-#### Load from File
-
-1. Click the **Load data** button (📤) in the toolbar
-2. Select your JSON file
-3. All hints and animations will be loaded
-
-#### Clear Everything
-
-1. Click the **Clear data** button (🗑️) in the toolbar
-2. Confirm the action
-3. All hints and animations will be deleted (use with caution!)
-
-### Common Workflows
-
-#### Creating a Hint Library
-
-1. Create multiple hints for different operation types
-2. Create reusable animations in the catalog
-3. Link hints to catalog animations using `#animation-id`
-4. Save to JSON file for backup
-5. Share the JSON file with your team
-
-#### Designing Multiple Variations
-
-1. Create a base hint
-2. Use placeholders for colors, text, etc.
-3. Define different variable sets for different scenarios
-4. Test each variation with the variables panel
-
-#### Animation Development Cycle
-
-1. Create a simple hint for testing
-2. Write animation code with "embedded JS" checked
-3. Test with the timeline player
-4. When satisfied, **uncheck "embedded JS"** and **check "new animation"**
-5. Save to add it to the catalog
-6. Now it can be reused by other hints
-
-### Troubleshooting
-
-#### "SVG must start with &lt;g&gt; element"
-
-Your SVG code must have a root `<g>` element. Wrap your content:
-
-```xml
-<g>
-  <!-- your SVG elements here -->
-</g>
-```
-
-#### "Animation value cannot start with # when 'embedded JS' is checked"
-
-You have a reference (`#animation-id`) but "embedded JS" is checked. Either:
-
-- **Uncheck "embedded JS"** to use the catalog animation, OR
-- **Replace the reference** with actual JS code.
-
-#### "No animation selected"
-
-You have JS code (not a reference) but no animation is selected from the dropdown. Either:
-
-- **Select an animation** from the dropdown to update it, OR
-- **Check "embedded JS"** to save as embedded animation, OR
-- **Check "new animation"** to create a new catalog animation.
-
-#### Animation is not playing
-
-- Check that the animation code returns a Promise.
-- Check that `resolve` is called when animation completes.
-- Look for JavaScript errors in the message panel.
-- Verify GSAP is loaded (should be available globally).
-
-#### Variables not resolving
-
-- Check that variable names in `{{...}}` match exactly (case-sensitive).
-- Ensure variables are defined in the Variables panel.
-- Click **Refresh** after changing variables.
-
-## Running the Designer
-
-Use the npm script to start the designer:
-
-```bash
-pnpm run start:designer
-```
-
-This will build the component and open the hint designer in your browser.
-
-## Data Format
-
-The component saves/loads data in JSON format:
-
-```json
-{
-  "hints": {
-    "hint-id": {
-      "svg": "<g>...</g>",
-      "position": "o",
-      "offsetX": 0,
-      "offsetY": 0,
-      "scaleX": 1,
-      "scaleY": 1,
-      "rotation": 0,
-      "solid": false,
-      "animation": "#animation-id"
-    }
-  },
-  "animations": {
-    "animation-id": "return new Promise(resolve => { ... });"
-  }
-}
-```
-
-## Quick Tips
-
-1. **Start Simple**: Create a basic hint first, then add animations and placeholders.
-2. **Use the Catalog**: Create reusable animations for common effects (fade, slide, etc.).
-3. **Test Early**: Use the timeline player frequently while developing animations.
-4. **Save Often**: Use the Save data button to backup your work regularly.
-5. **Animation Template**: When loading a hint with a missing animation reference, a template is automatically provided.
-6. **Message Panel**: Always check the message panel for helpful error messages and guidance.
-
-For detailed instructions, see the [How-To Guides](#how-to-guides) section above.
-
-## Using InkScape
-
-To use [InkScape](https://inkscape.org) for drawing and then import SVG code into a hint:
-
-1. open `File/Document Properties` and set display units to `px` and a custom size equal to that of your hint (e.g. 300 x 100).
-2. draw your hint.
-3. optionally, convert everything into a group by selecting all (Ctrl+A) and grouping (Ctrl+G). Or you can just wrap the SVG code later into a single `g` element.
-4. open `File/Save As` and save as plain SVG.
-
-If you want your drawing to exactly fit the canvas:
-
-1. select all (Ctrl+A).
-2. `Object/Align and Distribute` (Ctrl+Shift+A): in the Align section set relative to `Page` and click `Center on vertical axis` and `Center on horizontal axis`.
-3. with everything still selected, in the top toolbar set `W` and `H` fields to the size of your canvas (disable the lock icon to stretch and fix exactly if this is what you want).
