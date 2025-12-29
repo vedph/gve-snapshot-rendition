@@ -2,6 +2,15 @@
 
 _A minimalist standard W3C custom web component for designing and testing operation hints for the GVE Snapshot Rendition component._
 
+- [GVE Hint Designer Component](#gve-hint-designer-component)
+  - [Usage](#usage)
+    - [Editing Hints](#editing-hints)
+    - [Using Placeholders in SVG](#using-placeholders-in-svg)
+    - [Drawing SVG](#drawing-svg)
+    - [Testing Animations](#testing-animations)
+    - [Saving Locally](#saving-locally)
+  - [Integrating Designer in an HTML Page](#integrating-designer-in-an-html-page)
+
 The Hint Designer is a companion tool to the main `gve-snapshot-rendition` component that allows users to:
 
 - design hints visually with SVG code;
@@ -119,7 +128,7 @@ So, in practice:
    - **check "new animation"** and save with a new ID, OR
    - **select a different animation** from the dropdown and save to update it.
 
-💡 **Tip**: The dropdown works even when "embedded JS" is checked, so you can copy animation code to use as embedded JS.
+💡 **Tip**: the dropdown works even when "embedded JS" is checked, so you can copy animation code to use as embedded JS.
 
 ### Using Placeholders in SVG
 
@@ -173,7 +182,7 @@ Here are some suggestions to use the popular freeware [InkScape](https://inkscap
 
 ### Saving Locally
 
-At any moment, whether you are integrating the designer into a more complex UI and workflow or just using it directly, you can save or load your data using local files.
+At any time, whether you are integrating the designer into a more complex UI and workflow or just using it directly, you can save or load your data using local files.
 
 To save:
 
