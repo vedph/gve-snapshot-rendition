@@ -7,6 +7,8 @@ _A minimalist standard W3C custom web component for designing and testing operat
     - [Editing Hints](#editing-hints)
     - [Using Placeholders in SVG](#using-placeholders-in-svg)
     - [Drawing SVG](#drawing-svg)
+      - [Drawing](#drawing)
+      - [Creating a Template](#creating-a-template)
     - [Testing Animations](#testing-animations)
     - [Saving Locally](#saving-locally)
   - [Integrating Designer in an HTML Page](#integrating-designer-in-an-html-page)
@@ -32,7 +34,7 @@ The hint designer UI has these main panels (from top to bottom):
 
 In general:
 
-1. **start simple**: create a basic hint first, using placeholders wherever this could be useful to make it more reusable (e.g. for changing its color), and pick an animation for each. Remember that hints will be stretched to fit the RBR, so draw and configure them accordingly.
+1. **keep it simple**: create a basic hint first, using placeholders wherever this could be useful to make it more reusable (e.g. for changing its color), and pick an animation for each. As for its appearance, the hint is a symbolic visual approximation, mostly designed for reuse, and typically displayed at small size; so keep it simple and readable. Also remember that hints will be stretched to fit the RBR, so draw and configure them accordingly.
 2. **use the catalog**: create reusable animations for common effects (fade, slide, etc.).
 3. **test early**: use the timeline player frequently while developing animations.
 4. **save often**: use the Save data button to backup your work regularly.
@@ -168,20 +170,48 @@ Placeholders allow you to reuse hints with different values, derived from operat
 
 The hint designer is not an SVG editor; it is rather a tool to integrate your SVG drawings into the GVE snapshot rendition engine by providing a development environment. While you can easily draw trivial hints like a diagonal line by directly coding them, in case of more elaborated drawings you should rather use an SVG editor.
 
-Here are some suggestions to use the popular freeware [InkScape](https://inkscape.org) SVG editor for drawing and then import SVG code into a hint:
+Here are some suggestions to use the popular freeware [InkScape](https://inkscape.org) SVG editor for drawing and then import SVG code into a hint.
 
-1. open `File/Document Properties` and set display units to `px` and a custom size equal to that of your hint (e.g. 300 x 100).
+#### Drawing
+
+1. open `File/Document Properties` (Ctrl+Shift+D) and set:
+
+    - both display units to `px`.
+    - page scale = `1.0`.
+    - custom size equal to that of your hint (e.g. 300 x 100).
+
 2. draw your hint.
-3. optionally, convert everything into a group by selecting all (Ctrl+A) and grouping (Ctrl+G). Or you can just wrap the SVG code later into a single `g` element.
-4. open `File/Save As` and save as plain SVG.
+3. optionally, convert everything into a group by selecting all (Ctrl+A) and grouping (Ctrl+G). Or you can just wrap the SVG code later into a single `g` element. Grouping in Inkscape ensures consistent transforms and makes alignment easier, but it's not needed when you have a single shape.
+4. open `File/Save As` and save as plain SVG, then extract the root `g` element from it.
 
-💡 If you want your drawing to exactly **fit** the canvas:
+>👉 It is suggested you set optimized transform in InkScape: `Edit/Preferences/Behavior/Transform`: in `Store transformation` select `Optimized`. This reduces the number of transform attributes applied by the editor to your drawing.
+
+💡 If you want your drawing to exactly **fit the canvas**:
 
 1. select all (Ctrl+A).
-2. `Object/Align and Distribute` (Ctrl+Shift+A): in the Align section set relative to `Page` and click `Center on vertical axis` and `Center on horizontal axis`.
+2. `Object/Align and Distribute` (Ctrl+Shift+A): in the `Align` section set relative to `Page` and click `Center on vertical axis` and `Center on horizontal axis`.
 3. with everything still selected, in the top toolbar set `W` and `H` fields to the size of your canvas (disable the lock icon to stretch and fix exactly if this is what you want).
+4. after scaling, center again using `Align and Distribute` like before, because scaling can shift the position.
+
+⚠️ Note that if you use InkScape shapes, this often results in InkScape applying a transform to the existing SVG. Instead, here we want pure geometries, with the right coordinates, no transforms, so we get no surprises when the rendering engine will use that hint. To avoid such transforms, ensure that you use `Optimized` for `Store transformation` as explained above, and then while drawing:
+
+1. as soon as you add a shape _transform it into a path_ via `Path/Object to Path` (Shift+Ctrl+C). Then, you can apply the above procedure to fit it to the canvas.
+2. once you have fit the path, select it, open `Edit/XML Editor` (Ctrl+Shift+X), select the path node, open the command palette (`View/Command Palette` or `?`) and select `Reapply Transform`.
 
 >The canvas size for all your hints is defined by the HTML page hosting the hint designer. In the above example, it is 300x100.
+
+#### Creating a Template
+
+You may want to create an SVG template rather than having to setup the document each time. Here is the procedure for creating it using InkScape:
+
+1. create a new default document.
+2. open `File/Document Properties` (Ctrl+Shift+D) and set:
+
+    - both display units (display and custom size) to `px`.
+    - page scale = `1.0`.
+    - custom size equal to that of your hint (e.g. 300 x 100).
+
+3. open `File/Save Template` and save it with the name you prefer.
 
 ### Testing Animations
 
