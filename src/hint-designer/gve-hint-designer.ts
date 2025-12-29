@@ -26,7 +26,9 @@ const NEW_ANIMATION_TEMPLATE = `return new Promise(resolve => {
 export class GveHintDesigner extends HTMLElement {
   // Properties
   private _data: HintDesignerData = { hints: {}, animations: {} };
-  private _settings: HintDesignerSettings = { ...DEFAULT_HINT_DESIGNER_SETTINGS };
+  private _settings: HintDesignerSettings = {
+    ...DEFAULT_HINT_DESIGNER_SETTINGS,
+  };
   private _hintId?: string;
   private _hintVariables: StringPair[] = [];
 
@@ -68,6 +70,8 @@ export class GveHintDesigner extends HTMLElement {
   private _pauseButton?: HTMLButtonElement;
   private _restartButton?: HTMLButtonElement;
   private _progressBar?: HTMLInputElement;
+  private _variablesValidationMsg?: HTMLDivElement;
+  private _variablesPanelHeader?: HTMLDivElement;
 
   // Animation state
   private _currentTimeline?: any; // GSAP timeline
@@ -84,7 +88,11 @@ export class GveHintDesigner extends HTMLElement {
     const gsap = (window as any).gsap;
     if (gsap) {
       gsap.registerPlugin(DrawSVGPlugin);
-      this._logger.debug("Component", "DrawSVG plugin registered:", gsap.plugins.drawSVG !== undefined);
+      this._logger.debug(
+        "Component",
+        "DrawSVG plugin registered:",
+        gsap.plugins.drawSVG !== undefined
+      );
     }
 
     // Create shadow DOM
@@ -164,7 +172,9 @@ export class GveHintDesigner extends HTMLElement {
   public set hintVariables(value: StringPair[]) {
     this._hintVariables = value || [];
     this.refreshVariablesTable();
-    this.fireEvent("hintVariablesChange", { hintVariables: this._hintVariables });
+    this.fireEvent("hintVariablesChange", {
+      hintVariables: this._hintVariables,
+    });
   }
 
   // ==================== RENDERING ====================
@@ -230,7 +240,11 @@ export class GveHintDesigner extends HTMLElement {
     toolbar.className = "toolbar";
 
     // Refresh button
-    const refreshBtn = this.createButton("refresh-svg", "refresh-cw", "Refresh SVG display");
+    const refreshBtn = this.createButton(
+      "refresh-svg",
+      "refresh-cw",
+      "Refresh SVG display"
+    );
     toolbar.appendChild(refreshBtn);
 
     // Add button (primary)
@@ -241,7 +255,8 @@ export class GveHintDesigner extends HTMLElement {
     // Hints dropdown
     this._hintsDropdown = document.createElement("select");
     this._hintsDropdown.className = "hints-dropdown";
-    this._hintsDropdown.innerHTML = '<option value="">-- Select Hint --</option>';
+    this._hintsDropdown.innerHTML =
+      '<option value="">-- Select Hint --</option>';
     toolbar.appendChild(this._hintsDropdown);
 
     // Save button (accent)
@@ -250,7 +265,11 @@ export class GveHintDesigner extends HTMLElement {
     toolbar.appendChild(saveBtn);
 
     // Delete button (danger)
-    const deleteBtn = this.createButton("delete-hint", "trash-2", "Delete hint");
+    const deleteBtn = this.createButton(
+      "delete-hint",
+      "trash-2",
+      "Delete hint"
+    );
     deleteBtn.classList.add("btn-danger");
     toolbar.appendChild(deleteBtn);
 
@@ -260,8 +279,16 @@ export class GveHintDesigner extends HTMLElement {
 
     const zoomInBtn = this.createButton("zoom-in", "zoom-in", "Zoom in");
     const zoomOutBtn = this.createButton("zoom-out", "zoom-out", "Zoom out");
-    const zoomResetBtn = this.createButton("zoom-reset", "maximize", "Reset zoom");
-    const sizeToFitBtn = this.createButton("size-to-fit", "maximize-2", "Size to fit");
+    const zoomResetBtn = this.createButton(
+      "zoom-reset",
+      "maximize",
+      "Reset zoom"
+    );
+    const sizeToFitBtn = this.createButton(
+      "size-to-fit",
+      "maximize-2",
+      "Size to fit"
+    );
 
     zoomGroup.appendChild(zoomInBtn);
     zoomGroup.appendChild(zoomOutBtn);
@@ -273,9 +300,21 @@ export class GveHintDesigner extends HTMLElement {
     const dataGroup = document.createElement("div");
     dataGroup.className = "toolbar-group";
 
-    const saveDataBtn = this.createButton("save-data", "download", "Save data to file");
-    const loadDataBtn = this.createButton("load-data", "upload", "Load data from file");
-    const clearDataBtn = this.createButton("clear-data", "x-circle", "Clear all data");
+    const saveDataBtn = this.createButton(
+      "save-data",
+      "download",
+      "Save data to file"
+    );
+    const loadDataBtn = this.createButton(
+      "load-data",
+      "upload",
+      "Load data from file"
+    );
+    const clearDataBtn = this.createButton(
+      "clear-data",
+      "x-circle",
+      "Clear all data"
+    );
     clearDataBtn.classList.add("btn-danger");
 
     dataGroup.appendChild(saveDataBtn);
@@ -293,10 +332,19 @@ export class GveHintDesigner extends HTMLElement {
     const panel = document.createElement("div");
     panel.className = "svg-display-panel";
 
-    this._svgDisplay = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    this._svgDisplay = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "svg"
+    );
     this._svgDisplay.setAttribute("class", "svg-display");
-    this._svgDisplay.setAttribute("width", this._settings.hintDesignWidth.toString());
-    this._svgDisplay.setAttribute("height", this._settings.hintDesignHeight.toString());
+    this._svgDisplay.setAttribute(
+      "width",
+      this._settings.hintDesignWidth.toString()
+    );
+    this._svgDisplay.setAttribute(
+      "height",
+      this._settings.hintDesignHeight.toString()
+    );
     this._svgDisplay.setAttribute(
       "viewBox",
       `0 0 ${this._settings.hintDesignWidth} ${this._settings.hintDesignHeight}`
@@ -323,14 +371,20 @@ export class GveHintDesigner extends HTMLElement {
     const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
 
     // Define grid pattern
-    const pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+    const pattern = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "pattern"
+    );
     pattern.setAttribute("id", "grid");
     pattern.setAttribute("width", gridSize.toString());
     pattern.setAttribute("height", gridSize.toString());
     pattern.setAttribute("patternUnits", "userSpaceOnUse");
 
     // Add small grid lines
-    const gridPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    const gridPath = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "path"
+    );
     gridPath.setAttribute("d", `M ${gridSize} 0 L 0 0 0 ${gridSize}`);
     gridPath.setAttribute("fill", "none");
     gridPath.setAttribute("stroke", "#e0e0e0");
@@ -341,11 +395,17 @@ export class GveHintDesigner extends HTMLElement {
     svg.appendChild(defs);
 
     // Create main group for grid and rulers (will be behind hint content)
-    const backgroundGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const backgroundGroup = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "g"
+    );
     backgroundGroup.setAttribute("id", "grid-and-rulers");
 
     // Add grid background rectangle
-    const gridRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    const gridRect = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "rect"
+    );
     gridRect.setAttribute("x", rulerSize.toString());
     gridRect.setAttribute("y", rulerSize.toString());
     gridRect.setAttribute("width", (width - rulerSize).toString());
@@ -354,7 +414,10 @@ export class GveHintDesigner extends HTMLElement {
     backgroundGroup.appendChild(gridRect);
 
     // Add horizontal ruler (top)
-    const hRuler = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    const hRuler = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "rect"
+    );
     hRuler.setAttribute("x", rulerSize.toString());
     hRuler.setAttribute("y", "0");
     hRuler.setAttribute("width", (width - rulerSize).toString());
@@ -365,7 +428,10 @@ export class GveHintDesigner extends HTMLElement {
     backgroundGroup.appendChild(hRuler);
 
     // Add vertical ruler (left)
-    const vRuler = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    const vRuler = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "rect"
+    );
     vRuler.setAttribute("x", "0");
     vRuler.setAttribute("y", rulerSize.toString());
     vRuler.setAttribute("width", rulerSize.toString());
@@ -376,7 +442,10 @@ export class GveHintDesigner extends HTMLElement {
     backgroundGroup.appendChild(vRuler);
 
     // Add corner square
-    const corner = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    const corner = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "rect"
+    );
     corner.setAttribute("x", "0");
     corner.setAttribute("y", "0");
     corner.setAttribute("width", rulerSize.toString());
@@ -394,7 +463,10 @@ export class GveHintDesigner extends HTMLElement {
       const isMajorTick = x % tickInterval === 0;
       const tickHeight = isMajorTick ? 8 : 4;
 
-      const tick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      const tick = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line"
+      );
       tick.setAttribute("x1", (rulerSize + x).toString());
       tick.setAttribute("y1", (rulerSize - tickHeight).toString());
       tick.setAttribute("x2", (rulerSize + x).toString());
@@ -405,7 +477,10 @@ export class GveHintDesigner extends HTMLElement {
 
       // Add label for major ticks
       if (isMajorTick && x > 0) {
-        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        const label = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "text"
+        );
         label.setAttribute("x", (rulerSize + x).toString());
         label.setAttribute("y", "12");
         label.setAttribute("font-size", "9");
@@ -422,7 +497,10 @@ export class GveHintDesigner extends HTMLElement {
       const isMajorTick = y % tickInterval === 0;
       const tickWidth = isMajorTick ? 8 : 4;
 
-      const tick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      const tick = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line"
+      );
       tick.setAttribute("x1", (rulerSize - tickWidth).toString());
       tick.setAttribute("y1", (rulerSize + y).toString());
       tick.setAttribute("x2", rulerSize.toString());
@@ -433,7 +511,10 @@ export class GveHintDesigner extends HTMLElement {
 
       // Add label for major ticks
       if (isMajorTick && y > 0) {
-        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        const label = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "text"
+        );
         label.setAttribute("x", "10");
         label.setAttribute("y", (rulerSize + y + 3).toString());
         label.setAttribute("font-size", "9");
@@ -460,7 +541,11 @@ export class GveHintDesigner extends HTMLElement {
     // Buttons
     this._playButton = this.createButton("play", "play", "Play animation");
     this._pauseButton = this.createButton("pause", "pause", "Pause animation");
-    this._restartButton = this.createButton("restart", "skip-back", "Restart animation");
+    this._restartButton = this.createButton(
+      "restart",
+      "skip-back",
+      "Restart animation"
+    );
 
     // Initially disable pause (nothing playing)
     this._pauseButton.disabled = true;
@@ -515,7 +600,9 @@ export class GveHintDesigner extends HTMLElement {
     form.className = "properties-form";
 
     // Position
-    form.appendChild(this.createFormRow("Position:", this.createPositionSelect()));
+    form.appendChild(
+      this.createFormRow("Position:", this.createPositionSelect())
+    );
 
     // Offset X
     this._offsetXInput = this.createInput("text", "0");
@@ -544,7 +631,9 @@ export class GveHintDesigner extends HTMLElement {
 
     // Displaced Ref Span
     this._displacedRefSpanInput = this.createInput("text", "");
-    form.appendChild(this.createFormRow("Displaced Ref Span:", this._displacedRefSpanInput));
+    form.appendChild(
+      this.createFormRow("Displaced Ref Span:", this._displacedRefSpanInput)
+    );
 
     col1.appendChild(form);
     content.appendChild(col1);
@@ -561,7 +650,11 @@ export class GveHintDesigner extends HTMLElement {
     svgLabel.className = "textarea-label";
     svgHeader.appendChild(svgLabel);
 
-    const svgWrapBtn = this.createButton("toggle-svg-wrap", "align-left", "Toggle word wrap");
+    const svgWrapBtn = this.createButton(
+      "toggle-svg-wrap",
+      "align-left",
+      "Toggle word wrap"
+    );
     svgWrapBtn.className = "toolbar-btn wrap-toggle-btn";
     svgHeader.appendChild(svgWrapBtn);
 
@@ -596,7 +689,11 @@ export class GveHintDesigner extends HTMLElement {
     animLabel.className = "textarea-label";
     animHeader.appendChild(animLabel);
 
-    const jsWrapBtn = this.createButton("toggle-js-wrap", "align-left", "Toggle word wrap");
+    const jsWrapBtn = this.createButton(
+      "toggle-js-wrap",
+      "align-left",
+      "Toggle word wrap"
+    );
     jsWrapBtn.className = "toolbar-btn wrap-toggle-btn";
     animHeader.appendChild(jsWrapBtn);
 
@@ -632,11 +729,16 @@ export class GveHintDesigner extends HTMLElement {
     // Animation dropdown
     this._animationsDropdown = document.createElement("select");
     this._animationsDropdown.className = "animations-dropdown";
-    this._animationsDropdown.innerHTML = '<option value="">-- Select Animation --</option>';
+    this._animationsDropdown.innerHTML =
+      '<option value="">-- Select Animation --</option>';
     animControls.appendChild(this._animationsDropdown);
 
     // Load button
-    const loadAnimBtn = this.createButton("load-animation", "download-cloud", "Load animation code");
+    const loadAnimBtn = this.createButton(
+      "load-animation",
+      "download-cloud",
+      "Load animation code"
+    );
     animControls.appendChild(loadAnimBtn);
 
     col3.appendChild(animControls);
@@ -670,25 +772,45 @@ export class GveHintDesigner extends HTMLElement {
     const panel = document.createElement("div");
     panel.className = "variables-panel resizable-panel";
 
-    // Header
+    // Header with warning icon placeholder
     const header = document.createElement("div");
     header.className = "panel-header";
-    header.textContent = "Hint Variables";
+
+    const headerText = document.createElement("span");
+    headerText.textContent = "Hint Variables";
+    header.appendChild(headerText);
+
+    // Store reference to header for adding warning icon
+    this._variablesPanelHeader = header;
     panel.appendChild(header);
 
     // Toolbar
     const toolbar = document.createElement("div");
     toolbar.className = "panel-toolbar";
 
-    const addVarBtn = this.createButton("add-variable", "plus-circle", "Add new variable");
+    const addVarBtn = this.createButton(
+      "add-variable",
+      "plus-circle",
+      "Add new variable"
+    );
     addVarBtn.classList.add("btn-primary");
     toolbar.appendChild(addVarBtn);
 
-    const deleteAllBtn = this.createButton("delete-all-vars", "trash-2", "Delete all variables");
+    const deleteAllBtn = this.createButton(
+      "delete-all-vars",
+      "trash-2",
+      "Delete all variables"
+    );
     deleteAllBtn.classList.add("btn-danger");
     toolbar.appendChild(deleteAllBtn);
 
     panel.appendChild(toolbar);
+
+    // Validation message (initially hidden)
+    this._variablesValidationMsg = document.createElement("div");
+    this._variablesValidationMsg.className = "validation-message";
+    this._variablesValidationMsg.style.display = "none";
+    panel.appendChild(this._variablesValidationMsg);
 
     // Content
     const content = document.createElement("div");
@@ -709,7 +831,11 @@ export class GveHintDesigner extends HTMLElement {
   /**
    * Create a button element with a Feather icon.
    */
-  private createButton(id: string, iconName: string, tooltip: string): HTMLButtonElement {
+  private createButton(
+    id: string,
+    iconName: string,
+    tooltip: string
+  ): HTMLButtonElement {
     const btn = document.createElement("button");
     btn.className = "toolbar-btn";
     btn.id = id;
@@ -718,7 +844,12 @@ export class GveHintDesigner extends HTMLElement {
     // Use feather.icons to get the SVG directly (for Shadow DOM compatibility)
     const icon = (feather.icons as any)[iconName];
     if (icon) {
-      btn.innerHTML = icon.toSvg({ class: 'feather-icon', width: 16, height: 16, 'stroke-width': 2 });
+      btn.innerHTML = icon.toSvg({
+        class: "feather-icon",
+        width: 16,
+        height: 16,
+        "stroke-width": 2,
+      });
     } else {
       this._logger.warn("Feather icon not found:", iconName);
       btn.textContent = iconName;
@@ -730,7 +861,11 @@ export class GveHintDesigner extends HTMLElement {
   /**
    * Create an input element.
    */
-  private createInput(type: string, value: string, step?: number): HTMLInputElement {
+  private createInput(
+    type: string,
+    value: string,
+    step?: number
+  ): HTMLInputElement {
     const input = document.createElement("input");
     input.type = type;
     input.value = value;
@@ -802,7 +937,9 @@ export class GveHintDesigner extends HTMLElement {
     splitter.addEventListener("pointerdown", (e: PointerEvent) => {
       const startY = e.clientY;
       const startHeightAbove = panelAbove.offsetHeight;
-      const container = this._shadow.querySelector('.hint-designer-container') as HTMLElement;
+      const container = this._shadow.querySelector(
+        ".hint-designer-container"
+      ) as HTMLElement;
       if (!container) return;
 
       const onMove = (moveEvent: PointerEvent) => {
@@ -810,7 +947,8 @@ export class GveHintDesigner extends HTMLElement {
         const newHeightAbove = Math.max(300, startHeightAbove + delta);
 
         // Determine which splitter this is based on the panel above
-        const isTopSplitter = panelAbove.classList.contains('top-panels-wrapper');
+        const isTopSplitter =
+          panelAbove.classList.contains("top-panels-wrapper");
 
         if (isTopSplitter) {
           // Splitter 1: between top and properties
@@ -819,7 +957,9 @@ export class GveHintDesigner extends HTMLElement {
         } else {
           // Splitter 2: between properties and variables
           // Get top panel height and keep it fixed
-          const topPanel = this._shadow.querySelector('.top-panels-wrapper') as HTMLElement;
+          const topPanel = this._shadow.querySelector(
+            ".top-panels-wrapper"
+          ) as HTMLElement;
           const topHeight = topPanel ? topPanel.offsetHeight : 300;
           // Set top and properties heights, let variables fill remaining
           container.style.gridTemplateRows = `${topHeight}px 6px ${newHeightAbove}px 6px minmax(200px, 1fr)`;
@@ -916,18 +1056,18 @@ export class GveHintDesigner extends HTMLElement {
    * Initialize panning with mouse drag.
    */
   private initializePanning(): void {
-    const panel = this._shadow.querySelector('.svg-display-panel');
+    const panel = this._shadow.querySelector(".svg-display-panel");
     if (!panel) return;
 
-    panel.addEventListener('mousedown', (e: Event) => {
+    panel.addEventListener("mousedown", (e: Event) => {
       const mouseEvent = e as MouseEvent;
       this._isPanning = true;
       this._lastPanX = mouseEvent.clientX;
       this._lastPanY = mouseEvent.clientY;
-      (panel as HTMLElement).style.cursor = 'grabbing';
+      (panel as HTMLElement).style.cursor = "grabbing";
     });
 
-    document.addEventListener('mousemove', (e: MouseEvent) => {
+    document.addEventListener("mousemove", (e: MouseEvent) => {
       if (!this._isPanning) return;
 
       const deltaX = e.clientX - this._lastPanX;
@@ -942,26 +1082,26 @@ export class GveHintDesigner extends HTMLElement {
       this.updateSvgTransform();
     });
 
-    document.addEventListener('mouseup', () => {
+    document.addEventListener("mouseup", () => {
       if (this._isPanning) {
         this._isPanning = false;
         const panelEl = panel as HTMLElement;
-        panelEl.style.cursor = 'grab';
+        panelEl.style.cursor = "grab";
       }
     });
 
     // Set initial cursor
-    (panel as HTMLElement).style.cursor = 'grab';
+    (panel as HTMLElement).style.cursor = "grab";
   }
 
   /**
    * Initialize zooming with mouse wheel.
    */
   private initializeWheelZoom(): void {
-    const panel = this._shadow.querySelector('.svg-display-panel');
+    const panel = this._shadow.querySelector(".svg-display-panel");
     if (!panel) return;
 
-    panel.addEventListener('wheel', (e: Event) => {
+    panel.addEventListener("wheel", (e: Event) => {
       const wheelEvent = e as WheelEvent;
       wheelEvent.preventDefault();
 
@@ -1022,7 +1162,8 @@ export class GveHintDesigner extends HTMLElement {
     if (!this._hintsDropdown) return;
 
     const currentValue = this._hintsDropdown.value;
-    this._hintsDropdown.innerHTML = '<option value="">-- Select Hint --</option>';
+    this._hintsDropdown.innerHTML =
+      '<option value="">-- Select Hint --</option>';
 
     const hintIds = Object.keys(this._data.hints);
     hintIds.forEach((hintId) => {
@@ -1048,7 +1189,8 @@ export class GveHintDesigner extends HTMLElement {
     if (!this._animationsDropdown) return;
 
     const currentValue = this._animationsDropdown.value;
-    this._animationsDropdown.innerHTML = '<option value="">-- Select Animation --</option>';
+    this._animationsDropdown.innerHTML =
+      '<option value="">-- Select Animation --</option>';
 
     Object.keys(this._data.animations).forEach((animId) => {
       const option = document.createElement("option");
@@ -1097,8 +1239,10 @@ export class GveHintDesigner extends HTMLElement {
       this._offsetXInput.value = hint.offsetX?.toString() || "0";
     if (this._offsetYInput)
       this._offsetYInput.value = hint.offsetY?.toString() || "0";
-    if (this._scaleXInput) this._scaleXInput.value = hint.scaleX?.toString() || "1";
-    if (this._scaleYInput) this._scaleYInput.value = hint.scaleY?.toString() || "1";
+    if (this._scaleXInput)
+      this._scaleXInput.value = hint.scaleX?.toString() || "1";
+    if (this._scaleYInput)
+      this._scaleYInput.value = hint.scaleY?.toString() || "1";
     if (this._rotationInput)
       this._rotationInput.value = hint.rotation?.toString() || "0";
     if (this._solidCheckbox) this._solidCheckbox.checked = hint.solid || false;
@@ -1119,7 +1263,8 @@ export class GveHintDesigner extends HTMLElement {
         if (this._jsTextarea) {
           // If the ID is not found, use the template; otherwise use empty string
           const animCode = this._data.animations[animId];
-          this._jsTextarea.value = animCode !== undefined ? animCode : NEW_ANIMATION_TEMPLATE;
+          this._jsTextarea.value =
+            animCode !== undefined ? animCode : NEW_ANIMATION_TEMPLATE;
           this.highlightJs();
         }
       } else {
@@ -1263,7 +1408,10 @@ export class GveHintDesigner extends HTMLElement {
           // Case (b): New animation - prompt for ID
           const newAnimId = prompt("Enter ID for the new animation:");
           if (!newAnimId) {
-            this.showMessage("Save cancelled - no animation ID provided", "info");
+            this.showMessage(
+              "Save cancelled - no animation ID provided",
+              "info"
+            );
             return;
           }
           if (!newAnimId.trim()) {
@@ -1382,26 +1530,39 @@ export class GveHintDesigner extends HTMLElement {
       if (node.nodeType === Node.ELEMENT_NODE) {
         const element = node as Element;
         const tagName = element.tagName.toLowerCase();
-        const id = element.getAttribute('id');
+        const id = element.getAttribute("id");
         // Keep defs and grid-and-rulers, remove everything else
-        if (tagName !== 'defs' && id !== 'grid-and-rulers') {
+        if (tagName !== "defs" && id !== "grid-and-rulers") {
           nodesToRemove.push(node);
         }
       }
     }
-    nodesToRemove.forEach(node => this._svgDisplay!.removeChild(node));
+    nodesToRemove.forEach((node) => this._svgDisplay!.removeChild(node));
 
     // If grid and rulers don't exist yet, add them
-    if (!this._svgDisplay.querySelector('#grid-and-rulers')) {
+    if (!this._svgDisplay.querySelector("#grid-and-rulers")) {
       this.addGridAndRulers(this._svgDisplay);
     }
 
-    if (!this._hintId || !this._data.hints[this._hintId]) {
+    if (!this._hintId) {
       return;
     }
 
-    const hint = this._data.hints[this._hintId];
-    let svgCode = hint.svg;
+    // Get SVG code from textarea if it exists, otherwise from saved data
+    let svgCode = this._svgTextarea?.value || "";
+
+    // Fallback to saved data if textarea is empty and we have saved data
+    if (!svgCode && this._data.hints[this._hintId]) {
+      svgCode = this._data.hints[this._hintId].svg;
+    }
+
+    // If still no SVG code, return early
+    if (!svgCode) {
+      return;
+    }
+
+    // Validate variables before resolving them
+    this.validateSvgVariables(svgCode);
 
     // Resolve variables
     svgCode = this.resolveVariables(svgCode);
@@ -1425,7 +1586,9 @@ export class GveHintDesigner extends HTMLElement {
       }
 
       // Clone the g element using adoptNode for proper namespace handling
-      const importedNode = this._shadow.ownerDocument!.adoptNode(gElement.cloneNode(true)) as SVGGElement;
+      const importedNode = this._shadow.ownerDocument!.adoptNode(
+        gElement.cloneNode(true)
+      ) as SVGGElement;
       this._svgDisplay.appendChild(importedNode);
 
       // Debug: Log the imported node
@@ -1465,12 +1628,117 @@ export class GveHintDesigner extends HTMLElement {
   }
 
   /**
+   * Extract variable names from SVG code (variables in {{...}} placeholders).
+   */
+  private extractVariablesFromSvg(svgCode: string): string[] {
+    const variablePattern = /\{\{([^}]+)\}\}/g;
+    const variables: string[] = [];
+    let match;
+
+    while ((match = variablePattern.exec(svgCode)) !== null) {
+      const varName = match[1].trim();
+      if (varName && !variables.includes(varName)) {
+        variables.push(varName);
+      }
+    }
+
+    return variables;
+  }
+
+  /**
+   * Validate SVG variables and update validation message.
+   * Shows a warning if any variables used in SVG are not defined in hint variables.
+   */
+  private validateSvgVariables(svgCode: string): void {
+    if (!this._variablesValidationMsg || !this._variablesPanelHeader) {
+      return;
+    }
+
+    // Extract variables from SVG
+    const usedVariables = this.extractVariablesFromSvg(svgCode);
+
+    if (usedVariables.length === 0) {
+      // No variables used - hide validation message and warning icon
+      this._variablesValidationMsg.style.display = "none";
+      this.updateVariablesHeaderWarning(false);
+      return;
+    }
+
+    // Get defined variable names
+    const definedVariables = this._hintVariables.map((v) => v.name);
+
+    // Find undefined variables
+    const undefinedVariables = usedVariables.filter(
+      (v) => !definedVariables.includes(v)
+    );
+
+    if (undefinedVariables.length === 0) {
+      // All variables are defined - hide validation message and warning icon
+      this._variablesValidationMsg.style.display = "none";
+      this.updateVariablesHeaderWarning(false);
+      return;
+    }
+
+    // Show validation message with list of undefined variables
+    this._variablesValidationMsg.style.display = "block";
+    this._variablesValidationMsg.innerHTML = `
+      <strong>⚠️ Undefined Variables:</strong>
+      <div style="margin-top: 0.5rem;">
+        The following variables are used in the SVG code but not defined in Hint Variables:
+        <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+          ${undefinedVariables
+            .map((v) => `<li><code>{{${v}}}</code></li>`)
+            .join("")}
+        </ul>
+        <em>Add these variables to the list below to ensure the hint displays correctly.</em>
+      </div>
+    `;
+
+    // Show warning icon in header
+    this.updateVariablesHeaderWarning(true);
+  }
+
+  /**
+   * Update warning icon in variables panel header.
+   */
+  private updateVariablesHeaderWarning(showWarning: boolean): void {
+    if (!this._variablesPanelHeader) return;
+
+    // Remove existing warning icon if present
+    const existingWarning =
+      this._variablesPanelHeader.querySelector(".warning-icon");
+    if (existingWarning) {
+      existingWarning.remove();
+    }
+
+    if (showWarning) {
+      // Add warning icon
+      const warningIcon = document.createElement("span");
+      warningIcon.className = "warning-icon";
+      warningIcon.title = "Some variables used in SVG are not defined";
+      const icon = (feather.icons as any)["alert-triangle"];
+      if (icon) {
+        warningIcon.innerHTML = icon.toSvg({
+          class: "feather-icon",
+          width: 16,
+          height: 16,
+          "stroke-width": 2,
+          color: "#ff9800",
+        });
+      } else {
+        warningIcon.textContent = "⚠️";
+      }
+      this._variablesPanelHeader.appendChild(warningIcon);
+    }
+  }
+
+  /**
    * Play animation.
    */
   private playAnimation(): void {
     this._logger.debug("Animation", "playAnimation called", {
       hasTimeline: !!this._currentTimeline,
-      isPlaying: this._isPlaying
+      isPlaying: this._isPlaying,
     });
 
     if (this._currentTimeline) {
@@ -1507,12 +1775,15 @@ export class GveHintDesigner extends HTMLElement {
   private createTimeline(): void {
     this._logger.debug("Animation", "createTimeline called", {
       hasSvgDisplay: !!this._svgDisplay,
-      hintId: this._hintId
+      hintId: this._hintId,
     });
 
     if (!this._svgDisplay || !this._hintId || !this._data.hints[this._hintId]) {
       this.showMessage("No hint to animate!", "error");
-      this._logger.error("Animation", "Cannot create timeline - missing prerequisites");
+      this._logger.error(
+        "Animation",
+        "Cannot create timeline - missing prerequisites"
+      );
       return;
     }
 
@@ -1524,10 +1795,15 @@ export class GveHintDesigner extends HTMLElement {
       if (hint.animation.startsWith("#")) {
         const animId = hint.animation.substring(1);
         jsCode = this._data.animations[animId] || "";
-        this._logger.debug("Animation", "Using referenced animation", { animId, hasCode: !!jsCode });
+        this._logger.debug("Animation", "Using referenced animation", {
+          animId,
+          hasCode: !!jsCode,
+        });
       } else {
         jsCode = hint.animation;
-        this._logger.debug("Animation", "Using embedded animation", { codeLength: jsCode.length });
+        this._logger.debug("Animation", "Using embedded animation", {
+          codeLength: jsCode.length,
+        });
       }
     }
 
@@ -1547,7 +1823,10 @@ export class GveHintDesigner extends HTMLElement {
       if (!hintEl) {
         throw new Error("No hint <g> element found in SVG");
       }
-      this._logger.debug("Animation", "Found hint element", { tagName: hintEl.tagName, id: hintEl.getAttribute('id') });
+      this._logger.debug("Animation", "Found hint element", {
+        tagName: hintEl.tagName,
+        id: hintEl.getAttribute("id"),
+      });
 
       // Set initial opacity to 0 (on style attribute)
       (hintEl as SVGGElement).style.opacity = "0";
@@ -1568,17 +1847,17 @@ export class GveHintDesigner extends HTMLElement {
       const originalTimeline = gsap.timeline;
 
       // Wrap GSAP methods to capture tweens
-      gsap.to = function(...args: any[]) {
+      gsap.to = function (...args: any[]) {
         const tween = originalTo.apply(gsap, args);
         capturedTweens.push(tween);
         return tween;
       };
-      gsap.fromTo = function(...args: any[]) {
+      gsap.fromTo = function (...args: any[]) {
         const tween = originalFromTo.apply(gsap, args);
         capturedTweens.push(tween);
         return tween;
       };
-      gsap.from = function(...args: any[]) {
+      gsap.from = function (...args: any[]) {
         const tween = originalFrom.apply(gsap, args);
         capturedTweens.push(tween);
         return tween;
@@ -1598,23 +1877,30 @@ export class GveHintDesigner extends HTMLElement {
 
       this._logger.debug("Animation", "Animation function executed", {
         resultType: typeof result,
-        isPromise: result && typeof result.then === 'function',
-        isTimeline: result && typeof result.progress === 'function',
-        capturedTweensCount: capturedTweens.length
+        isPromise: result && typeof result.then === "function",
+        isTimeline: result && typeof result.progress === "function",
+        capturedTweensCount: capturedTweens.length,
       });
 
       // Check what was returned
-      if (result && typeof result.progress === 'function') {
+      if (result && typeof result.progress === "function") {
         // Direct timeline/tween return
         this._currentTimeline = result;
         this._currentTimeline.pause();
-        this._logger.debug("Animation", "Using returned timeline/tween directly");
+        this._logger.debug(
+          "Animation",
+          "Using returned timeline/tween directly"
+        );
       } else if (capturedTweens.length > 0) {
         // Animation called gsap methods - create timeline with captured tweens
-        this._logger.debug("Animation", "Creating timeline from captured tweens", {
-          tweenCount: capturedTweens.length,
-          tweenDurations: capturedTweens.map(t => t.duration())
-        });
+        this._logger.debug(
+          "Animation",
+          "Creating timeline from captured tweens",
+          {
+            tweenCount: capturedTweens.length,
+            tweenDurations: capturedTweens.map((t) => t.duration()),
+          }
+        );
 
         // The tweens have already started playing, so we need to:
         // 1. Kill them to stop auto-playing
@@ -1631,7 +1917,7 @@ export class GveHintDesigner extends HTMLElement {
             duration: duration,
             totalDuration: totalDuration,
             targets: tween.targets(),
-            vars: tween.vars
+            vars: tween.vars,
           });
 
           // Get the animation method that was used (to, from, fromTo)
@@ -1640,7 +1926,7 @@ export class GveHintDesigner extends HTMLElement {
 
           // Get the initial values if this was a fromTo or from tween
           const isFromTo = tween._from !== undefined;
-          const isFrom = !isFromTo && tween.vars.hasOwnProperty('startAt');
+          const isFrom = !isFromTo && tween.vars.hasOwnProperty("startAt");
 
           // Kill the original tween to stop it from playing
           tween.kill();
@@ -1660,24 +1946,33 @@ export class GveHintDesigner extends HTMLElement {
         });
 
         this._logger.debug("Animation", "Timeline built from tweens", {
-          timelineDuration: this._currentTimeline.duration()
+          timelineDuration: this._currentTimeline.duration(),
         });
       } else {
         // No tweens captured - animation has no effect
-        this._logger.warn("Animation", "No tweens captured - creating empty timeline");
+        this._logger.warn(
+          "Animation",
+          "No tweens captured - creating empty timeline"
+        );
         this._currentTimeline = gsap.timeline({ paused: true });
       }
 
       this._logger.debug("Animation", "Timeline created", {
         duration: this._currentTimeline.duration(),
         progress: this._currentTimeline.progress(),
-        paused: this._currentTimeline.paused()
+        paused: this._currentTimeline.paused(),
       });
 
       // Check if timeline has duration
       if (this._currentTimeline.duration() === 0) {
-        this._logger.warn("Animation", "Timeline has zero duration - animation may not work correctly");
-        this.showMessage("Warning: Animation has zero duration. Check your animation code.", "info");
+        this._logger.warn(
+          "Animation",
+          "Timeline has zero duration - animation may not work correctly"
+        );
+        this.showMessage(
+          "Warning: Animation has zero duration. Check your animation code.",
+          "info"
+        );
       }
 
       // Set up timeline callbacks
@@ -1685,7 +1980,7 @@ export class GveHintDesigner extends HTMLElement {
         this._logger.debug("Animation", "Animation completed callback", {
           finalProgress: this._currentTimeline.progress(),
           finalTime: this._currentTimeline.time(),
-          duration: this._currentTimeline.duration()
+          duration: this._currentTimeline.duration(),
         });
         this._isPlaying = false;
         if (this._playButton) this._playButton.disabled = false;
@@ -1701,7 +1996,7 @@ export class GveHintDesigner extends HTMLElement {
 
       this.showMessage("", "");
       this._logger.info("Animation", "Timeline created successfully", {
-        duration: this._currentTimeline.duration()
+        duration: this._currentTimeline.duration(),
       });
     } catch (err) {
       this.showMessage(`Animation Error: ${err}`, "error");
@@ -1718,7 +2013,7 @@ export class GveHintDesigner extends HTMLElement {
   private pauseAnimation(): void {
     this._logger.debug("Animation", "pauseAnimation called", {
       hasTimeline: !!this._currentTimeline,
-      isPlaying: this._isPlaying
+      isPlaying: this._isPlaying,
     });
 
     if (this._currentTimeline) {
@@ -1728,7 +2023,7 @@ export class GveHintDesigner extends HTMLElement {
       if (this._pauseButton) this._pauseButton.disabled = true;
       this.stopProgressUpdate();
       this._logger.debug("Animation", "Animation paused", {
-        progress: this._currentTimeline.progress()
+        progress: this._currentTimeline.progress(),
       });
     }
   }
@@ -1739,7 +2034,7 @@ export class GveHintDesigner extends HTMLElement {
   private restartAnimation(): void {
     this._logger.debug("Animation", "restartAnimation called", {
       hasTimeline: !!this._currentTimeline,
-      isPlaying: this._isPlaying
+      isPlaying: this._isPlaying,
     });
 
     if (this._currentTimeline) {
@@ -1763,7 +2058,7 @@ export class GveHintDesigner extends HTMLElement {
     this._logger.debug("Animation", "seekAnimation called", {
       hasProgressBar: !!this._progressBar,
       hasTimeline: !!this._currentTimeline,
-      progressBarValue: this._progressBar?.value
+      progressBarValue: this._progressBar?.value,
     });
 
     if (!this._progressBar) return;
@@ -1773,7 +2068,10 @@ export class GveHintDesigner extends HTMLElement {
       this._logger.debug("Animation", "No timeline, creating one");
       this.createTimeline();
       if (!this._currentTimeline) {
-        this._logger.error("Animation", "Failed to create timeline for seeking");
+        this._logger.error(
+          "Animation",
+          "Failed to create timeline for seeking"
+        );
         return; // Failed to create
       }
     }
@@ -1783,7 +2081,7 @@ export class GveHintDesigner extends HTMLElement {
       progressBarValue: this._progressBar.value,
       calculatedProgress: progress,
       wasPlaying: this._isPlaying,
-      timelineDuration: this._currentTimeline.duration()
+      timelineDuration: this._currentTimeline.duration(),
     });
 
     // Pause the timeline to prevent it from continuing to play
@@ -1795,7 +2093,7 @@ export class GveHintDesigner extends HTMLElement {
 
     this._logger.debug("Animation", "Seek completed", {
       newProgress: this._currentTimeline.progress(),
-      timelinePaused: this._currentTimeline.paused()
+      timelinePaused: this._currentTimeline.paused(),
     });
 
     // Update playing state
@@ -1820,7 +2118,7 @@ export class GveHintDesigner extends HTMLElement {
       }
     }, 50); // Update every 50ms
     this._logger.debug("Animation", "Progress update started", {
-      intervalId: this._progressUpdateInterval
+      intervalId: this._progressUpdateInterval,
     });
   }
 
@@ -1830,7 +2128,7 @@ export class GveHintDesigner extends HTMLElement {
   private stopProgressUpdate(): void {
     if (this._progressUpdateInterval) {
       this._logger.debug("Animation", "Stopping progress update", {
-        intervalId: this._progressUpdateInterval
+        intervalId: this._progressUpdateInterval,
       });
       clearInterval(this._progressUpdateInterval);
       this._progressUpdateInterval = undefined;
@@ -1860,7 +2158,9 @@ export class GveHintDesigner extends HTMLElement {
     if (!this._svgDisplay) return;
 
     // Get panel size to center the SVG
-    const panel = this._shadow.querySelector('.svg-display-panel') as HTMLElement;
+    const panel = this._shadow.querySelector(
+      ".svg-display-panel"
+    ) as HTMLElement;
     if (panel) {
       const panelWidth = panel.clientWidth;
       const panelHeight = panel.clientHeight;
@@ -1894,8 +2194,8 @@ export class GveHintDesigner extends HTMLElement {
       panY: this._panY,
       zoomLevel: this._zoomLevel,
       transformString,
-      svgWidth: this._svgDisplay.getAttribute('width'),
-      svgHeight: this._svgDisplay.getAttribute('height'),
+      svgWidth: this._svgDisplay.getAttribute("width"),
+      svgHeight: this._svgDisplay.getAttribute("height"),
       svgBBox: this._svgDisplay.getBBox(),
       svgBoundingClientRect: {
         x: svgBoundingRect.x,
@@ -1905,19 +2205,19 @@ export class GveHintDesigner extends HTMLElement {
         top: svgBoundingRect.top,
         left: svgBoundingRect.left,
         right: svgBoundingRect.right,
-        bottom: svgBoundingRect.bottom
-      }
+        bottom: svgBoundingRect.bottom,
+      },
     });
 
     // Apply transform: translate first, then scale from the SVG's own center
     this._svgDisplay.style.transform = transformString;
-    this._svgDisplay.style.transformOrigin = '0 0';
+    this._svgDisplay.style.transformOrigin = "0 0";
 
     // Only apply transition during zoom, not during pan (to avoid sluggishness)
     if (!this._isPanning) {
-      this._svgDisplay.style.transition = 'transform 0.15s ease-out';
+      this._svgDisplay.style.transition = "transform 0.15s ease-out";
     } else {
-      this._svgDisplay.style.transition = 'none';
+      this._svgDisplay.style.transition = "none";
     }
   }
 
@@ -1928,7 +2228,9 @@ export class GveHintDesigner extends HTMLElement {
     if (!this._svgDisplay) return;
 
     // Get the SVG content (not the grid-and-rulers)
-    const hintContent = this._svgDisplay.querySelector("g:not(#grid-and-rulers)");
+    const hintContent = this._svgDisplay.querySelector(
+      "g:not(#grid-and-rulers)"
+    );
     if (!hintContent) {
       // If no hint content, just reset zoom
       this.resetZoom();
@@ -1940,7 +2242,9 @@ export class GveHintDesigner extends HTMLElement {
       const bbox = (hintContent as SVGGraphicsElement).getBBox();
 
       // Get the SVG display panel size
-      const panel = this._shadow.querySelector('.svg-display-panel') as HTMLElement;
+      const panel = this._shadow.querySelector(
+        ".svg-display-panel"
+      ) as HTMLElement;
       if (!panel) return;
 
       const panelWidth = panel.clientWidth;
@@ -1965,8 +2269,8 @@ export class GveHintDesigner extends HTMLElement {
       // We want this to be at the center of the panel: (panelWidth/2, panelHeight/2)
       // So: panX + (bboxCenterX * scale) = panelWidth / 2
       //     panY + (bboxCenterY * scale) = panelHeight / 2
-      const panX = (panelWidth / 2) - (bboxCenterX * scale);
-      const panY = (panelHeight / 2) - (bboxCenterY * scale);
+      const panX = panelWidth / 2 - bboxCenterX * scale;
+      const panY = panelHeight / 2 - bboxCenterY * scale;
 
       this._zoomLevel = scale;
       this._panX = panX;
@@ -1981,7 +2285,7 @@ export class GveHintDesigner extends HTMLElement {
         bboxCenterX,
         bboxCenterY,
         panelWidth,
-        panelHeight
+        panelHeight,
       });
     } catch (err) {
       this._logger.error("Failed to size to fit", err);
@@ -1994,15 +2298,19 @@ export class GveHintDesigner extends HTMLElement {
    */
   private toggleSvgWordWrap(): void {
     this._svgWordWrapEnabled = !this._svgWordWrapEnabled;
-    const wrapper = this._shadow.getElementById('svg-wrapper');
+    const wrapper = this._shadow.getElementById("svg-wrapper");
     if (wrapper) {
       if (this._svgWordWrapEnabled) {
-        wrapper.classList.add('word-wrap-enabled');
+        wrapper.classList.add("word-wrap-enabled");
       } else {
-        wrapper.classList.remove('word-wrap-enabled');
+        wrapper.classList.remove("word-wrap-enabled");
       }
     }
-    this._logger.debug("Component", "SVG word wrap toggled", this._svgWordWrapEnabled);
+    this._logger.debug(
+      "Component",
+      "SVG word wrap toggled",
+      this._svgWordWrapEnabled
+    );
   }
 
   /**
@@ -2010,15 +2318,19 @@ export class GveHintDesigner extends HTMLElement {
    */
   private toggleJsWordWrap(): void {
     this._jsWordWrapEnabled = !this._jsWordWrapEnabled;
-    const wrapper = this._shadow.getElementById('js-wrapper');
+    const wrapper = this._shadow.getElementById("js-wrapper");
     if (wrapper) {
       if (this._jsWordWrapEnabled) {
-        wrapper.classList.add('word-wrap-enabled');
+        wrapper.classList.add("word-wrap-enabled");
       } else {
-        wrapper.classList.remove('word-wrap-enabled');
+        wrapper.classList.remove("word-wrap-enabled");
       }
     }
-    this._logger.debug("Component", "JS word wrap toggled", this._jsWordWrapEnabled);
+    this._logger.debug(
+      "Component",
+      "JS word wrap toggled",
+      this._jsWordWrapEnabled
+    );
   }
 
   /**
@@ -2125,7 +2437,9 @@ export class GveHintDesigner extends HTMLElement {
 
     this._hintVariables.push({ name, value: "" });
     this.refreshVariablesTable();
-    this.fireEvent("hintVariablesChange", { hintVariables: this._hintVariables });
+    this.fireEvent("hintVariablesChange", {
+      hintVariables: this._hintVariables,
+    });
   }
 
   /**
@@ -2134,7 +2448,9 @@ export class GveHintDesigner extends HTMLElement {
   private deleteVariable(index: number): void {
     this._hintVariables.splice(index, 1);
     this.refreshVariablesTable();
-    this.fireEvent("hintVariablesChange", { hintVariables: this._hintVariables });
+    this.fireEvent("hintVariablesChange", {
+      hintVariables: this._hintVariables,
+    });
   }
 
   /**
@@ -2142,11 +2458,16 @@ export class GveHintDesigner extends HTMLElement {
    */
   private editVariable(index: number): void {
     const variable = this._hintVariables[index];
-    const newValue = prompt(`Enter value for "${variable.name}":`, variable.value);
+    const newValue = prompt(
+      `Enter value for "${variable.name}":`,
+      variable.value
+    );
     if (newValue !== null) {
       variable.value = newValue;
       this.refreshVariablesTable();
-      this.fireEvent("hintVariablesChange", { hintVariables: this._hintVariables });
+      this.fireEvent("hintVariablesChange", {
+        hintVariables: this._hintVariables,
+      });
     }
   }
 
@@ -2159,7 +2480,9 @@ export class GveHintDesigner extends HTMLElement {
 
     this._hintVariables = [];
     this.refreshVariablesTable();
-    this.fireEvent("hintVariablesChange", { hintVariables: this._hintVariables });
+    this.fireEvent("hintVariablesChange", {
+      hintVariables: this._hintVariables,
+    });
   }
 
   /**
@@ -2177,6 +2500,12 @@ export class GveHintDesigner extends HTMLElement {
       cell.textContent = "No variables defined";
       cell.style.fontStyle = "italic";
       cell.style.color = "#999";
+
+      // Re-validate SVG variables after clearing variables
+      const svgCode = this._svgTextarea?.value || "";
+      if (svgCode) {
+        this.validateSvgVariables(svgCode);
+      }
       return;
     }
 
@@ -2186,7 +2515,11 @@ export class GveHintDesigner extends HTMLElement {
       // Actions cell
       const actionsCell = row.insertCell();
 
-      const editBtn = this.createButton(`edit-var-${index}`, "edit-2", "Edit variable");
+      const editBtn = this.createButton(
+        `edit-var-${index}`,
+        "edit-2",
+        "Edit variable"
+      );
       editBtn.onclick = () => this.editVariable(index);
 
       const deleteBtn = this.createButton(
@@ -2208,12 +2541,21 @@ export class GveHintDesigner extends HTMLElement {
       const valueCell = row.insertCell();
       valueCell.textContent = variable.value;
     });
+
+    // Re-validate SVG variables after updating the variables table
+    const svgCode = this._svgTextarea?.value || "";
+    if (svgCode) {
+      this.validateSvgVariables(svgCode);
+    }
   }
 
   /**
    * Show a message in the message panel.
    */
-  private showMessage(message: string, type: "info" | "success" | "error" | ""): void {
+  private showMessage(
+    message: string,
+    type: "info" | "success" | "error" | ""
+  ): void {
     if (!this._messagePanel) return;
 
     this._messagePanel.textContent = message;
@@ -2229,20 +2571,26 @@ export class GveHintDesigner extends HTMLElement {
    */
   private highlightSvg(): void {
     if (!this._svgTextarea || !this._svgHighlightContainer) {
-      this._logger.debug("Component", "Cannot highlight SVG - missing elements", {
-        hasTextarea: !!this._svgTextarea,
-        hasContainer: !!this._svgHighlightContainer
-      });
+      this._logger.debug(
+        "Component",
+        "Cannot highlight SVG - missing elements",
+        {
+          hasTextarea: !!this._svgTextarea,
+          hasContainer: !!this._svgHighlightContainer,
+        }
+      );
       return;
     }
 
     const code = this._svgTextarea.value;
-    this._logger.debug("Component", "Highlighting SVG", { codeLength: code.length });
+    this._logger.debug("Component", "Highlighting SVG", {
+      codeLength: code.length,
+    });
 
     try {
       // Highlight as XML
-      const highlighted = hljs.highlight(code, { language: 'xml' }).value;
-      this._svgHighlightContainer.innerHTML = highlighted + '\n';
+      const highlighted = hljs.highlight(code, { language: "xml" }).value;
+      this._svgHighlightContainer.innerHTML = highlighted + "\n";
       this._logger.debug("Component", "SVG highlighted successfully");
     } catch (err) {
       this._logger.error("Failed to highlight SVG", err);
@@ -2259,20 +2607,28 @@ export class GveHintDesigner extends HTMLElement {
    */
   private highlightJs(): void {
     if (!this._jsTextarea || !this._jsHighlightContainer) {
-      this._logger.debug("Component", "Cannot highlight JS - missing elements", {
-        hasTextarea: !!this._jsTextarea,
-        hasContainer: !!this._jsHighlightContainer
-      });
+      this._logger.debug(
+        "Component",
+        "Cannot highlight JS - missing elements",
+        {
+          hasTextarea: !!this._jsTextarea,
+          hasContainer: !!this._jsHighlightContainer,
+        }
+      );
       return;
     }
 
     const code = this._jsTextarea.value;
-    this._logger.debug("Component", "Highlighting JS", { codeLength: code.length });
+    this._logger.debug("Component", "Highlighting JS", {
+      codeLength: code.length,
+    });
 
     try {
       // Highlight as JavaScript
-      const highlighted = hljs.highlight(code, { language: 'javascript' }).value;
-      this._jsHighlightContainer.innerHTML = highlighted + '\n';
+      const highlighted = hljs.highlight(code, {
+        language: "javascript",
+      }).value;
+      this._jsHighlightContainer.innerHTML = highlighted + "\n";
       this._logger.debug("Component", "JS highlighted successfully");
     } catch (err) {
       this._logger.error("Failed to highlight JavaScript", err);
@@ -2871,6 +3227,60 @@ export class GveHintDesigner extends HTMLElement {
 
       .variables-table button[id^="delete-"]:hover {
         background: #ffcdd2;
+      }
+
+      /* Validation Message */
+      .validation-message {
+        padding: 0.75rem;
+        margin: 0.5rem;
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 4px;
+        color: #856404;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .validation-message strong {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #ff9800;
+      }
+
+      .validation-message code {
+        background: #fff;
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 12px;
+        border: 1px solid #e0e0e0;
+      }
+
+      .validation-message ul {
+        margin: 0.5rem 0;
+      }
+
+      .validation-message li {
+        margin: 0.25rem 0;
+      }
+
+      .validation-message em {
+        display: block;
+        margin-top: 0.5rem;
+        font-size: 12px;
+        color: #666;
+      }
+
+      /* Warning Icon in Panel Header */
+      .warning-icon {
+        display: inline-flex;
+        align-items: center;
+        margin-left: 0.5rem;
+        color: #ff9800;
+      }
+
+      .warning-icon .feather-icon {
+        display: block;
       }
 
       /* Responsive layout - use nested grids for each column */

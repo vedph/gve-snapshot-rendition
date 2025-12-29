@@ -436,3 +436,18 @@ The component saves/loads data in JSON format:
 6. **Message Panel**: Always check the message panel for helpful error messages and guidance.
 
 For detailed instructions, see the [How-To Guides](#how-to-guides) section above.
+
+## Using InkScape
+
+To use [InkScape](https://inkscape.org) for drawing and then import SVG code into a hint:
+
+1. open `File/Document Properties` and set display units to `px` and a custom size equal to that of your hint (e.g. 300 x 100).
+2. draw your hint.
+3. optionally, convert everything into a group by selecting all (Ctrl+A) and grouping (Ctrl+G). Or you can just wrap the SVG code later into a single `g` element.
+4. open `File/Save As` and save as plain SVG.
+
+If you want your drawing to exactly fit the canvas:
+
+1. select all (Ctrl+A).
+2. `Object/Align and Distribute` (Ctrl+Shift+A): in the Align section set relative to `Page` and click `Center on vertical axis` and `Center on horizontal axis`.
+3. with everything still selected, in the top toolbar set `W` and `H` fields to the size of your canvas (disable the lock icon to stretch and fix exactly if this is what you want).

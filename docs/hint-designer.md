@@ -182,6 +182,7 @@ As specified in the documentation, some hints may include variable name placehol
 To this end, the hint variables pane provides an editable list of name=value pairs, each representing the definition of a variable. This list must be used to resolve variables before rendering SVG when whiskers are present in its code. The hint variables list is a table listing all the defined variables (and thus it is initially empty).
 
 - at the top, a toolbar contains a button to delete all the variables (prompt for confirmation!).
+- in case of variables used in the SVG code but not defined in this list, a warning message appears below the top toolbar with the list of missing variables.
 - below it, a table lists objects of type `StringPair` having properties properties `name` and `value` (both strings); in the table:
   - column 1 contains buttons to delete the pair or edit the pair.
   - column 2 contains the name.
