@@ -32,7 +32,7 @@ The hint designer UI has these main panels (from top to bottom):
 
 In general:
 
-1. **start simple**: create a basic hint first, then add animations and placeholders. Remember that hints will be stretched to fit the RBR, so draw and configure them accordingly.
+1. **start simple**: create a basic hint first, using placeholders wherever this could be useful to make it more reusable (e.g. for changing its color), and pick an animation for each. Remember that hints will be stretched to fit the RBR, so draw and configure them accordingly.
 2. **use the catalog**: create reusable animations for common effects (fade, slide, etc.).
 3. **test early**: use the timeline player frequently while developing animations.
 4. **save often**: use the Save data button to backup your work regularly.
@@ -55,7 +55,16 @@ In the hint properties, you edit all the properties of the hint being edited:
 </g>
 ```
 
->This hint's SVG code wraps in a `g` element (required) a single line in a designer whose canvas size is 300x100. Thus it represents a diagonal line from the top left to the bottom right of the canvas rectangle.
+>This hint's SVG code wraps in a `g` element (required) a single line in a designer whose canvas size is 300x100 (this is set via the web component's settings in the host page). Thus it represents a diagonal line from the top left to the bottom right of the canvas rectangle.
+
+Hint content can also have these special elements:
+
+- a **handle** element with `id`=`handle`. This represents the "handle" for the SVG code, i.e. the point in it which is used as _the reference for positioning it_. If there is no such handle element, then the component just uses the _bounding rectangle_ for the whole SVG (i.e. its root `g` element, which is always present). Often, in the hint SVG code the handle element has opacity=0 so it is not visible; but this is up to the SVG code you get from the hint. Anyway, the setting `showHintHandles` can force such hidden handles to be displayed setting their opacity to 1 for diagnostic purposes.
+- a **placeholder** element with `id`=`placeholder`. This is usually an SVG shape, like a rectangle including a `text` SVG element which represents the text to draw, or directly a `text` element. Whatever the placeholder element is, in the end it either is a `text` element, or it contains a `text` element. This text element has this behavior:
+  - its _text value_ is resolved at runtime: in the hint SVG, it is just the _name of the variable_ containing the text. This is equal to the name of a _feature_ which is supposed to be provided by the same operation the hints belongs to (usually, this is the `note` feature).
+  - as for its _size_:
+    - when the hint's placeholder element has a `class` attribute equal to `fit`, the text's size is calculated so that its content fits the container element with the `placeholder` ID. For instance, the SVG code of the hint might represent a callout for insertion, where the balloon is a rectangle with id=`placeholder`, and the line ends into the handle point. This way, the text being added will appear inside the balloon. So, here the text must fit into the container.
+    - else, the text value and the settings for drawing it determine the resulting size of `text`. This implies that all the SVG elements containing this `text` element, including the root `g` element, must scale to fit it inside them. So, this is the inverse case with reference to the default one: here the container must fit the text.
 
 - **animation**: the animation panel contains the JS code fragment for the enter animation for the hint. Unless you are creating an ad-hoc animation for the hint being edited ("embedded JS"), this is usually drawn from a set of available animations.
 
@@ -81,7 +90,12 @@ return new Promise(resolve => {
 
 >This code wraps the animation in a `Promise` object which is returned to the consumer code. This is required by the rendition engine architecture. Inside the promise, it uses `gsap` to animate the target element's opacity from 0 (=invisible) to 1 (=fully visible) in 2 seconds. Remember to call resolve on complete by adding `onComplete: resolve`.
 
-👉 This UI is designed so that it reflects the fact that animations depend on hints, i.e. are selected by them. Besides, you can't design and test an animation without having a hint to apply it to. So, this is the logic when you **save an animation**:
+For GSAP, see:
+
+- [GSAP Documentation](https://greensock.com/docs/).
+- [DrawSVG Plugin](https://greensock.com/docs/v3/Plugins/DrawSVGPlugin): plugin for animating SVG.
+
+👉 The animations UI is designed so that it reflects the fact that animations depend on hints, i.e. are selected by them. Besides, you can't design and test an animation without having a hint to apply it to. So, this is the logic when you **save an animation**:
 
 - if `embedded JS` is checked, the JS code is saved as the embedded JS for that hint only.
 - otherwise:
