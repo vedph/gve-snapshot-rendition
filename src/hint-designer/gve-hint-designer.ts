@@ -796,6 +796,14 @@ export class GveHintDesigner extends HTMLElement {
     addVarBtn.classList.add("btn-primary");
     toolbar.appendChild(addVarBtn);
 
+    const populateBtn = this.createButton(
+      "populate-from-hints",
+      "download-cloud",
+      "Populate from all hints"
+    );
+    populateBtn.classList.add("btn-accent");
+    toolbar.appendChild(populateBtn);
+
     const deleteAllBtn = this.createButton(
       "delete-all-vars",
       "trash-2",
@@ -1028,6 +1036,9 @@ export class GveHintDesigner extends HTMLElement {
     // Variables panel
     this.addClickListener("delete-all-vars", () => this.deleteAllVariables());
     this.addClickListener("add-variable", () => this.addVariable());
+    this.addClickListener("populate-from-hints", () =>
+      this.populateVariablesFromHints()
+    );
 
     // Word wrap toggles
     this.addClickListener("toggle-svg-wrap", () => this.toggleSvgWordWrap());
@@ -2483,6 +2494,72 @@ export class GveHintDesigner extends HTMLElement {
     this.fireEvent("hintVariablesChange", {
       hintVariables: this._hintVariables,
     });
+  }
+
+  /**
+   * Extract all variable names from all hints in data.
+   * Returns a sorted array of unique variable names.
+   */
+  private extractAllVariablesFromHints(): string[] {
+    const allVariables = new Set<string>();
+
+    // Iterate through all hints in data
+    Object.values(this._data.hints).forEach((hint) => {
+      if (hint.svg) {
+        // Extract variables from this hint's SVG
+        const variables = this.extractVariablesFromSvg(hint.svg);
+        variables.forEach((varName) => allVariables.add(varName));
+      }
+    });
+
+    // Convert to array and sort alphabetically
+    return Array.from(allVariables).sort();
+  }
+
+  /**
+   * Populate hint variables from all hints.
+   * Extracts all variables from all hints' SVG code and merges them into hintVariables.
+   * Only adds variables that don't already exist.
+   */
+  private populateVariablesFromHints(): void {
+    // Extract all variables from hints
+    const extractedVariables = this.extractAllVariablesFromHints();
+
+    if (extractedVariables.length === 0) {
+      this.showMessage("No variables found in hints", "info");
+      return;
+    }
+
+    // Get existing variable names for quick lookup
+    const existingNames = new Set(this._hintVariables.map((v) => v.name));
+
+    // Add new variables (those not already in hintVariables)
+    let addedCount = 0;
+    extractedVariables.forEach((varName) => {
+      if (!existingNames.has(varName)) {
+        this._hintVariables.push({ name: varName, value: "" });
+        addedCount++;
+      }
+    });
+
+    // Refresh UI and notify
+    this.refreshVariablesTable();
+    this.fireEvent("hintVariablesChange", {
+      hintVariables: this._hintVariables,
+    });
+
+    // Show feedback message
+    if (addedCount === 0) {
+      this.showMessage(
+        `All ${extractedVariables.length} variable(s) already defined`,
+        "info"
+      );
+    } else {
+      this.showMessage(
+        `Added ${addedCount} new variable(s) from hints (${extractedVariables.length} total found)`,
+        "success"
+      );
+    }
   }
 
   /**
