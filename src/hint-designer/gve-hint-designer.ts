@@ -1323,6 +1323,60 @@ export class GveHintDesigner extends HTMLElement {
   }
 
   /**
+   * Validate SVG code for well-formedness and structure.
+   * Returns an error message if validation fails, or null if valid.
+   */
+  private validateSvgCode(svgCode: string): string | null {
+    // Check if SVG code is empty
+    if (!svgCode || !svgCode.trim()) {
+      return "SVG code cannot be empty";
+    }
+
+    const trimmedCode = svgCode.trim();
+
+    // Check that it starts with <g and ends with </g>
+    if (!trimmedCode.startsWith("<g")) {
+      return "SVG must start with a <g> element (e.g., <g> or <g ...>)";
+    }
+
+    if (!trimmedCode.endsWith("</g>")) {
+      return "SVG must end with </g> (closing tag for the root <g> element)";
+    }
+
+    // Use DOMParser to validate XML well-formedness
+    const parser = new DOMParser();
+    const wrappedSvg = `<svg xmlns="http://www.w3.org/2000/svg">${svgCode}</svg>`;
+    const doc = parser.parseFromString(wrappedSvg, "image/svg+xml");
+
+    // Check for parsing errors
+    const errorNode = doc.querySelector("parsererror");
+    if (errorNode) {
+      const errorText = errorNode.textContent || "Unknown XML parsing error";
+      return `XML is not well-formed: ${errorText}`;
+    }
+
+    // Verify there is exactly one root <g> element
+    const svgElement = doc.documentElement;
+    const rootChildren = Array.from(svgElement.children);
+
+    if (rootChildren.length === 0) {
+      return "SVG must contain a <g> element";
+    }
+
+    if (rootChildren.length > 1) {
+      return `SVG must have exactly one root <g> element, but found ${rootChildren.length} root elements. Wrap all content in a single <g> element.`;
+    }
+
+    const rootElement = rootChildren[0];
+    if (rootElement.tagName.toLowerCase() !== "g") {
+      return `Root element must be <g>, but found <${rootElement.tagName}>`;
+    }
+
+    // All validations passed
+    return null;
+  }
+
+  /**
    * Add a new hint.
    */
   private addHint(): void {
@@ -1367,19 +1421,21 @@ export class GveHintDesigner extends HTMLElement {
     const svgCode = this._svgTextarea?.value || "";
     const animationValue = this._jsTextarea?.value || "";
 
-    try {
-      // Validate SVG (basic check)
-      if (svgCode && !svgCode.trim().startsWith("<g")) {
-        throw new Error("SVG must start with <g> element");
-      }
+    // Validate SVG code for well-formedness and structure
+    const svgValidationError = this.validateSvgCode(svgCode);
+    if (svgValidationError) {
+      this.showMessage(`SVG validation error: ${svgValidationError}`, "error");
+      return; // Prevent saving on error
+    }
 
-      // Validate JS syntax if present (we'll do more specific validation below)
+    // Validate JS syntax if present
+    try {
       if (animationValue && !animationValue.trim().startsWith("#")) {
         // Try to create a function to validate syntax
         new Function("gsap", "targetEl", "rootEl", animationValue);
       }
     } catch (err) {
-      this.showMessage(`Validation error: ${err}`, "error");
+      this.showMessage(`JS validation error: ${err}`, "error");
       return; // Prevent saving on error
     }
 
