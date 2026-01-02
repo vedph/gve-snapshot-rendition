@@ -170,7 +170,17 @@ export class GveHintDesigner extends HTMLElement {
   }
 
   public set hintVariables(value: StringPair[]) {
-    this._hintVariables = value || [];
+    // Ensure value is an array
+    if (!Array.isArray(value)) {
+      this._logger.warn(
+        "Component",
+        "hintVariables setter received non-array value, converting to array",
+        value
+      );
+      this._hintVariables = [];
+    } else {
+      this._hintVariables = value || [];
+    }
     this.refreshVariablesTable();
     this.fireEvent("hintVariablesChange", {
       hintVariables: this._hintVariables,
@@ -2625,6 +2635,16 @@ export class GveHintDesigner extends HTMLElement {
     if (!this._variablesTable) return;
 
     this._variablesTable.innerHTML = "";
+
+    // Ensure _hintVariables is an array
+    if (!Array.isArray(this._hintVariables)) {
+      this._logger.warn(
+        "Component",
+        "hintVariables is not an array, resetting to empty array",
+        this._hintVariables
+      );
+      this._hintVariables = [];
+    }
 
     if (this._hintVariables.length === 0) {
       const row = this._variablesTable.insertRow();

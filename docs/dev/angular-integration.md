@@ -151,6 +151,29 @@ export class SnapshotViewerComponent implements AfterViewInit {
 
 ## Hints Designer Component
 
+⚠️ Besides installing GSAP, you should make GSAP available in the `window` object by adding these to `angular.json`:
+
+```json
+{
+  "projects": {
+    "your-project-name": {
+      "architect": {
+        "build": {
+          "options": {
+            "scripts": [
+              "node_modules/gsap/dist/gsap.min.js",
+              "node_modules/gsap/dist/DrawSVGPlugin.min.js"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+This will bundle GSAP into your application and make it globally available via `window.gsap`.
+
 - 🔥 **events**:
   - `dataChange`: fired when hint data changes (detail: `{ data }`).
   - `hintIdChange`: fired when selected hint changes (detail: `{ hintId }`).
