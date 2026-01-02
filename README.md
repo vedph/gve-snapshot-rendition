@@ -151,3 +151,10 @@ Package structure:
 ├── README.md
 └── LICENSE
 ```
+
+## Deploy Demo at Surge
+
+To deploy demo in surge:
+
+1. run the script for the demo you want to create (`deploy-demo.ps1` or `deploy-hint-demo.ps1`).
+2. in the created folder, run `surge`, enter your credentials, confirm the local source directory, and specify a URL to use.
