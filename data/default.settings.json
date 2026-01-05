@@ -56,10 +56,10 @@
     }
   },
   "animations": {
-    "text-fade-in": "\n          return new Promise(resolve => {\n            gsap.fromTo(targetEl,\n              { opacity: 0 },\n              { opacity: 1, duration: 0.05, onComplete: resolve }\n            );\n          });\n        ",
-    "fade-in": "\n          return new Promise(resolve => {\n            gsap.fromTo(targetEl,\n              { opacity: 0 },\n              { opacity: 1, duration: 1, onComplete: resolve }\n            );\n          });\n        ",
-    "wipe-right": "\n          return new Promise(resolve => {\n            gsap.fromTo(targetEl,\n              { opacity: 0, x: -20 },\n              { opacity: 1, x: 0, duration: 0.6, ease: 'power2.out', onComplete: resolve }\n            );\n          });\n        ",
-    "scale-in": "\n          return new Promise(resolve => {\n            gsap.fromTo(targetEl,\n              { opacity: 0, scale: 0.5 },\n              { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)', onComplete: resolve }\n            );\n          });\n        "
+    "text-fade-in": "return new Promise(resolve => {\n  gsap.fromTo(targetEl,\n    { opacity: 0 },\n    { opacity: 1, duration: 0.05, onComplete: resolve }\n    );\n});",
+    "fade-in": "return new Promise(resolve => {\n  gsap.fromTo(targetEl,\n    { opacity: 0 },\n    { opacity: 1, duration: 1, onComplete: resolve }\n    );\n});",
+    "wipe-right": "return new Promise(resolve => {\n  gsap.fromTo(targetEl,\n    { opacity: 0, x: -20 },\n    { opacity: 1, x: 0, duration: 0.6, ease: 'power2.out', onComplete: resolve }\n    );\n});",
+    "scale-in": "return new Promise(resolve => {\n  gsap.fromTo(targetEl,\n    { opacity: 0, scale: 0.5 },\n    { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)', onComplete: resolve }\n    );\n});"
   },
   "charAnimationId": "text-fade-in"
 }
