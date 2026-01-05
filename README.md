@@ -29,7 +29,7 @@ Conceptual documentation and sample data:
 - [rendition description](docs/rendition.md): details about the architecture and logic of this component.
 - [sample request to backend snapshot processor](docs/sample/request.json): the request used to generate our sample data via backend. This is used only when we want to change our sample data.
 - [sample response from backend snapshot processor](docs/sample/response.json): the response received from backend corresponding to our request. This is used only when we want to change our sample data.
-- [data used in the demo](data.json): the data loaded in the web component to test it. This is copied from [response.json](docs/sample/response.json), and contains all the data received by the web component for rendering.
+- data used in the demo are found in the `data` folder. Each sample has 3 files for base text, data received from backend service, and settings. For the default sample, data is copied from [response.json](docs/sample/response.json). These represent all the data received by the web component for rendering.
 - [features adapter services](docs/adapter.md): complementary services independent from the GVE snapshot rendition component, possibly used to adapt data before passing it to the component.
 
 The test page used in this project is `index.html` and its code is `consumer.js`. The data model is `CharChainResult` and it is found with all the imported models in `models.ts`. These are the models imported from another package and should not be touched.
