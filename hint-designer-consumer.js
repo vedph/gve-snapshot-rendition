@@ -110,6 +110,44 @@ document.addEventListener("DOMContentLoaded", () => {
         solid: false,
         animation: "#fade-in",
       },
+      snake: {
+        svg: `<g>
+  <path
+     style="fill:none;stroke:red;stroke-width:5"
+     d="M 197.68715,3.0148358 156.47518,14.039149 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 l -25.56877,14.045081 v 0"
+     />
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 2,
+        rotation: 0,
+        solid: false,
+        animation: "#wipe-right",
+      },
+      "snake-callout": {
+        svg: `<g>
+  <path
+     style="fill:none;stroke:#e40000;stroke-width:5"
+     d="m 197.78287,15.856525 -41.29892,9.551979 a 12.814808,10.986948 0 0 0 -9.35458,9.092047 L 140.32721,76.3708 a 14.576478,12.49734 0 0 1 -7.37373,9.207996 l -25.62272,12.169313 v 0"
+     id="path1" />
+  <text
+     xml:space="preserve"
+     fill="red"
+     x="146"
+     y="12"
+     id="text1">{{note}}</text>
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 2,
+        rotation: 0,
+        solid: false,
+        animation: "#wipe-right",
+      },
     },
     animations: {
       "fade-in": `// Fade in using GSAP
