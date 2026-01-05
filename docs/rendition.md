@@ -356,11 +356,11 @@ The hint has these **properties**:
 
 - `svg`: SVG code for hint's visuals, always having a root g element.
 - `position`: relative position for the hint.
-- `offsetX`: absolute (10) or proportional ("0.5th" = half text height, "0.5tw" = half text width).
-- `offsetY`: absolute (10) or proportional ("0.5th" = half text height, "0.5tw" = half text width)
-- `scaleX`: horizontal scale: 1 = match bounds width, 1.1 = 110% of bounds width.
-- `scaleY`: vertical scale: 1 = match bounds height, 1.1 = 110% of bounds height.
-- `rotation`: optional hint's rotation (0=none).
+- `offsetX`: absolute (10) or proportional (`0.5th` = half text height, `0.5tw` = half text width).
+- `offsetY`: absolute (10) or proportional (`0.5th` = half text height, `0.5tw` = half text width)
+- `scaleX`: horizontal scale: `1` = match bounds width, `1.1` = 110% of bounds width.
+- `scaleY`: vertical scale: `1` = match bounds height, `1.1` = 110% of bounds height.
+- `rotation`: optional hint's rotation (`0`=none).
 - `animation`: JS code for animating the hint's entrance via GSAP.
 - `displacedRefSpan`: a span of base text with format IDxN where ID=node ID and N=count of chars to include, to be used as the RBR instead of the default RBR.
 
