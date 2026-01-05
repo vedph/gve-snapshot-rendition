@@ -110,6 +110,43 @@ document.addEventListener("DOMContentLoaded", () => {
         solid: false,
         animation: "#fade-in",
       },
+      "half-psi": {
+        svg: `<g>
+  <path
+     style="fill:none;fill-opacity:1;stroke:#ff0000;stroke-width:5.04942;stroke-opacity:1"
+     d="M 150,0 V 100"
+     />
+  <path
+     style="fill:none;fill-opacity:1;stroke:#ff0000;stroke-width:4.70823;stroke-linecap:round;stroke-opacity:1"
+     d="m 152.09414,34.999888 11.93025,-11.63501 a 30.931452,30.496454 0 0 0 5.68666,-7.604445 l 4.43347,-8.4004413 a 8.2686977,8.1524124 0 0 1 2.87164,-3.0995426 l 2.8897,-1.8269636 v 0"
+     />
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1.5,
+        rotation: 0,
+        solid: false,
+        animation: "#wipe-up",
+      },
+      "i-dot": {
+        svg: `<g>
+  <circle
+     style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:5;stroke-linecap:round;stroke-opacity:1"
+     cx="150"
+     cy="9"
+     r="9" />
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        solid: false,
+        animation: "#fade-in",
+      },
       snake: {
         svg: `<g>
   <path
