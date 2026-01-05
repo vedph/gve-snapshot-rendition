@@ -56,6 +56,8 @@ pnpm run start:designer
 
 This will build the component and open the hint designer in your browser.
 
+>If you want to pick a different sample, add it to the URL with a `sample` argument, e.g. <localhost:3000?sample=h5-48>.
+
 ## Quick Start
 
 To start working with this code:
