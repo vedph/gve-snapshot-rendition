@@ -375,7 +375,6 @@ export class GveHintDesigner extends HTMLElement {
     const width = this._settings.hintDesignWidth;
     const height = this._settings.hintDesignHeight;
     const gridSize = 10; // Grid cell size in pixels
-    const rulerSize = 20; // Ruler width/height in pixels
 
     // Create defs section for the grid pattern
     const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
@@ -397,7 +396,7 @@ export class GveHintDesigner extends HTMLElement {
     );
     gridPath.setAttribute("d", `M ${gridSize} 0 L 0 0 0 ${gridSize}`);
     gridPath.setAttribute("fill", "none");
-    gridPath.setAttribute("stroke", "#e0e0e0");
+    gridPath.setAttribute("stroke", "#999999");
     gridPath.setAttribute("stroke-width", "0.5");
     pattern.appendChild(gridPath);
 
@@ -411,65 +410,23 @@ export class GveHintDesigner extends HTMLElement {
     );
     backgroundGroup.setAttribute("id", "grid-and-rulers");
 
-    // Add grid background rectangle
+    // Add grid background rectangle - now starting at (0,0)
     const gridRect = document.createElementNS(
       "http://www.w3.org/2000/svg",
       "rect"
     );
-    gridRect.setAttribute("x", rulerSize.toString());
-    gridRect.setAttribute("y", rulerSize.toString());
-    gridRect.setAttribute("width", (width - rulerSize).toString());
-    gridRect.setAttribute("height", (height - rulerSize).toString());
+    gridRect.setAttribute("x", "0");
+    gridRect.setAttribute("y", "0");
+    gridRect.setAttribute("width", width.toString());
+    gridRect.setAttribute("height", height.toString());
     gridRect.setAttribute("fill", "url(#grid)");
     backgroundGroup.appendChild(gridRect);
-
-    // Add horizontal ruler (top)
-    const hRuler = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "rect"
-    );
-    hRuler.setAttribute("x", rulerSize.toString());
-    hRuler.setAttribute("y", "0");
-    hRuler.setAttribute("width", (width - rulerSize).toString());
-    hRuler.setAttribute("height", rulerSize.toString());
-    hRuler.setAttribute("fill", "#f5f5f5");
-    hRuler.setAttribute("stroke", "#ccc");
-    hRuler.setAttribute("stroke-width", "1");
-    backgroundGroup.appendChild(hRuler);
-
-    // Add vertical ruler (left)
-    const vRuler = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "rect"
-    );
-    vRuler.setAttribute("x", "0");
-    vRuler.setAttribute("y", rulerSize.toString());
-    vRuler.setAttribute("width", rulerSize.toString());
-    vRuler.setAttribute("height", (height - rulerSize).toString());
-    vRuler.setAttribute("fill", "#f5f5f5");
-    vRuler.setAttribute("stroke", "#ccc");
-    vRuler.setAttribute("stroke-width", "1");
-    backgroundGroup.appendChild(vRuler);
-
-    // Add corner square
-    const corner = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "rect"
-    );
-    corner.setAttribute("x", "0");
-    corner.setAttribute("y", "0");
-    corner.setAttribute("width", rulerSize.toString());
-    corner.setAttribute("height", rulerSize.toString());
-    corner.setAttribute("fill", "#e8e8e8");
-    corner.setAttribute("stroke", "#ccc");
-    corner.setAttribute("stroke-width", "1");
-    backgroundGroup.appendChild(corner);
 
     // Add ruler tick marks and labels (horizontal)
     const tickInterval = 50; // Major tick every 50 pixels
     const minorTickInterval = 10; // Minor tick every 10 pixels
 
-    for (let x = 0; x <= width - rulerSize; x += minorTickInterval) {
+    for (let x = 0; x <= width; x += minorTickInterval) {
       const isMajorTick = x % tickInterval === 0;
       const tickHeight = isMajorTick ? 8 : 4;
 
@@ -477,21 +434,21 @@ export class GveHintDesigner extends HTMLElement {
         "http://www.w3.org/2000/svg",
         "line"
       );
-      tick.setAttribute("x1", (rulerSize + x).toString());
-      tick.setAttribute("y1", (rulerSize - tickHeight).toString());
-      tick.setAttribute("x2", (rulerSize + x).toString());
-      tick.setAttribute("y2", rulerSize.toString());
+      tick.setAttribute("x1", x.toString());
+      tick.setAttribute("y1", "0");
+      tick.setAttribute("x2", x.toString());
+      tick.setAttribute("y2", tickHeight.toString());
       tick.setAttribute("stroke", "#666");
       tick.setAttribute("stroke-width", "1");
       backgroundGroup.appendChild(tick);
 
-      // Add label for major ticks
+      // Add label for major ticks - positioned inside the grid, below the top edge
       if (isMajorTick && x > 0) {
         const label = document.createElementNS(
           "http://www.w3.org/2000/svg",
           "text"
         );
-        label.setAttribute("x", (rulerSize + x).toString());
+        label.setAttribute("x", x.toString());
         label.setAttribute("y", "12");
         label.setAttribute("font-size", "9");
         label.setAttribute("font-family", "Arial, sans-serif");
@@ -503,7 +460,7 @@ export class GveHintDesigner extends HTMLElement {
     }
 
     // Add ruler tick marks and labels (vertical)
-    for (let y = 0; y <= height - rulerSize; y += minorTickInterval) {
+    for (let y = 0; y <= height; y += minorTickInterval) {
       const isMajorTick = y % tickInterval === 0;
       const tickWidth = isMajorTick ? 8 : 4;
 
@@ -511,26 +468,26 @@ export class GveHintDesigner extends HTMLElement {
         "http://www.w3.org/2000/svg",
         "line"
       );
-      tick.setAttribute("x1", (rulerSize - tickWidth).toString());
-      tick.setAttribute("y1", (rulerSize + y).toString());
-      tick.setAttribute("x2", rulerSize.toString());
-      tick.setAttribute("y2", (rulerSize + y).toString());
+      tick.setAttribute("x1", "0");
+      tick.setAttribute("y1", y.toString());
+      tick.setAttribute("x2", tickWidth.toString());
+      tick.setAttribute("y2", y.toString());
       tick.setAttribute("stroke", "#666");
       tick.setAttribute("stroke-width", "1");
       backgroundGroup.appendChild(tick);
 
-      // Add label for major ticks
+      // Add label for major ticks - positioned inside the grid, to the right of the left edge
       if (isMajorTick && y > 0) {
         const label = document.createElementNS(
           "http://www.w3.org/2000/svg",
           "text"
         );
         label.setAttribute("x", "10");
-        label.setAttribute("y", (rulerSize + y + 3).toString());
+        label.setAttribute("y", (y + 3).toString());
         label.setAttribute("font-size", "9");
         label.setAttribute("font-family", "Arial, sans-serif");
         label.setAttribute("fill", "#333");
-        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("text-anchor", "start");
         label.textContent = y.toString();
         backgroundGroup.appendChild(label);
       }
