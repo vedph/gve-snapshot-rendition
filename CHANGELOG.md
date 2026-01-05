@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - 2026-01-05:
   - fixed SVG grid in hint designer.
   - added alternative sample data.
+  - refactor `consumer.js` for different sample data.
 - 2026-01-02: more robust variables in hint designer.
 
 ## [0.0.3]

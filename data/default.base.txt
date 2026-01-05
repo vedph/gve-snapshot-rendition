@@ -1,0 +1,4 @@
+In this test I show all operation
+types.
+It is not complex nor long.
+This too, is another line
