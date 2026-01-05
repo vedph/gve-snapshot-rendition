@@ -71,6 +71,19 @@ document.addEventListener("DOMContentLoaded", () => {
         solid: false,
         animation: "#wipe-right",
       },
+      "vertical-stroke": {
+        svg: `<g>
+  <line x1="150" y1="0" x2="150" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        solid: false,
+        animation: "#wipe-down",
+      },
       box: {
         svg: `<g>
   <rect x="0" y="0" width="300" height="100" fill="none" stroke="{{r_fore-color}}" stroke-width="2" />
