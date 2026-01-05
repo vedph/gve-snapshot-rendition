@@ -64,12 +64,12 @@ To start working with this code:
 2. download dependencies with `pnpm i`.
 3. run with `pnpm start`.
 
-Note: if you need to **update sample data**, follow these steps:
+💡 Note: if you need to **update sample data**, follow these steps:
 
-1. open the GVE backend solution and run the demo.
+1. open the [GVE backend solution](https://github.com/vedph/gve-core) and run the demo.
 2. set text and operations as you want (to start with the current data, pick the "rendition features" preset).
 3. click the "build request" button.
-4. paste the request in [docs/sample/request.json](docs/sample/request.json) if you want to make it the default data.
+4. optionally, paste the request in [docs/sample/request.json](docs/sample/request.json) if you want to make it the default data.
 5. run the GVE backend API and use Postman or similar to send the request body with this header:
 
     ```txt

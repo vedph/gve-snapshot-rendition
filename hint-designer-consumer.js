@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleY: 1.1,
         rotation: 0,
         solid: false,
-        animation: "#scale-in",
+        animation: "#fade-in",
       },
       note: {
         svg: `<g>
@@ -150,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
       snake: {
         svg: `<g>
   <path
-     style="fill:none;stroke:red;stroke-width:5"
+     style="fill:none;stroke:{{r_fore-color}};stroke-width:5"
      d="M 197.68715,3.0148358 156.47518,14.039149 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 l -25.56877,14.045081 v 0"
      />
 </g>`,
@@ -171,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
      id="path1" />
   <text
      xml:space="preserve"
-     fill="red"
+     fill="{{r_fore-color}}"
      x="146"
      y="12"
      id="text1">{{note}}</text>

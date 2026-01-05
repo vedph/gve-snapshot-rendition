@@ -276,7 +276,7 @@ export const DEFAULT_SETTINGS: GveRenditionSettings = {
   // Hints - empty by default, to be filled by consumer code
   hints: {},
   hintMargin: 0,
-  hintDesignWidth: 100,
+  hintDesignWidth: 300,
   hintDesignHeight: 100,
   showHintHandles: false,
 
