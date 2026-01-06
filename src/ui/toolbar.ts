@@ -80,7 +80,6 @@ export class Toolbar {
           <button id="prev-btn" class="toolbar-btn" title="Previous Version (←)">
             <i data-feather="chevron-left"></i>
           </button>
-          <div id="version-label" class="version-label">v0 (1/1)</div>
           <button id="next-btn" class="toolbar-btn" title="Next Version (→)">
             <i data-feather="chevron-right"></i>
           </button>
@@ -128,8 +127,11 @@ export class Toolbar {
         <div id="custom-buttons-group" class="toolbar-group custom-buttons-group">
         </div>
 
-        <!-- Group Badge (at the end) -->
-        <div id="group-badge" class="version-group-badge" style="display: none; margin-left: auto;"></div>
+        <!-- Version Label and Group Badge (at the right edge) -->
+        <div class="toolbar-group version-info-group" style="margin-left: auto;">
+          <div id="version-label" class="version-label">v0 (1/1)</div>
+          <div id="group-badge" class="version-group-badge" style="display: none;"></div>
+        </div>
       </div>
     `;
 
