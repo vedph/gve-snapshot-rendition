@@ -45,6 +45,7 @@ export interface RenditionConfig {
   textOffsetY: number | string;      // r_t-offset-y (can be string like "0.5th" for relative offsets)
   textSolid?: boolean;      // r_t-solid
   textDisplacedSpan?: { nodeId: number; count: number }; // r_t-displaced-span
+  textValue?: string;       // r_t-value (display-only override for operation value)
 
   hints?: string[]; // Array of hint IDs from r_hints
 
@@ -225,6 +226,10 @@ export class FeatureResolver {
           if (!config.textDisplacedSpan) {
             this._logger.warn(`Invalid r_t-displaced-span value: ${value}`);
           }
+          break;
+
+        case "r_t-value":
+          config.textValue = value;
           break;
 
         case "r_hints":

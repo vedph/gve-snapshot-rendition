@@ -216,6 +216,34 @@ export class TextRenderer {
       return;
     }
 
+    // Apply r_t-value override if specified
+    // This overrides the operation's value (the text being added) for display only
+    if (config.textValue) {
+      this._logger.debug(
+        "TextRenderer",
+        `Applying r_t-value override: "${config.textValue}" (original text had ${nodes.length} characters)`
+      );
+
+      // Replace node data with characters from r_t-value
+      // If r_t-value has fewer characters than nodes, we only override the first N nodes
+      // If r_t-value has more characters, we only use the first N characters
+      const overrideChars = config.textValue.split('');
+      const charsToOverride = Math.min(nodes.length, overrideChars.length);
+
+      for (let i = 0; i < charsToOverride; i++) {
+        nodes[i] = { ...nodes[i], data: overrideChars[i] };
+      }
+
+      // If r_t-value has fewer characters, we need to only render those nodes
+      if (overrideChars.length < nodes.length) {
+        nodes = nodes.slice(0, overrideChars.length);
+        this._logger.debug(
+          "TextRenderer",
+          `r_t-value has fewer characters (${overrideChars.length}) than nodes (${nodes.length}), only rendering first ${overrideChars.length} characters`
+        );
+      }
+    }
+
     // 1. Calculate RBR (or use displaced span if specified)
     let rbrs: BoundingRect[];
     if (config.textDisplacedSpan) {

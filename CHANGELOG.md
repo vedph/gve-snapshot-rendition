@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - 2026-01-06:
   - fixes to H5-48 sample.
   - more hints.
+  - added `r_t-value` feature.
 - 2026-01-05:
   - fixed SVG grid in hint designer.
   - added alternative sample data.
