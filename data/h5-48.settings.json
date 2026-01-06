@@ -110,15 +110,15 @@
       "scaleY": 1.5,
       "rotation": 0,
       "solid": false,
-      "animation": "#wipe-up"
+      "animation": "#wipe-right"
     },
     "i-dot": {
       "svg": "<g>\n  <circle\n     style=\"fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:5;stroke-linecap:round;stroke-opacity:1\"\n     cx=\"150\"\n     cy=\"9\"\n     r=\"9\" />\n</g>",
       "position": "o",
       "offsetX": 0,
-      "offsetY": 0,
+      "offsetY": -16,
       "scaleX": 1,
-      "scaleY": 1,
+      "scaleY": 0.3,
       "rotation": 0,
       "solid": false,
       "animation": "#fade-in"
