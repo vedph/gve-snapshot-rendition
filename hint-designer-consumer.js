@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleY: 1.5,
         rotation: 0,
         solid: false,
-        animation: "#wipe-up",
+        animation: "#wipe-right",
       },
       "i-dot": {
         svg: `<g>
@@ -137,6 +137,28 @@ document.addEventListener("DOMContentLoaded", () => {
      cx="150"
      cy="9"
      r="9" />
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        solid: false,
+        animation: "#fade-in",
+      },
+      umlaut: {
+        svg: `<g>
+<circle
+  style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:5;stroke-linecap:round;stroke-opacity:1"
+  cx="170"
+  cy="9"
+  r="9" />
+<circle
+  style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:5;stroke-linecap:round;stroke-opacity:1"
+  cx="129"
+  cy="9"
+  r="9" />
 </g>`,
         position: "o",
         offsetX: 0,
