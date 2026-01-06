@@ -158,6 +158,7 @@
     }
   },
   "animations": {
+    "text-fade-in": "return new Promise(resolve => {\n  gsap.fromTo(targetEl,\n    { opacity: 0 },\n    { opacity: 1, duration: 0.05, onComplete: resolve }\n    );\n});",
     "fade-in": "// Fade in using GSAP\nreturn new Promise(resolve => {\n  gsap.fromTo(targetEl,\n    { opacity: 0 },\n    { opacity: 1, duration: 2, onComplete: resolve }\n  );\n});",
     "scale-in": "// Scale in using GSAP\nreturn new Promise(resolve => {\n  gsap.fromTo(targetEl,\n    { opacity: 0, scale: 0.5 },\n    { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.7)', onComplete: resolve }\n  );\n});",
     "wipe-left": "// Wipe from right to left using GSAP DrawSVGPlugin\nreturn new Promise(resolve => {\n  // Set initial state\n  targetEl.style.opacity = '1';\n\n  // Find all drawable elements (line, path, polyline, polygon, circle, rect, ellipse)\n  const drawables = targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse');\n\n  gsap.fromTo(drawables,\n    { drawSVG: '100% 100%' },\n    {\n      drawSVG: '0% 100%',\n      duration: 0.8,\n      ease: 'power2.out',\n      stagger: 0.1,\n      onComplete: resolve\n    }\n  );\n});",
