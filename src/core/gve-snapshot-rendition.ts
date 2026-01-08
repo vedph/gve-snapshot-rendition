@@ -1905,6 +1905,23 @@ export class GveSnapshotRendition extends HTMLElement {
         background: #f5f5f5;
       }
 
+      .toolbar-log-display {
+        padding: 0.5rem 1rem;
+        font-size: 13px;
+        color: var(--gve-text-color, #333);
+        font-style: italic;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: center;
+        max-width: 800px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-height: 1.4;
+        max-height: calc(1.4em * 2);
+        cursor: help;
+      }
+
       .version-label {
         font-family: monospace;
         font-size: 16px;

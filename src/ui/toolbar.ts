@@ -30,6 +30,7 @@ export class Toolbar {
   // Current step label
   private versionLabel!: HTMLElement;
   private groupBadge!: HTMLElement;
+  private logDisplay!: HTMLElement;
 
   // Slideshow buttons
   private slideshowStartBtn!: HTMLButtonElement;
@@ -127,6 +128,9 @@ export class Toolbar {
         <div id="custom-buttons-group" class="toolbar-group custom-buttons-group">
         </div>
 
+        <!-- Log Display (flexible space) -->
+        <div id="log-display" class="toolbar-log-display" style="flex: 1; display: none;"></div>
+
         <!-- Version Label and Group Badge (at the right edge) -->
         <div class="toolbar-group version-info-group" style="margin-left: auto;">
           <div id="version-label" class="version-label">v0 (1/1)</div>
@@ -144,6 +148,7 @@ export class Toolbar {
     this.lastBtn = this.container.querySelector("#last-btn")!;
     this.versionLabel = this.container.querySelector("#version-label")!;
     this.groupBadge = this.container.querySelector("#group-badge")!;
+    this.logDisplay = this.container.querySelector("#log-display")!;
 
     this.slideshowStartBtn = this.container.querySelector("#slideshow-start-btn")!;
     this.slideshowStopBtn = this.container.querySelector("#slideshow-stop-btn")!;
@@ -289,6 +294,7 @@ export class Toolbar {
     if (!info) {
       this.versionLabel.innerHTML = "v0 (1/1)";
       this.groupBadge.style.display = "none";
+      this.logDisplay.style.display = "none";
       return;
     }
 
@@ -307,6 +313,47 @@ export class Toolbar {
       this.groupBadge.style.display = "inline-block";
     } else {
       this.groupBadge.style.display = "none";
+    }
+
+    // Update log display
+    this.updateLogDisplay();
+  }
+
+  /**
+   * Update the log display with the current operation's log feature.
+   */
+  private updateLogDisplay(): void {
+    if (!this._data || this._currentVersionIndex === 0) {
+      // v0 has no operation, hide log
+      this.logDisplay.style.display = "none";
+      this.logDisplay.textContent = "";
+      this.logDisplay.title = "";
+      return;
+    }
+
+    const stepIndex = this._currentVersionIndex - 1;
+    if (stepIndex < 0 || stepIndex >= (this._data.steps?.length || 0)) {
+      this.logDisplay.style.display = "none";
+      this.logDisplay.textContent = "";
+      this.logDisplay.title = "";
+      return;
+    }
+
+    const step = this._data.steps![stepIndex];
+
+    // Look for a global feature named "log"
+    const logFeature = step.operation?.features?.find(
+      (f) => f.name === "log" && f.isGlobal
+    );
+
+    if (logFeature && logFeature.value) {
+      this.logDisplay.textContent = logFeature.value;
+      this.logDisplay.title = logFeature.value; // Add tooltip with full text
+      this.logDisplay.style.display = "block";
+    } else {
+      this.logDisplay.style.display = "none";
+      this.logDisplay.textContent = "";
+      this.logDisplay.title = "";
     }
   }
 
