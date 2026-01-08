@@ -1,6 +1,6 @@
 {
   "name": "@myrmidon/gve-snapshot-rendition",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "homepage": "https://github.com/vedph/gve-snapshot-rendition",
   "repository": {
     "type": "git",
@@ -62,14 +62,14 @@
     "concurrency": "^0.1.4",
     "concurrently": "^9.2.1",
     "lite-server": "^2.6.1",
-    "rollup": "^4.54.0",
+    "rollup": "^4.55.1",
     "source-map-loader": "^5.0.0",
     "ts-loader": "^9.5.4",
     "typescript": "^5.9.3",
     "vitest": "^4.0.16"
   },
   "optionalDependencies": {
-    "@rollup/rollup-win32-arm64-msvc": "^4.54.0"
+    "@rollup/rollup-win32-arm64-msvc": "^4.55.1"
   },
   "pnpm": {
     "overrides": {

@@ -71,8 +71,8 @@ importers:
         version: 4.0.16(@types/node@24.10.1)(@vitest/ui@4.0.16)(terser@5.44.1)
     optionalDependencies:
       '@rollup/rollup-win32-arm64-msvc':
-        specifier: ^4.54.0
-        version: 4.54.0
+        specifier: ^4.55.1
+        version: 4.55.1
 
 packages:
 
@@ -300,8 +300,8 @@ packages:
       rollup:
         optional: true
 
-  '@rollup/rollup-win32-arm64-msvc@4.54.0':
-    resolution: {integrity: sha512-c2V0W1bsKIKfbLMBu/WGBz6Yci8nJ/ZJdheE0EwB73N3MvHYKiKGs3mVilX4Gs70eGeDaMqEob25Tw2Gb9Nqyw==}
+  '@rollup/rollup-win32-arm64-msvc@4.55.1':
+    resolution: {integrity: sha512-yR6Bl3tMC/gBok5cz/Qi0xYnVbIxGx5Fcf/ca0eB6/6JwOY+SRUcJfI0OpeTpPls7f194as62thCt/2BjxYN8g==}
     cpu: [arm64]
     os: [win32]
 
@@ -1615,7 +1615,7 @@ snapshots:
     optionalDependencies:
       rollup: '@rollup/wasm-node@4.53.3'
 
-  '@rollup/rollup-win32-arm64-msvc@4.54.0':
+  '@rollup/rollup-win32-arm64-msvc@4.55.1':
     optional: true
 
   '@rollup/wasm-node@4.53.3':

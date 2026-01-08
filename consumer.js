@@ -24,32 +24,36 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 2. <sampleName>.base.txt
   // 3. <sampleName>.settings.json
   try {
-    // Load data from data folder
+    // Load all three files in parallel
     const dataFile = `./data/${sampleName}.data.json`;
-    const dataResponse = await fetch(dataFile);
-    const jsonData = await dataResponse.json();
-    const data = jsonData.result;
-    console.log(`Data loaded from: ${dataFile}`);
-
-    // Load text from corresponding .base.txt file
     const textFile = `./data/${sampleName}.base.txt`;
-    const textResponse = await fetch(textFile);
-    data.text = await textResponse.text();
+    const settingsFile = `./data/${sampleName}.settings.json`;
+
+    console.log('Loading all data files...');
+    const [dataResponse, textResponse, settingsResponse] = await Promise.all([
+      fetch(dataFile),
+      fetch(textFile),
+      fetch(settingsFile)
+    ]);
+
+    // Parse all responses
+    const [jsonData, text, settings] = await Promise.all([
+      dataResponse.json(),
+      textResponse.text(),
+      settingsResponse.json()
+    ]);
+
+    const data = jsonData.result;
 
     // Normalize line endings: replace CRLF with LF
-    data.text = data.text.replace(/\r\n/g, '\n');
-    console.log(`Text loaded from: ${textFile}`);
-
-    // Load settings from corresponding .settings.json file
-    const settingsFile = `./data/${sampleName}.settings.json`;
-    const settingsResponse = await fetch(settingsFile);
-    const settings = await settingsResponse.json();
-    console.log(`Settings loaded from: ${settingsFile}`);
+    data.text = text.replace(/\r\n/g, '\n');
 
     // Add operation summary function (not stored in JSON)
     settings.opSummaryFn = renderOperationSummary;
 
-    // Apply settings and data to component
+    console.log(`All data loaded from: ${dataFile}, ${textFile}, ${settingsFile}`);
+
+    // Apply settings and data to component AT ONCE to prevent flashing
     component.settings = settings;
     component.data = data;
     console.log("Component initialized successfully!");
