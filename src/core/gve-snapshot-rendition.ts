@@ -2296,6 +2296,26 @@ export class GveSnapshotRendition extends HTMLElement {
         overflow: hidden;
       }
 
+      .details-area.collapsed .details-resize-handle {
+        display: none;
+      }
+
+      .details-resize-handle {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        cursor: ns-resize;
+        background: transparent;
+        transition: background-color 0.2s ease;
+        z-index: 10;
+      }
+
+      .details-resize-handle:hover {
+        background-color: var(--gve-border-color, #ddd);
+      }
+
       .details-header {
         display: flex;
         justify-content: space-between;

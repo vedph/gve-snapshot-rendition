@@ -14,6 +14,7 @@ export class DetailsArea {
   private hoveredElementsSection!: HTMLElement;
   private hiddenFeaturesCheckbox!: HTMLInputElement;
   private collapseBtn!: HTMLButtonElement;
+  private resizeHandle!: HTMLElement;
 
   private _settings: GveRenditionSettings;
   private _logger: Logger;
@@ -22,6 +23,9 @@ export class DetailsArea {
   private _showHiddenFeatures = false;
   private _data: CharChainResult | null = null;
   private _currentVersionTag = "v0";
+  private _isResizing = false;
+  private _initialHeight = 0;
+  private _initialMouseY = 0;
 
   constructor(settings: GveRenditionSettings, logger: Logger) {
     this._settings = settings;
@@ -47,9 +51,10 @@ export class DetailsArea {
       </div>
       <div class="details-content">
         <div id="operation-section" class="details-operation-section"></div>
-        <div id="version-features-section" class="details-version-section"></div>
         <div id="hovered-elements-section" class="details-hovered-section"></div>
+        <div id="version-features-section" class="details-version-section"></div>
       </div>
+      <div class="details-resize-handle" id="details-resize-handle"></div>
     `;
 
     // Get element references
@@ -58,6 +63,7 @@ export class DetailsArea {
     this.hoveredElementsSection = this.container.querySelector("#hovered-elements-section")!;
     this.hiddenFeaturesCheckbox = this.container.querySelector("#hidden-features-checkbox")!;
     this.collapseBtn = this.container.querySelector("#collapse-details-btn")!;
+    this.resizeHandle = this.container.querySelector("#details-resize-handle")!;
 
     this.attachEventListeners();
 
@@ -104,6 +110,62 @@ export class DetailsArea {
     this.collapseBtn.addEventListener("click", () => {
       this.toggleCollapse();
     });
+
+    // Resize handle
+    this.resizeHandle.addEventListener("mousedown", (e: MouseEvent) => {
+      this.startResize(e);
+    });
+  }
+
+  /**
+   * Start resizing the details area.
+   */
+  private startResize(e: MouseEvent): void {
+    e.preventDefault();
+    this._isResizing = true;
+    this._initialHeight = this.container.offsetHeight;
+    this._initialMouseY = e.clientY;
+
+    // Attach document-level listeners for smooth resizing
+    const onMouseMove = (e: MouseEvent) => this.handleResize(e);
+    const onMouseUp = () => this.stopResize(onMouseMove, onMouseUp);
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+
+    this._logger.debug("DetailsArea", "Started resizing");
+  }
+
+  /**
+   * Handle resize drag.
+   */
+  private handleResize(e: MouseEvent): void {
+    if (!this._isResizing) return;
+
+    // Calculate delta: dragging down increases height, dragging up decreases height
+    const deltaY = e.clientY - this._initialMouseY;
+    const newHeight = this._initialHeight + deltaY;
+
+    // Enforce minimum and maximum height
+    const minHeight = 100;
+    const maxHeight = 1200;
+    const clampedHeight = Math.max(minHeight, Math.min(maxHeight, newHeight));
+
+    this.container.style.height = `${clampedHeight}px`;
+    this.container.style.maxHeight = `${clampedHeight}px`;
+  }
+
+  /**
+   * Stop resizing the details area.
+   */
+  private stopResize(onMouseMove: (e: MouseEvent) => void, onMouseUp: () => void): void {
+    this._isResizing = false;
+
+    // Remove document-level listeners
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+
+    this._logger.debug("DetailsArea", `Stopped resizing (height: ${this.container.offsetHeight}px)`);
   }
 
   /**

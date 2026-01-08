@@ -777,6 +777,8 @@ The area has these sections:
 - a clone of that `text` SVG element, scaled up to fit a box with size equal to settings `refGlyphWidth` and `refGlyphHeight`.
 - to its right, the list of the features attached to the corresponding text node.
 
+>Data about hovered text element is displayed below the operation, but above the global features, because it should be visible even when global features are many as they are visible only when hovering, and thus users could not leverage a vertical scrollbar to reveal them if they were at the bottom.
+
 As for features, wherever they are:
 
 - features are sorted in alphabetical order of their name.
