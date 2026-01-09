@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - 2026-01-09:
   - added pinning for hovered added text.
+  - added node ID in hovered details.
+  - fixes for node features not displayed when hovering on node.
   - integrated [Split.js](https://github.com/nathancahill/split) library for robust panel resizing.
   - all panels (versions list, version text, details) are now smoothly resizable with drag handles.
   - added "Reset Layout" button to toolbar to restore default panel sizes.

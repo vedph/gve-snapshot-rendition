@@ -1146,6 +1146,49 @@ export class GveSnapshotRendition extends HTMLElement {
   }
 
   /**
+   * Attach features from featureSet to a node.
+   * Features are stored separately in the step's featureSet.nodeFeatures map.
+   */
+  private attachNodeFeatures(node: CharNode, versionTag: string): CharNode {
+    // Create a copy of the node to avoid modifying the original
+    const nodeWithFeatures: CharNode = { ...node };
+
+    this._logger.debug("Features", `Looking up features for node ${node.id} at ${versionTag}`);
+
+    // Look up features in the step's featureSet
+    if (this._data?.steps) {
+      // Find the step that produced this version
+      const step = this._data.steps.find((s) => s.outputTag === versionTag);
+      if (step) {
+        this._logger.debug("Features", `Found step for ${versionTag}: ${step.operation?.type}`);
+
+        if (step.featureSet?.nodeFeatures) {
+          // Features are keyed as "v{version}_{nodeId}"
+          const featureKey = `${versionTag}_${node.id}`;
+          const features = step.featureSet.nodeFeatures[featureKey];
+
+          this._logger.debug("Features", `Feature key: ${featureKey}, found ${features?.length || 0} features`);
+
+          if (features) {
+            nodeWithFeatures.features = features;
+            this._logger.info("Features", `Attached ${features.length} features to node ${node.id}`);
+          } else {
+            this._logger.debug("Features", `No features found for key ${featureKey}`);
+          }
+        } else {
+          this._logger.debug("Features", `Step ${versionTag} has no nodeFeatures`);
+        }
+      } else {
+        this._logger.warn("Features", `No step found with outputTag=${versionTag}`);
+      }
+    } else {
+      this._logger.warn("Features", `No steps data available`);
+    }
+
+    return nodeWithFeatures;
+  }
+
+  /**
    * Handle hover over a text element.
    */
   private handleTextElementHover(textEl: SVGTextElement): void {
@@ -1180,20 +1223,25 @@ export class GveSnapshotRendition extends HTMLElement {
 
       if (elementInVersion) {
         // Found the element in this version, now get the node data
-        // First try baseNodes (for original nodes)
-        let node = this._baseNodes.find((n) => n.id === hoveredNodeId);
-
-        // If not found in baseNodes, look in taggedNodes for this version (for added nodes)
-        if (!node && this._data?.taggedNodes) {
+        // First try taggedNodes for this version (nodes with accumulated features)
+        let node: CharNode | undefined;
+        if (this._data?.taggedNodes) {
           const versionNodes = this._data.taggedNodes[versionTag];
           if (versionNodes) {
             node = versionNodes.find((n) => n.id === hoveredNodeId);
           }
         }
 
+        // If not found in taggedNodes, fall back to baseNodes (for v0 nodes)
+        if (!node) {
+          node = this._baseNodes.find((n) => n.id === hoveredNodeId);
+        }
+
         if (node) {
+          // Get features for this node from the current version's step
+          const nodeWithFeatures = this.attachNodeFeatures(node, this._currentVersion);
           foundElement = elementInVersion;
-          foundNode = node;
+          foundNode = nodeWithFeatures;
           break; // Stop at first match (most recent version)
         }
       }
@@ -1262,20 +1310,25 @@ export class GveSnapshotRendition extends HTMLElement {
 
       if (elementInVersion) {
         // Found the element in this version, now get the node data
-        // First try baseNodes (for original nodes)
-        let node = this._baseNodes.find((n) => n.id === clickedNodeId);
-
-        // If not found in baseNodes, look in taggedNodes for this version (for added nodes)
-        if (!node && this._data?.taggedNodes) {
+        // First try taggedNodes for this version (nodes with accumulated features)
+        let node: CharNode | undefined;
+        if (this._data?.taggedNodes) {
           const versionNodes = this._data.taggedNodes[versionTag];
           if (versionNodes) {
             node = versionNodes.find((n) => n.id === clickedNodeId);
           }
         }
 
+        // If not found in taggedNodes, fall back to baseNodes (for v0 nodes)
+        if (!node) {
+          node = this._baseNodes.find((n) => n.id === clickedNodeId);
+        }
+
         if (node) {
+          // Get features for this node from the current version's step
+          const nodeWithFeatures = this.attachNodeFeatures(node, this._currentVersion);
           foundElement = elementInVersion;
-          foundNode = node;
+          foundNode = nodeWithFeatures;
           break; // Stop at first match (most recent version)
         }
       }
@@ -2839,6 +2892,15 @@ export class GveSnapshotRendition extends HTMLElement {
       .hovered-features {
         flex: 1;
         min-width: 0;
+      }
+
+      .node-id {
+        font-weight: bold;
+        font-size: 12px;
+        color: var(--gve-primary, #007bff);
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--gve-border-color, #ddd);
       }
     `;
   }

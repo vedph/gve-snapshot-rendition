@@ -390,10 +390,14 @@ export class DetailsArea {
       const nodeFeatures = node.features || [];
       const filteredFeatures = this.filterFeatures(nodeFeatures);
 
-      // Build features HTML
+      // Build features HTML with node ID
       const featuresContainer = document.createElement("div");
       featuresContainer.className = "hovered-features";
-      featuresContainer.innerHTML = this.renderFeatureList(filteredFeatures);
+
+      // Add node ID header
+      let html = `<div class="node-id">Node ID: ${node.id}</div>`;
+      html += this.renderFeatureList(filteredFeatures);
+      featuresContainer.innerHTML = html;
 
       // Assemble the element container
       elementContainer.appendChild(svgWrapper);
