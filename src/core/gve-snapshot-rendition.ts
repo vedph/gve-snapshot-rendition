@@ -359,7 +359,7 @@ export class GveSnapshotRendition extends HTMLElement {
     );
     this._rootSvg.setAttribute("class", "gve-text-rendition");
     this._rootSvg.setAttribute("width", "100%");
-    this._rootSvg.setAttribute("height", "600px");
+    this._rootSvg.setAttribute("height", "100%");
 
     this._container.appendChild(this._rootSvg);
 
@@ -379,17 +379,23 @@ export class GveSnapshotRendition extends HTMLElement {
       }
     );
 
+    // Create bottom panels container
+    const bottomPanels = document.createElement("div");
+    bottomPanels.id = "bottom-panels";
+
     // Create version text area
     this._versionTextArea = new VersionTextArea(this._settings, this._logger);
     const versionTextContainer = this._versionTextArea.create();
     versionTextContainer.id = "version-text-container";
-    this._container.appendChild(versionTextContainer);
+    bottomPanels.appendChild(versionTextContainer);
 
     // Create details area
     this._detailsArea = new DetailsArea(this._settings, this._logger);
     const detailsContainer = this._detailsArea.create();
     detailsContainer.id = "details-container";
-    this._container.appendChild(detailsContainer);
+    bottomPanels.appendChild(detailsContainer);
+
+    this._container.appendChild(bottomPanels);
 
     // Create hilites manager
     this._hilites = new Hilites(
@@ -1831,29 +1837,46 @@ export class GveSnapshotRendition extends HTMLElement {
         overflow: hidden;
         display: grid;
         grid-template-columns: auto 1fr;
-        grid-template-rows: auto 1fr auto;
+        grid-template-rows: auto minmax(400px, 1fr) minmax(350px, auto);
         grid-template-areas:
           "toolbar toolbar"
           "versions-list text-rendition"
-          "version-text details";
+          "bottom-panels bottom-panels";
+      }
+
+      /* Bottom panels container - holds version-text and details side by side */
+      #bottom-panels {
+        grid-area: bottom-panels;
+        display: flex;
+        flex-direction: row;
+        min-height: 350px;
+        max-height: 600px;
+        overflow: hidden;
+        border-top: 1px solid var(--gve-border-color, #ddd);
       }
 
       /* Responsive layout: stack vertically on small screens */
       @media (max-width: 1024px) {
         .gve-container {
           grid-template-columns: 1fr;
-          grid-template-rows: auto auto auto auto auto;
+          grid-template-rows: auto auto minmax(200px, 1fr) minmax(200px, auto);
           grid-template-areas:
             "toolbar"
-            "text-rendition"
             "versions-list"
-            "version-text"
-            "details";
+            "text-rendition"
+            "bottom-panels";
+        }
+
+        #bottom-panels {
+          flex-direction: column;
         }
       }
 
       #toolbar-container {
         grid-area: toolbar;
+        min-height: 60px;
+        max-height: 120px;
+        overflow: hidden;
       }
 
       .toolbar {
@@ -1866,6 +1889,7 @@ export class GveSnapshotRendition extends HTMLElement {
         border-bottom: 1px solid var(--gve-border-color, #ddd);
         flex-shrink: 0;
         flex-wrap: wrap;
+        min-height: 60px;
       }
 
       .toolbar-group {
@@ -1939,6 +1963,7 @@ export class GveSnapshotRendition extends HTMLElement {
         background: var(--gve-bg-color, #fafafa);
         border: 1px solid var(--gve-border-color, #ddd);
         overflow: hidden;
+        min-height: 400px;
       }
 
       .node {
@@ -1951,19 +1976,21 @@ export class GveSnapshotRendition extends HTMLElement {
 
       /* Version Text Area */
       #version-text-container {
-        grid-area: version-text;
+        flex: 1;
+        min-width: 400px;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid var(--gve-border-color, #ddd);
+        overflow: hidden;
       }
 
       .version-text-area {
-        flex-shrink: 0;
+        flex: 1;
         display: flex;
         flex-direction: column;
         background: var(--gve-text-pane-bg, #fff);
-        border-top: 1px solid var(--gve-border-color, #ddd);
-        border-bottom: 1px solid var(--gve-border-color, #ddd);
-        max-height: 500px;
-        height: 500px;
-        position: relative;
+        min-height: 0;
+        overflow: hidden;
       }
 
       .version-text-area.collapsed {
@@ -2002,14 +2029,16 @@ export class GveSnapshotRendition extends HTMLElement {
 
       .version-text-content {
         flex: 1;
-        overflow: auto;
-        transition: max-height 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
         min-height: 0;
       }
 
       .version-text {
         width: 100%;
-        min-height: 100%;
+        flex: 1;
         padding: 1rem;
         border: none;
         resize: none;
@@ -2020,6 +2049,8 @@ export class GveSnapshotRendition extends HTMLElement {
         background: transparent;
         white-space: pre-wrap;
         box-sizing: border-box;
+        overflow: auto;
+        min-height: 0;
       }
 
       .version-text:focus {
@@ -2050,13 +2081,30 @@ export class GveSnapshotRendition extends HTMLElement {
       .text-panel {
         display: flex;
         flex-direction: column;
-        min-height: 0;
         position: relative;
-        flex: 1;
+        overflow: hidden;
+        flex: 0 0 auto;
       }
 
       .text-panel:not(:last-child) {
         border-bottom: 1px solid var(--gve-border-color, #ddd);
+      }
+
+      /* Default heights for panels */
+      #text-panel-a {
+        height: 150px;
+        min-height: 80px;
+      }
+
+      #text-panel-b {
+        height: 150px;
+        min-height: 80px;
+      }
+
+      #text-panel-diff {
+        height: 180px;
+        min-height: 100px;
+        flex: 1 1 auto;
       }
 
       .panel-resize-handle {
@@ -2094,11 +2142,6 @@ export class GveSnapshotRendition extends HTMLElement {
         background: var(--gve-text-pane-secondary-bg, #fafafa);
       }
 
-      .text-panel-diff {
-        flex: 1;
-        min-height: 100px;
-      }
-
       .diff-content {
         flex: 1;
         padding: 1rem;
@@ -2108,6 +2151,7 @@ export class GveSnapshotRendition extends HTMLElement {
         line-height: 1.5;
         white-space: pre-wrap;
         background: var(--gve-text-pane-bg, #fff);
+        min-height: 0;
       }
 
       .diff-empty {
@@ -2145,6 +2189,8 @@ export class GveSnapshotRendition extends HTMLElement {
       /* Versions List Area */
       #versions-list-container {
         grid-area: versions-list;
+        height: 100%;
+        overflow: hidden;
       }
 
       .versions-list-area {
@@ -2156,6 +2202,7 @@ export class GveSnapshotRendition extends HTMLElement {
         max-width: 250px;
         min-width: 200px;
         width: 250px;
+        height: 100%;
       }
 
       .versions-list-area.collapsed {
@@ -2288,19 +2335,20 @@ export class GveSnapshotRendition extends HTMLElement {
 
       /* Details Area */
       #details-container {
-        grid-area: details;
+        flex: 0 0 350px;
+        min-width: 300px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
       }
 
       .details-area {
-        flex-shrink: 0;
+        flex: 1;
         display: flex;
         flex-direction: column;
         background: var(--gve-details-bg, #fff);
-        border-top: 1px solid var(--gve-border-color, #ddd);
-        border-bottom: 1px solid var(--gve-border-color, #ddd);
-        max-height: 400px;
-        height: 400px;
-        position: relative;
+        min-height: 0;
+        overflow: hidden;
       }
 
       .details-area.collapsed {
