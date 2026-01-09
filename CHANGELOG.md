@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-- 2026-01-09: fixes to layout.
+- 2026-01-09:
+  - Integrated [Split.js](https://github.com/nathancahill/split) library for robust panel resizing.
+  - All panels (versions list, version text, details) are now smoothly resizable with drag handles.
+  - Added "Reset Layout" button to toolbar to restore default panel sizes.
+  - SVG text rendition area maintains stable position and size during panel resizing.
+  - Layout state (panel sizes) saved and restored across sessions.
 
 ## [0.0.4]
 

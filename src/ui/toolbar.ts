@@ -44,6 +44,9 @@ export class Toolbar {
   private fitBtn!: HTMLButtonElement;
   private downloadBtn!: HTMLButtonElement;
 
+  // Layout buttons
+  private resetLayoutBtn!: HTMLButtonElement;
+
   // State
   private _data: CharChainResult | null = null;
   private _currentVersionIndex: number = 0;
@@ -124,6 +127,13 @@ export class Toolbar {
           </button>
         </div>
 
+        <!-- Layout Group -->
+        <div class="toolbar-group layout-group">
+          <button id="reset-layout-btn" class="toolbar-btn" title="Reset Layout to Default Sizes">
+            <i data-feather="layout"></i>
+          </button>
+        </div>
+
         <!-- Custom Buttons Group -->
         <div id="custom-buttons-group" class="toolbar-group custom-buttons-group">
         </div>
@@ -159,6 +169,8 @@ export class Toolbar {
     this.zoomOutBtn = this.container.querySelector("#zoom-out-btn")!;
     this.fitBtn = this.container.querySelector("#fit-btn")!;
     this.downloadBtn = this.container.querySelector("#download-btn")!;
+
+    this.resetLayoutBtn = this.container.querySelector("#reset-layout-btn")!;
 
     this.attachEventListeners();
     this.updateButtons();
@@ -218,6 +230,9 @@ export class Toolbar {
     this.zoomOutBtn.addEventListener("click", () => this.dispatchDisplayEvent("zoom-out"));
     this.fitBtn.addEventListener("click", () => this.dispatchDisplayEvent("fit"));
     this.downloadBtn.addEventListener("click", () => this.dispatchDisplayEvent("download"));
+
+    // Layout buttons
+    this.resetLayoutBtn.addEventListener("click", () => this.dispatchLayoutEvent("reset"));
   }
 
   /**
@@ -545,6 +560,18 @@ export class Toolbar {
   private dispatchDisplayEvent(action: "zoom-in" | "zoom-out" | "fit" | "download"): void {
     this.container.dispatchEvent(
       new CustomEvent("toolbar-display", {
+        detail: { action },
+        bubbles: true,
+      })
+    );
+  }
+
+  /**
+   * Dispatch layout event for parent component to handle.
+   */
+  private dispatchLayoutEvent(action: "reset"): void {
+    this.container.dispatchEvent(
+      new CustomEvent("toolbar-layout", {
         detail: { action },
         bubbles: true,
       })

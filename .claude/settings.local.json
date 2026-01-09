@@ -12,7 +12,9 @@
       "Bash(pnpm test:*)",
       "Bash(curl:*)",
       "Bash(npm run build:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm remove:*)"
     ],
     "deny": [],
     "ask": []

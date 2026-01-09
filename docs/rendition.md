@@ -605,7 +605,7 @@ For the settings, see [settings.ts](../src/settings/settings.ts).
 
 ### Component UI
 
-As a general rule, wherever possible provide support for consistent theming the web component by using standard _CSS variables_ (all prefixed with `--gve-`) instead of literal values.
+Wherever possible the web component uses standard _CSS variables_ (all prefixed with `--gve-`) instead of literal values to support theming.
 
 The component UI contains these areas:
 
@@ -634,6 +634,8 @@ When the available width is too small, the areas are repositioned so that each o
 - row 3: versions list.
 - row 4: version text.
 - row 5: details.
+
+>The general layout is managed with the help of the [Split.js](https://github.com/nathancahill/split) library for robust panel resizing. A reset layout button can be used to reset the layout to its default.
 
 #### Component UI: Toolbar Area
 

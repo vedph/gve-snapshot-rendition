@@ -23,6 +23,8 @@ import { generateVersionPalette } from "../utils/color-palette";
 import svgPanZoom from "svg-pan-zoom";
 type SvgPanZoomInstance = ReturnType<typeof svgPanZoom>;
 import gsap from "gsap";
+import Split from "split.js";
+type SplitInstance = ReturnType<typeof Split>;
 
 /**
  * Relative position for elements (hints and additional text) with respect to the RBR.
@@ -75,6 +77,14 @@ export class GveSnapshotRendition extends HTMLElement {
   private _hilites?: Hilites;
   private _panZoomInstance?: SvgPanZoomInstance;
   private _keyboardHandler?: (e: KeyboardEvent) => void;
+
+  // Split.js instances for resizable panels
+  private _mainSplit?: SplitInstance; // Horizontal: versions-list | text-rendition
+  private _bottomSplit?: SplitInstance; // Horizontal: version-text | details
+  private _verticalSplit?: SplitInstance; // Vertical: top | bottom-panels
+
+  // Layout state storage key
+  private static readonly LAYOUT_STORAGE_KEY = "gve-snapshot-rendition-layout";
 
   // State
   private _baseNodes: CharNode[] = [];
@@ -141,6 +151,19 @@ export class GveSnapshotRendition extends HTMLElement {
       this._panZoomInstance.destroy();
       this._panZoomInstance = undefined;
       this._logger.info("Pan/zoom destroyed");
+    }
+    // Cleanup Split.js instances
+    if (this._mainSplit) {
+      this._mainSplit.destroy();
+      this._mainSplit = undefined;
+    }
+    if (this._bottomSplit) {
+      this._bottomSplit.destroy();
+      this._bottomSplit = undefined;
+    }
+    if (this._verticalSplit) {
+      this._verticalSplit.destroy();
+      this._verticalSplit = undefined;
     }
     // Cleanup keyboard shortcuts
     if (this._keyboardHandler) {
@@ -323,6 +346,14 @@ export class GveSnapshotRendition extends HTMLElement {
           const customEvent = e as CustomEvent;
           this.handleToolbarDisplay(customEvent.detail.action);
         });
+
+        // Listen for toolbar layout events
+        toolbarContainer.addEventListener("toolbar-layout", (e: Event) => {
+          const customEvent = e as CustomEvent;
+          if (customEvent.detail.action === "reset") {
+            this.resetLayout();
+          }
+        });
       }
     }
 
@@ -347,27 +378,27 @@ export class GveSnapshotRendition extends HTMLElement {
     this._container = document.createElement("div");
     this._container.className = "gve-container";
 
-    // Create toolbar container
+    // Create toolbar container (not part of Split.js)
     const toolbarContainer = document.createElement("div");
     toolbarContainer.id = "toolbar-container";
     this._container.appendChild(toolbarContainer);
 
-    // Create SVG root
-    this._rootSvg = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg"
-    );
-    this._rootSvg.setAttribute("class", "gve-text-rendition");
-    this._rootSvg.setAttribute("width", "100%");
-    this._rootSvg.setAttribute("height", "100%");
+    // Create main split container (vertical split)
+    const mainSplitContainer = document.createElement("div");
+    mainSplitContainer.id = "main-split-container";
+    mainSplitContainer.className = "split-container";
 
-    this._container.appendChild(this._rootSvg);
+    // Create top area container (horizontal split: versions-list | text-rendition)
+    const topArea = document.createElement("div");
+    topArea.id = "top-area";
+    topArea.className = "split-horizontal";
 
     // Create versions list area
     this._versionsListArea = new VersionsListArea(this._settings, this._logger);
     const versionsListContainer = this._versionsListArea.create();
     versionsListContainer.id = "versions-list-container";
-    this._container.appendChild(versionsListContainer);
+    versionsListContainer.className = "split-panel";
+    topArea.appendChild(versionsListContainer);
 
     // Set up versions list callbacks
     this._versionsListArea.setNavigateCallback((versionTag: string) => {
@@ -379,23 +410,45 @@ export class GveSnapshotRendition extends HTMLElement {
       }
     );
 
-    // Create bottom panels container
+    // Create SVG container
+    const svgContainer = document.createElement("div");
+    svgContainer.id = "svg-container";
+    svgContainer.className = "split-panel";
+
+    // Create SVG root
+    this._rootSvg = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "svg"
+    );
+    this._rootSvg.setAttribute("class", "gve-text-rendition");
+    this._rootSvg.setAttribute("width", "100%");
+    this._rootSvg.setAttribute("height", "100%");
+    svgContainer.appendChild(this._rootSvg);
+    topArea.appendChild(svgContainer);
+
+    mainSplitContainer.appendChild(topArea);
+
+    // Create bottom panels container (horizontal split: version-text | details)
     const bottomPanels = document.createElement("div");
     bottomPanels.id = "bottom-panels";
+    bottomPanels.className = "split-horizontal";
 
     // Create version text area
     this._versionTextArea = new VersionTextArea(this._settings, this._logger);
     const versionTextContainer = this._versionTextArea.create();
     versionTextContainer.id = "version-text-container";
+    versionTextContainer.className = "split-panel";
     bottomPanels.appendChild(versionTextContainer);
 
     // Create details area
     this._detailsArea = new DetailsArea(this._settings, this._logger);
     const detailsContainer = this._detailsArea.create();
     detailsContainer.id = "details-container";
+    detailsContainer.className = "split-panel";
     bottomPanels.appendChild(detailsContainer);
 
-    this._container.appendChild(bottomPanels);
+    mainSplitContainer.appendChild(bottomPanels);
+    this._container.appendChild(mainSplitContainer);
 
     // Create hilites manager
     this._hilites = new Hilites(
@@ -406,7 +459,142 @@ export class GveSnapshotRendition extends HTMLElement {
 
     this._shadow.appendChild(this._container);
 
+    // Initialize Split.js after DOM is ready
+    requestAnimationFrame(() => {
+      this.initializeSplitPanes();
+    });
+
     this._logger.debug("Component", "UI structure rendered");
+  }
+
+  /**
+   * Initialize Split.js panes for resizable panels.
+   */
+  private initializeSplitPanes(): void {
+    try {
+      // Load saved sizes or use defaults
+      const savedSizes = this.loadLayoutSizes();
+
+      // Get element references from Shadow DOM
+      const versionsListContainer = this._shadow.querySelector(
+        "#versions-list-container"
+      ) as HTMLElement;
+      const svgContainer = this._shadow.querySelector(
+        "#svg-container"
+      ) as HTMLElement;
+      const versionTextContainer = this._shadow.querySelector(
+        "#version-text-container"
+      ) as HTMLElement;
+      const detailsContainer = this._shadow.querySelector(
+        "#details-container"
+      ) as HTMLElement;
+      const topArea = this._shadow.querySelector("#top-area") as HTMLElement;
+      const bottomPanels = this._shadow.querySelector(
+        "#bottom-panels"
+      ) as HTMLElement;
+
+      // Validate all elements exist
+      if (
+        !versionsListContainer ||
+        !svgContainer ||
+        !versionTextContainer ||
+        !detailsContainer ||
+        !topArea ||
+        !bottomPanels
+      ) {
+        throw new Error("Required elements not found in Shadow DOM");
+      }
+
+      // Initialize horizontal split in top area (versions-list | svg-container)
+      this._mainSplit = Split([versionsListContainer, svgContainer], {
+        sizes: savedSizes.main || [15, 85],
+        minSize: [200, 400],
+        gutterSize: 6,
+        cursor: "col-resize",
+        direction: "horizontal",
+        onDragEnd: () => this.saveLayoutSizes(),
+      });
+
+      // Initialize horizontal split in bottom panels (version-text | details)
+      this._bottomSplit = Split([versionTextContainer, detailsContainer], {
+        sizes: savedSizes.bottom || [60, 40],
+        minSize: [400, 300],
+        gutterSize: 6,
+        cursor: "col-resize",
+        direction: "horizontal",
+        onDragEnd: () => this.saveLayoutSizes(),
+      });
+
+      // Initialize vertical split (top-area | bottom-panels)
+      this._verticalSplit = Split([topArea, bottomPanels], {
+        sizes: savedSizes.vertical || [60, 40],
+        minSize: [400, 350],
+        gutterSize: 6,
+        cursor: "row-resize",
+        direction: "vertical",
+        onDragEnd: () => this.saveLayoutSizes(),
+      });
+
+      this._logger.info("Split.js", "Resizable panels initialized");
+    } catch (error) {
+      this._logger.error("Split.js", "Failed to initialize split panes", error);
+    }
+  }
+
+  /**
+   * Load saved layout sizes from localStorage.
+   */
+  private loadLayoutSizes(): {
+    main?: number[];
+    bottom?: number[];
+    vertical?: number[];
+  } {
+    try {
+      const saved = localStorage.getItem(
+        GveSnapshotRendition.LAYOUT_STORAGE_KEY
+      );
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (error) {
+      this._logger.warn("Split.js", "Failed to load saved layout", error);
+    }
+    return {};
+  }
+
+  /**
+   * Save current layout sizes to localStorage.
+   */
+  private saveLayoutSizes(): void {
+    try {
+      const sizes = {
+        main: this._mainSplit?.getSizes(),
+        bottom: this._bottomSplit?.getSizes(),
+        vertical: this._verticalSplit?.getSizes(),
+      };
+      localStorage.setItem(
+        GveSnapshotRendition.LAYOUT_STORAGE_KEY,
+        JSON.stringify(sizes)
+      );
+      this._logger.debug("Split.js", "Layout sizes saved");
+    } catch (error) {
+      this._logger.warn("Split.js", "Failed to save layout", error);
+    }
+  }
+
+  /**
+   * Reset layout to default sizes.
+   */
+  public resetLayout(): void {
+    try {
+      this._mainSplit?.setSizes([15, 85]);
+      this._bottomSplit?.setSizes([60, 40]);
+      this._verticalSplit?.setSizes([60, 40]);
+      this.saveLayoutSizes();
+      this._logger.info("Split.js", "Layout reset to defaults");
+    } catch (error) {
+      this._logger.error("Split.js", "Failed to reset layout", error);
+    }
   }
 
   /**
@@ -1835,45 +2023,73 @@ export class GveSnapshotRendition extends HTMLElement {
         width: 100%;
         height: 100%;
         overflow: hidden;
-        display: grid;
-        grid-template-columns: auto 1fr;
-        grid-template-rows: auto minmax(400px, 1fr) minmax(350px, auto);
-        grid-template-areas:
-          "toolbar toolbar"
-          "versions-list text-rendition"
-          "bottom-panels bottom-panels";
+        display: flex;
+        flex-direction: column;
       }
 
-      /* Bottom panels container - holds version-text and details side by side */
-      #bottom-panels {
-        grid-area: bottom-panels;
+      #main-split-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        min-height: 0;
+      }
+
+      /* Split.js containers */
+      .split-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .split-horizontal {
         display: flex;
         flex-direction: row;
-        min-height: 350px;
-        max-height: 600px;
         overflow: hidden;
-        border-top: 1px solid var(--gve-border-color, #ddd);
       }
 
-      /* Responsive layout: stack vertically on small screens */
-      @media (max-width: 1024px) {
-        .gve-container {
-          grid-template-columns: 1fr;
-          grid-template-rows: auto auto minmax(200px, 1fr) minmax(200px, auto);
-          grid-template-areas:
-            "toolbar"
-            "versions-list"
-            "text-rendition"
-            "bottom-panels";
-        }
+      .split-panel {
+        overflow: hidden;
+        position: relative;
+      }
 
-        #bottom-panels {
-          flex-direction: column;
-        }
+      /* Split.js gutter styles */
+      .gutter {
+        background-color: var(--gve-border-color, #ddd);
+        background-repeat: no-repeat;
+        background-position: 50%;
+        flex-shrink: 0;
+      }
+
+      .gutter.gutter-horizontal {
+        cursor: col-resize;
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+      }
+
+      .gutter.gutter-vertical {
+        cursor: row-resize;
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFCAYAAABSGeOsAAAAGklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjgEAXNPW8Nhz8+wAAAAASUVORK5CYII=');
+      }
+
+      /* Top area (versions-list | text-rendition) */
+      #top-area {
+        min-height: 400px;
+      }
+
+      /* Bottom panels container (version-text | details) */
+      #bottom-panels {
+        border-top: 1px solid var(--gve-border-color, #ddd);
+        min-height: 350px;
+      }
+
+      /* SVG container wrapper */
+      #svg-container {
+        display: flex;
+        flex-direction: column;
       }
 
       #toolbar-container {
-        grid-area: toolbar;
+        flex-shrink: 0;
         min-height: 60px;
         max-height: 120px;
         overflow: hidden;
@@ -1959,11 +2175,11 @@ export class GveSnapshotRendition extends HTMLElement {
       }
 
       .gve-text-rendition {
-        grid-area: text-rendition;
+        width: 100%;
+        height: 100%;
         background: var(--gve-bg-color, #fafafa);
         border: 1px solid var(--gve-border-color, #ddd);
         overflow: hidden;
-        min-height: 400px;
       }
 
       .node {
@@ -1976,12 +2192,11 @@ export class GveSnapshotRendition extends HTMLElement {
 
       /* Version Text Area */
       #version-text-container {
-        flex: 1;
-        min-width: 400px;
         display: flex;
         flex-direction: column;
         border-right: 1px solid var(--gve-border-color, #ddd);
         overflow: hidden;
+        height: 100%;
       }
 
       .version-text-area {
@@ -2188,7 +2403,6 @@ export class GveSnapshotRendition extends HTMLElement {
 
       /* Versions List Area */
       #versions-list-container {
-        grid-area: versions-list;
         height: 100%;
         overflow: hidden;
       }
@@ -2335,11 +2549,10 @@ export class GveSnapshotRendition extends HTMLElement {
 
       /* Details Area */
       #details-container {
-        flex: 0 0 350px;
-        min-width: 300px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        height: 100%;
       }
 
       .details-area {
