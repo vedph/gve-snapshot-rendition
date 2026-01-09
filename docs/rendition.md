@@ -637,6 +637,18 @@ When the available width is too small, the areas are repositioned so that each o
 
 >The general layout is managed with the help of the [Split.js](https://github.com/nathancahill/split) library for robust panel resizing. A reset layout button can be used to reset the layout to its default.
 
+⚙️ **Split.js Implementation Details**:
+
+- the component uses Shadow DOM, so Split.js must receive **actual DOM element references** (via `this._shadow.querySelector()`) rather than CSS selector strings.
+- three Split.js instances manage the layout:
+  - `_mainSplit`: Horizontal split between versions-list and SVG text-rendition (default: 15/85, min: 200/400px).
+  - `_bottomSplit`: Horizontal split between version-text and details panels (default: 60/40, min: 400/300px).
+  - `_verticalSplit`: Vertical split between top area and bottom panels (default: 60/40, min: 400/350px).
+- layout state persists to localStorage under key `"gve-snapshot-rendition-layout"`.
+- all Split instances must be destroyed in `disconnectedCallback()` to prevent memory leaks.
+- initialization happens in `requestAnimationFrame()` to ensure DOM is ready.
+- the toolbar is NOT part of Split.js (fixed position outside the split container).
+
 #### Component UI: Toolbar Area
 
 The toolbar area contains a toolbar with these buttons and labels:
