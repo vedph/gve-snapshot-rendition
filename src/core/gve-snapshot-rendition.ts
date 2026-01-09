@@ -681,7 +681,7 @@ export class GveSnapshotRendition extends HTMLElement {
       zoomScaleSensitivity: this._settings.zoomStep,
       dblClickZoomEnabled: false, // Disable double-click zoom to avoid conflicts
       mouseWheelZoomEnabled: true, // Enable mouse wheel zoom
-      preventMouseEventsDefault: true, // Prevent default mouse events
+      preventMouseEventsDefault: false, // Allow click events to propagate
       onZoom: (newZoom: number) => {
         // Zoom level is displayed in toolbar via version label area
         this._logger.debug("Zoom", `Zoom changed to ${newZoom.toFixed(2)}x`);
@@ -1132,6 +1132,11 @@ export class GveSnapshotRendition extends HTMLElement {
       svgTextEl.addEventListener("mouseleave", () => {
         this.handleTextElementLeave();
       });
+
+      // Add click event for pinning
+      svgTextEl.addEventListener("click", () => {
+        this.handleTextElementClick(svgTextEl);
+      });
     });
 
     this._logger.debug(
@@ -1216,6 +1221,76 @@ export class GveSnapshotRendition extends HTMLElement {
 
     // Clear hovered elements
     this._detailsArea.updateHoveredElements([]);
+  }
+
+  /**
+   * Handle click on a text element (for pinning).
+   */
+  private handleTextElementClick(textEl: SVGTextElement): void {
+    if (!this._detailsArea || !this._rootSvg) return;
+
+    // Extract node ID from the clicked element (format: "n_{nodeId}")
+    const elementId = textEl.id;
+    const match = elementId.match(/^n_(\d+)$/);
+    if (!match) {
+      this._logger.warn(`Cannot extract node ID from element ID: ${elementId}`);
+      return;
+    }
+
+    const clickedNodeId = parseInt(match[1], 10);
+    this._logger.info(
+      "Component",
+      `Click event fired on node ${clickedNodeId}`
+    );
+
+    // Search from current version backwards to find this specific node
+    let foundElement: SVGTextElement | null = null;
+    let foundNode: CharNode | null = null;
+
+    for (
+      let versionIdx = this._currentVersionIndex;
+      versionIdx >= 0;
+      versionIdx--
+    ) {
+      const versionTag = `v${versionIdx}`;
+      const versionClass = `version-${versionTag}`;
+
+      // Look for this specific node in this version
+      const elementInVersion = this._rootSvg.querySelector(
+        `text.${versionClass}#n_${clickedNodeId}`
+      ) as SVGTextElement;
+
+      if (elementInVersion) {
+        // Found the element in this version, now get the node data
+        // First try baseNodes (for original nodes)
+        let node = this._baseNodes.find((n) => n.id === clickedNodeId);
+
+        // If not found in baseNodes, look in taggedNodes for this version (for added nodes)
+        if (!node && this._data?.taggedNodes) {
+          const versionNodes = this._data.taggedNodes[versionTag];
+          if (versionNodes) {
+            node = versionNodes.find((n) => n.id === clickedNodeId);
+          }
+        }
+
+        if (node) {
+          foundElement = elementInVersion;
+          foundNode = node;
+          break; // Stop at first match (most recent version)
+        }
+      }
+    }
+
+    // Pin the element in details area
+    if (foundElement && foundNode) {
+      this._detailsArea.pinElement(foundElement, foundNode);
+      this._logger.debug(
+        "Component",
+        `Clicked on node ${clickedNodeId} to pin/unpin in ${this._currentVersion}`
+      );
+    } else {
+      this._logger.warn(`Node ${clickedNodeId} not found in any version`);
+    }
   }
 
   /**
@@ -2705,6 +2780,43 @@ export class GveSnapshotRendition extends HTMLElement {
 
       .details-hovered-section {
         margin-top: 0.5rem;
+      }
+
+      .hovered-section-header {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 0.5rem;
+        padding: 0 0.5rem;
+      }
+
+      .pin-btn {
+        padding: 0.25rem 0.5rem;
+        background: var(--gve-btn-bg, #fff);
+        border: 1px solid var(--gve-border-color, #ddd);
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 12px;
+        color: var(--gve-text-color, #333);
+        transition: all 0.2s ease;
+      }
+
+      .pin-btn:hover {
+        background: var(--gve-btn-hover-bg, #f0f0f0);
+        border-color: var(--gve-primary, #007bff);
+      }
+
+      .pin-btn.pinned {
+        background: var(--gve-primary-light, #e7f3ff);
+        border-color: var(--gve-primary, #007bff);
+        color: var(--gve-primary, #007bff);
+      }
+
+      .pin-btn .feather-icon {
+        width: 14px;
+        height: 14px;
       }
 
       .hovered-element-container {

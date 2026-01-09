@@ -26,6 +26,8 @@ export class DetailsArea {
   private _isResizing = false;
   private _initialHeight = 0;
   private _initialMouseY = 0;
+  private _isPinned = false;
+  private _pinnedElements: Array<{ element: SVGTextElement; node: CharNode }> = [];
 
   constructor(settings: GveRenditionSettings, logger: Logger) {
     this._settings = settings;
@@ -315,13 +317,47 @@ export class DetailsArea {
    * @param hoveredElements - Array of hovered text SVG elements with their node data
    */
   updateHoveredElements(hoveredElements: Array<{ element: SVGTextElement; node: CharNode }>): void {
+    // If pinned, ignore hover updates
+    if (this._isPinned) {
+      return;
+    }
+
     if (hoveredElements.length === 0) {
       this.hoveredElementsSection.innerHTML = "";
       return;
     }
 
-    let html = "";
+    this.renderHoveredElements(hoveredElements);
+  }
 
+  /**
+   * Render hovered elements with pin button.
+   */
+  private renderHoveredElements(hoveredElements: Array<{ element: SVGTextElement; node: CharNode }>): void {
+    // Clear section
+    this.hoveredElementsSection.innerHTML = "";
+
+    if (hoveredElements.length === 0) {
+      return;
+    }
+
+    // Create header with pin button
+    const headerDiv = document.createElement("div");
+    headerDiv.className = "hovered-section-header";
+
+    const pinBtn = document.createElement("button");
+    pinBtn.className = `pin-btn ${this._isPinned ? "pinned" : ""}`;
+    pinBtn.title = this._isPinned ? "Unpin (allow hover updates)" : "Pin (freeze current display)";
+    pinBtn.innerHTML = '<i data-feather="lock"></i>';
+
+    pinBtn.addEventListener("click", () => {
+      this.togglePin(hoveredElements);
+    });
+
+    headerDiv.appendChild(pinBtn);
+    this.hoveredElementsSection.appendChild(headerDiv);
+
+    // Render each hovered element
     for (const { element, node } of hoveredElements) {
       // Clone the SVG text element
       const clonedElement = element.cloneNode(true) as SVGTextElement;
@@ -366,7 +402,52 @@ export class DetailsArea {
       this.hoveredElementsSection.appendChild(elementContainer);
     }
 
+    // Replace feather icons in the pin button
+    this.replaceFeatherIcons();
+
     this._logger.debug("DetailsArea", `Updated with ${hoveredElements.length} hovered element(s)`);
+  }
+
+  /**
+   * Toggle pin state.
+   */
+  private togglePin(currentElements: Array<{ element: SVGTextElement; node: CharNode }>): void {
+    this._isPinned = !this._isPinned;
+
+    if (this._isPinned) {
+      // Store current elements
+      this._pinnedElements = currentElements;
+      this._logger.info("DetailsArea", "Pinned hovered elements");
+    } else {
+      // Clear pinned elements
+      this._pinnedElements = [];
+      this._logger.info("DetailsArea", "Unpinned hovered elements");
+    }
+
+    // Re-render with updated pin state
+    this.renderHoveredElements(currentElements);
+  }
+
+  /**
+   * Pin a specific element (triggered by click).
+   */
+  public pinElement(element: SVGTextElement, node: CharNode): void {
+    const elements = [{ element, node }];
+
+    if (this._isPinned) {
+      // If already pinned, unpin
+      this._isPinned = false;
+      this._pinnedElements = [];
+      this._logger.info("DetailsArea", "Unpinned via click");
+    } else {
+      // Pin this element
+      this._isPinned = true;
+      this._pinnedElements = elements;
+      this._logger.info("DetailsArea", "Pinned via click");
+    }
+
+    // Render the element
+    this.renderHoveredElements(elements);
   }
 
   /**

@@ -800,6 +800,10 @@ As for features, wherever they are:
 - if the "hidden features" option in this area is checked, all the features are shown; else, all the features whose name starts with regex `^[^_]+_` (i.e. any prefix followed by `_`) are not displayed. This is because by convention all rendition features have a name starting with this prefix (e.g. `r_hints`) and usually we do not want rendition features displayed to end users.
 - additionally, when "hidden features" option is not checked, hide all the features listed in the component's `hiddenFeatures` setting (an optional array of strings).
 
+**Pinning**: when hovering on an added text element, its details are displayed. As soon as the user moves the mouse, these disappear. This is expected and correct. Yet, in some cases the user might want to "pin" this information so that it stays there until un-pinned: for instance, to better look at it if the panel is too small, or to copy it. In both cases, he will need to move the mouse, and this will make the information disappear before he can do anything with it. To avoid this issue, the user can click the hovered element to "pin" it.
+
+When the user clicks on an added element, pin the current on-hover display and signal it with a toggled "pinned" button at the top-right corner of the panel appearing on hover and containing the element rendition on the left, and its node features on the right. When pinned, the current information stays there: so hovering elsewhere does nothing. When the user un-toggles the pin by clicking the button in the details panel, resume the original behavior: whenever the mouse hovers, the on-hover display changes.
+
 ## Example
 
 The request and response to and from backend for this example are available at these links:
