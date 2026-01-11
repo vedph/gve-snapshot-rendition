@@ -159,4 +159,10 @@ Package structure:
 To deploy demo in surge:
 
 1. run the script for the demo you want to create (`deploy-demo.ps1` or `deploy-hint-demo.ps1`).
-2. in the created folder, run `surge`, enter your credentials, confirm the local source directory, and specify a URL to use (e.g. <http://gve-rendition.surge.sh> or <http://gve-hint-designer.surge.sh/>).
+2. in the created folder, run `surge`, enter your credentials, confirm the local source directory, and specify a URL to use (e.g. <gve-rendition.surge.sh> or <gve-hint-designer.surge.sh/>).
+
+Demo links:
+
+- [rendition, mock text](http://gve-rendition.surge.sh)
+- [rendition, H5-48](http://gve-rendition.surge.sh?sample=h5-48)
+- [hint designer](http://gve-hint-designer.surge.sh)
