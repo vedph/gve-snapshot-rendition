@@ -26,7 +26,6 @@ if (Test-Path $demoFolder) {
 
 # Create new folder structure
 New-Item -ItemType Directory -Path $demoFolder | Out-Null
-New-Item -ItemType Directory -Path "$demoFolder\workspace" | Out-Null
 Write-Host "Deployment folder created!" -ForegroundColor Green
 Write-Host ""
 
@@ -41,11 +40,12 @@ Write-Host "  - Copied index.html" -ForegroundColor Gray
 Copy-Item -Path "consumer.js" -Destination "$demoFolder\consumer.js"
 Write-Host "  - Copied consumer.js" -ForegroundColor Gray
 
-# Copy data.json
-Copy-Item -Path "data.json" -Destination "$demoFolder\data.json"
-Write-Host "  - Copied data.json (3.1MB)" -ForegroundColor Gray
+# Copy data folder (contains all sample files)
+Copy-Item -Path "data" -Destination "$demoFolder\data" -Recurse
+Write-Host "  - Copied data folder with all sample files" -ForegroundColor Gray
 
 # Copy workspace files
+New-Item -ItemType Directory -Path "$demoFolder\workspace" -ErrorAction SilentlyContinue | Out-Null
 Copy-Item -Path "workspace\operation-summary.js" -Destination "$demoFolder\workspace\operation-summary.js"
 Write-Host "  - Copied workspace\operation-summary.js" -ForegroundColor Gray
 
@@ -117,4 +117,7 @@ Write-Host "=== Done! ===" -ForegroundColor Green
 Write-Host ""
 Write-Host "Your demo folder is ready at: $demoFolder" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Note: The data.json file is 3.1MB - ensure your Surge plan supports this file size." -ForegroundColor Yellow
+Write-Host "Note: The demo supports multiple samples via URL query parameters." -ForegroundColor Yellow
+Write-Host "Example URLs:" -ForegroundColor Yellow
+Write-Host "  - https://your-site.surge.sh/?sample=default" -ForegroundColor White
+Write-Host "  - https://your-site.surge.sh/?sample=h5-48" -ForegroundColor White
