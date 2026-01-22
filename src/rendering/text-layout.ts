@@ -30,12 +30,48 @@ export class TextLayout {
   private _logger: Logger;
   private _spaceWidth: number;
 
+  /**
+   * The SVG element used as the measurement context for text width calculations.
+   * This ensures measurements happen in the same CSS context as actual rendering,
+   * which is critical when the component runs inside frameworks like Angular
+   * that may apply global CSS styles affecting font metrics.
+   *
+   * When this is undefined, measurements fall back to document.body (legacy behavior)
+   * which can cause position mismatches if global styles differ from Shadow DOM styles.
+   */
+  private _measurementRoot?: SVGElement;
+
   constructor(settings: GveRenditionSettings, logger: Logger) {
     this._settings = settings;
     this._logger = logger;
 
     // Calculate space width based on reference character
+    // Note: This initial calculation uses document.body as fallback.
+    // When setMeasurementRoot() is called, space width will be recalculated
+    // in the correct CSS context.
     this._spaceWidth = this.calculateSpaceWidth();
+  }
+
+  /**
+   * Set the measurement root for text width calculations.
+   * This should be called with the root SVG element after it's created,
+   * before any layout calculations are performed.
+   *
+   * IMPORTANT: This ensures text measurements happen in the same CSS context
+   * as actual rendering (inside Shadow DOM), avoiding position mismatches
+   * caused by different font metrics in document.body vs Shadow DOM.
+   *
+   * @param root - The SVG element to use as measurement context
+   */
+  setMeasurementRoot(root: SVGElement): void {
+    this._measurementRoot = root;
+    // Recalculate space width in the new context
+    this._spaceWidth = this.calculateSpaceWidth();
+    this._logger.debug(
+      "TextLayout",
+      "Measurement root set, space width recalculated",
+      { spaceWidth: this._spaceWidth }
+    );
   }
 
   /**
@@ -47,7 +83,8 @@ export class TextLayout {
       this._settings.fontFamily,
       this._settings.fontSize,
       this._settings.bold,
-      this._settings.italic
+      this._settings.italic,
+      this._measurementRoot // Use measurement root for consistent font metrics
     );
 
     return refCharWidth * this._settings.spaceWidthFraction;
@@ -128,12 +165,14 @@ export class TextLayout {
         });
 
         // Calculate character width for next position
+        // Use measurement root for consistent font metrics with actual rendering
         const charWidth = getTextWidth(
           node.data,
           this._settings.fontFamily,
           this._settings.fontSize,
           this._settings.bold,
-          this._settings.italic
+          this._settings.italic,
+          this._measurementRoot
         );
 
         currentX += charWidth + this._settings.charSpacing;

@@ -27,6 +27,14 @@ export class TextRenderer {
   private _textLayout: TextLayout;
   private _featureResolver: FeatureResolver;
 
+  /**
+   * Reference to the root SVG element for text width measurements.
+   * This ensures measurements happen in the same CSS context as rendering,
+   * which is critical when running inside Angular or other frameworks
+   * that apply global CSS styles to document.body.
+   */
+  private _measurementRoot?: SVGElement;
+
   constructor(
     settings: GveRenditionSettings,
     logger: Logger,
@@ -58,6 +66,13 @@ export class TextRenderer {
   ): Promise<void> {
     this._logger.time("renderBaseText");
     this._logger.info(`Rendering ${nodes.length} base text characters`);
+
+    // Store and set the measurement root to ensure text width measurements
+    // happen in the same CSS context as actual rendering (inside Shadow DOM).
+    // This is critical for correct positioning when running inside Angular
+    // or other frameworks that apply global CSS styles to document.body.
+    this._measurementRoot = rootSvg;
+    this._textLayout.setMeasurementRoot(rootSvg);
 
     const positions = this._textLayout.calculateBaseTextPositions(
       nodes,
@@ -443,12 +458,14 @@ export class TextRenderer {
         });
 
         // Calculate character width for next position
+        // Use measurement root for consistent font metrics with actual rendering
         const charWidth = getTextWidth(
           node.data,
           this._settings.fontFamily,
           this._settings.fontSize,
           this._settings.bold,
-          this._settings.italic
+          this._settings.italic,
+          this._measurementRoot
         );
 
         currentX += charWidth + this._settings.charSpacing;

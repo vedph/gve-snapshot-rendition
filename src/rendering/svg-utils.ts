@@ -368,27 +368,74 @@ export function getRectCenter(
 /**
  * Get computed text width for a given text and style.
  * Creates a temporary SVG element to measure.
+ *
+ * IMPORTANT: The measurementRoot parameter is critical for correct measurements
+ * when the component runs inside Angular or other frameworks that apply global
+ * CSS styles (like font-family) to document.body. Without it, measurements
+ * happen in document.body where inherited styles may affect font metrics,
+ * but actual rendering happens inside Shadow DOM where styles are isolated.
+ * This mismatch causes text positions and hint placements to be incorrect.
+ *
+ * When measurementRoot is provided (typically the component's root SVG element),
+ * measurements happen in the same CSS context as the actual rendering,
+ * ensuring consistent font metrics.
+ *
+ * @param text - The text to measure
+ * @param fontFamily - Font family to use
+ * @param fontSize - Font size in pixels
+ * @param bold - Whether text is bold
+ * @param italic - Whether text is italic
+ * @param measurementRoot - Optional SVG element to use as measurement context.
+ *                          If provided, a temporary text element is appended here
+ *                          for measurement (same CSS context as rendering).
+ *                          If not provided, falls back to document.body (legacy behavior).
  */
 export function getTextWidth(
   text: string,
   fontFamily: string,
   fontSize: number,
   bold: boolean = false,
-  italic: boolean = false
+  italic: boolean = false,
+  measurementRoot?: SVGElement
 ): number {
-  // Create temporary SVG and text element
-  const svg = createSVGElement("svg");
-  svg.style.visibility = "hidden";
-  svg.style.position = "absolute";
-  document.body.appendChild(svg);
+  let svg: SVGSVGElement;
+  let needsCleanup = false;
+
+  if (measurementRoot) {
+    // Use the provided measurement root (same CSS context as rendering)
+    // Create a temporary SVG inside the measurement root's owner SVG
+    const ownerSvg = measurementRoot.ownerSVGElement || measurementRoot;
+    svg = ownerSvg as SVGSVGElement;
+  } else {
+    // Fallback: create temporary SVG in document.body (legacy behavior)
+    // WARNING: This may produce incorrect measurements when global CSS
+    // affects font rendering differently than inside Shadow DOM
+    svg = createSVGElement("svg");
+    svg.style.visibility = "hidden";
+    svg.style.position = "absolute";
+    document.body.appendChild(svg);
+    needsCleanup = true;
+  }
 
   const textEl = createTextElement(text);
   applyTextStyle(textEl, { fontFamily, fontSize, bold, italic });
+
+  // Make the measurement element invisible but still measurable
+  textEl.style.visibility = "hidden";
+  textEl.setAttribute("x", "-9999");
+  textEl.setAttribute("y", "-9999");
+
   svg.appendChild(textEl);
 
   const width = textEl.getBBox().width;
 
-  document.body.removeChild(svg);
+  // Clean up the temporary text element
+  svg.removeChild(textEl);
+
+  // Only remove the SVG if we created it (fallback case)
+  if (needsCleanup) {
+    document.body.removeChild(svg);
+  }
 
   return width;
 }
