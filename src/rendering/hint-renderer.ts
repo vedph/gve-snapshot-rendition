@@ -124,19 +124,6 @@ export class HintRenderer {
         return;
       }
 
-      // DIAGNOSTIC: Log detailed RBR information
-      this._logger.info(
-        "HintRenderer",
-        `DIAGNOSTIC: Calculated ${rbrs.length} RBR(s) for hint ${hintId}`,
-        rbrs.map((rbr, i) => ({
-          rbrIndex: i,
-          x: rbr.x.toFixed(1),
-          y: rbr.y.toFixed(1),
-          width: rbr.width.toFixed(1),
-          height: rbr.height.toFixed(1),
-        }))
-      );
-
       // 5. Check if this is a placeholder hint
       const hasPlaceholder = hintGroup.querySelector("#placeholder") !== null;
 
