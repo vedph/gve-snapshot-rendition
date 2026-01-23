@@ -86,6 +86,16 @@ export class GveSnapshotRendition extends HTMLElement {
   // Layout state storage key
   private static readonly LAYOUT_STORAGE_KEY = "gve-snapshot-rendition-layout";
 
+  /**
+   * Get the library version.
+   * This value is injected at build time via @rollup/plugin-replace
+   * from package.json. It allows consumers to verify which version
+   * of the web component is loaded.
+   */
+  public static get version(): string {
+    return "__VERSION__";
+  }
+
   // State
   private _baseNodes: CharNode[] = [];
   private _versionPalette: Map<string, string> = new Map();

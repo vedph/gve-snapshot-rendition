@@ -65,12 +65,62 @@ export class TextLayout {
    */
   setMeasurementRoot(root: SVGElement): void {
     this._measurementRoot = root;
+
+    // DIAGNOSTIC: Log measurement context details
+    const rootDimensions = {
+      clientWidth: root.clientWidth,
+      clientHeight: root.clientHeight,
+      boundingRect: root.getBoundingClientRect(),
+    };
+    this._logger.info(
+      "TextLayout",
+      "Setting measurement root - dimensions:",
+      rootDimensions
+    );
+
+    // DIAGNOSTIC: Compare measurements in document.body vs measurementRoot
+    const testChar = "M";
+    const bodyWidth = this.measureInDocumentBody(testChar);
+    const rootWidth = this.measureInRoot(testChar);
+    this._logger.info(
+      "TextLayout",
+      `DIAGNOSTIC: '${testChar}' width - document.body: ${bodyWidth.toFixed(2)}, measurementRoot: ${rootWidth.toFixed(2)}, diff: ${(rootWidth - bodyWidth).toFixed(2)}`
+    );
+
     // Recalculate space width in the new context
     this._spaceWidth = this.calculateSpaceWidth();
-    this._logger.debug(
+    this._logger.info(
       "TextLayout",
       "Measurement root set, space width recalculated",
       { spaceWidth: this._spaceWidth }
+    );
+  }
+
+  /**
+   * DIAGNOSTIC: Measure text width in document.body for comparison.
+   */
+  private measureInDocumentBody(text: string): number {
+    return getTextWidth(
+      text,
+      this._settings.fontFamily,
+      this._settings.fontSize,
+      this._settings.bold,
+      this._settings.italic
+      // No measurementRoot = uses document.body
+    );
+  }
+
+  /**
+   * DIAGNOSTIC: Measure text width in the measurement root.
+   */
+  private measureInRoot(text: string): number {
+    return getTextWidth(
+      text,
+      this._settings.fontFamily,
+      this._settings.fontSize,
+      this._settings.bold,
+      this._settings.italic,
+      this._measurementRoot
     );
   }
 

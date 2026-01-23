@@ -2,8 +2,13 @@ import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
 import * as terserModule from "@rollup/plugin-terser"; // Optional: Minification (for production)
 import { nodeResolve } from "@rollup/plugin-node-resolve";
+import replace from "@rollup/plugin-replace";
+import { readFileSync } from "fs";
 
 const terser = terserModule.terser || terserModule.default || terserModule;
+
+// Read version from package.json
+const pkg = JSON.parse(readFileSync("./package.json", "utf-8"));
 
 export default {
   input: "src/index.ts", // Entry point for your library
@@ -21,6 +26,12 @@ export default {
     },
   ],
   plugins: [
+    replace({
+      preventAssignment: true,
+      values: {
+        __VERSION__: pkg.version,
+      },
+    }),
     nodeResolve(), // Resolve node_modules
     commonjs(), // Convert CommonJS modules to ES6 (for GSAP)
     typescript({

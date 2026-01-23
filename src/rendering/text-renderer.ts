@@ -188,6 +188,14 @@ export class TextRenderer {
     const bbox = getSafeBBox(textEl);
     this._boundsCache.set(`n_${node.id}`, bbox);
 
+    // DIAGNOSTIC: Log first few characters' bounds to verify coordinate system
+    if (node.id <= 5) {
+      this._logger.info(
+        "TextRenderer",
+        `DIAGNOSTIC: Cached bounds for node ${node.id} ('${node.data}'): x=${bbox.x.toFixed(1)}, y=${bbox.y.toFixed(1)}, w=${bbox.width.toFixed(1)}, h=${bbox.height.toFixed(1)}`
+      );
+    }
+
     // Animate if function provided
     if (animationFn) {
       // Set initial opacity to 0 for animation via CSS style (GSAP animates CSS)
