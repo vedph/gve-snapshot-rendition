@@ -102,7 +102,7 @@ This is only a reminder.
 
 ## Deployment
 
-You must be logged into NPM with your account (verify with `npm whoami`, login with `npm login` if required).
+🚀 You must be logged into NPM with your account (verify with `npm whoami`, login with `npm login` if required).
 
 1. ensure that tests pass (`pnpm test`) and be sure to build (`pnpm build`).
 2. publish via `pnpm run publish:public` or directly via `npm publish --access=public`.

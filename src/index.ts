@@ -32,6 +32,9 @@ export type {
 
 export { DEFAULT_HINT_DESIGNER_SETTINGS } from "./hint-designer/hint-designer-models";
 
+// Export operation summary service
+export { OperationSummaryService } from "./ui/operation-summary-service";
+
 // Export models (re-export from models.ts)
 export type {
   Feature,
