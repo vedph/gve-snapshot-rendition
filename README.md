@@ -94,12 +94,6 @@ This component requires the following packages:
 - [feather-icons](https://github.com/feathericons/feather) for icons. See also the [icons list](https://feathericons.com) (`pnpm i feather-icons`).
 - [highlight.js](https://highlightjs.org/) for the hint designer (syntax highlight for SVG and JS code; `pnpm i highlight.js`).
 
-## Task List
-
-This is only a reminder.
-
-- consider simplifying logic by drawing node features from tagged nodes rather than from steps.
-
 ## Deployment
 
 🚀 You must be logged into NPM with your account (verify with `npm whoami`, login with `npm login` if required).

@@ -154,7 +154,7 @@ export class VersionTextArea {
     icons.forEach((icon) => {
       const iconName = icon.getAttribute("data-feather");
       if (iconName && feather.icons[iconName]) {
-        const svg = feather.toSvg(iconName, {
+        const svg = feather.icons[iconName].toSvg({
           class: "feather-icon",
           width: 16,
           height: 16,
@@ -255,14 +255,14 @@ export class VersionTextArea {
         // Visual feedback - store original icon
         const originalIcon = this.copyBtn.querySelector(".feather-icon");
         if (originalIcon) {
-          const checkSvg = feather.toSvg("check", {
+          const checkSvg = feather.icons["check"].toSvg({
             class: "feather-icon",
             width: 16,
             height: 16,
           });
           this.copyBtn.querySelector("i")!.innerHTML = checkSvg;
           setTimeout(() => {
-            const copySvg = feather.toSvg("copy", {
+            const copySvg = feather.icons["copy"].toSvg({
               class: "feather-icon",
               width: 16,
               height: 16,

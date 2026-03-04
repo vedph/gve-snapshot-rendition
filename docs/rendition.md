@@ -299,6 +299,7 @@ All rendering features have their name starting with `r_`. These are the only fe
   - `ID`=character ID. Each character has its unique numeric ID directly got from snapshot data. So here we target the character to be offset. As per the general text layout rules, once we offset this target characters, all the other characters will follow on the same baseline, unless any of them has another offset.
   - `y`=Y offset to add to the computed character baseline, thus shifting its default position down (when the offset is positive) or up (when the offset is negative).
   - `x`=X offset to add to the computed character baseline, thus shifting its default position to the right (when the offset is positive) or to the left (when the offset is negative).
+  - both `x` and `y` can be followed by a unit specifier. When not specified, the default unit is just pixels; otherwise, the value is followed by suffixes `tw`=text character average width (computed according to the current font and size) or `th`=text character average height.
 - `r_char-offset`: this works as `r_char-offsets`, but it is provided in the features of a single character node, instead of being an initial setup for multiple characters. For instance, `3:y=10,x=20` means that before rendering the character with ID=3, the baseline will be shifted down by 10 and the X position of the next character will be offset by 20, thus effectively leaving a wider gap between the previous character and the next ones. All the following characters up will follow on this newly defined baseline, unless any of them happens to have another offset.
 
 >The logic for these two features, `r_char-offsets` and `r_char-offset`, is equal; the only difference is that the former works on multiple characters at once. This is preferable to having just `r_char-offset` and using it multiple times, because when a character gets an offset, this affects not only it, but also all the following characters. So, order of application matters, and this could not be ensured when using multiple features, unless introducing ad-hoc logic which would be against generalization.
@@ -357,13 +358,13 @@ The hint has these **properties**:
 
 - `svg`: SVG code for hint's visuals, always having a root g element.
 - `position`: relative position for the hint.
-- `offsetX`: absolute (10) or proportional (`0.5th` = half text height, `0.5tw` = half text width).
-- `offsetY`: absolute (10) or proportional (`0.5th` = half text height, `0.5tw` = half text width)
+- `offsetX`: absolute (10) or proportional (`0.5th` = half text character average height, `0.5tw` = half text character average width).
+- `offsetY`: absolute (10) or proportional (`0.5th` = half text character average height, `0.5tw` = half text character average width).
 - `scaleX`: horizontal scale: `1` = match bounds width, `1.1` = 110% of bounds width.
 - `scaleY`: vertical scale: `1` = match bounds height, `1.1` = 110% of bounds height.
 - `rotation`: optional hint's rotation (`0`=none).
 - `animation`: JS code for animating the hint's entrance via GSAP.
-- `displacedRefSpan`: a span of base text with format IDxN where ID=node ID and N=count of chars to include, to be used as the RBR instead of the default RBR.
+- `displacedRefSpan`: a span of base text with format `IDxN` where `ID`=node ID and `N`=count of chars to include, to be used as the RBR instead of the default RBR.
 
 The following sections provide more details about some of these properties and their usage.
 

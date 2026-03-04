@@ -1484,7 +1484,7 @@ export class GveSnapshotRendition extends HTMLElement {
    * Extract char offsets from first operation if it's an annotate.
    */
   private extractCharOffsets():
-    | Map<number, { x?: number; y?: number }>
+    | Map<number, { x?: number | string; y?: number | string }>
     | undefined {
     if (this._data && this._data.steps.length > 0) {
       const firstOp = this._data.steps[0].operation;

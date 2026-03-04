@@ -3,6 +3,8 @@ import { GveRenditionSettings } from "../settings/settings";
 import { Logger } from "../core/logger";
 import { isLineBreak, isSpace } from "../utils/node-utils";
 import { getTextWidth } from "./svg-utils";
+import { parseOffset } from "../utils/text-utils";
+import { parseCharOffsets } from "../utils/feature-utils";
 
 /**
  * Position information for a character node.
@@ -89,14 +91,29 @@ export class TextLayout {
    * Calculate positions for all base text nodes.
    *
    * @param nodes - The character nodes to position
-   * @param charOffsets - Map of node IDs to their offset overrides (from r_char-offsets feature)
+   * @param charOffsets - Map of node IDs to their offset overrides (from r_char-offsets feature).
+   *   Offset values may be plain numbers (px) or strings with units "tw"/"th"
+   *   (average character width / height of the current font).
    * @returns Array of character positions
    */
   calculateBaseTextPositions(
     nodes: CharNode[],
-    charOffsets?: Map<number, { x?: number; y?: number }>
+    charOffsets?: Map<number, { x?: number | string; y?: number | string }>
   ): CharPosition[] {
     this._logger.time("calculateBaseTextPositions");
+
+    // Compute the average character dimensions used to resolve "tw" and "th" units.
+    // tw = average character width (width of the reference character 'm' in the current font)
+    // th = average character height  (≈ font size, which is the em-square in CSS/SVG pixels)
+    const avgCharWidth = getTextWidth(
+      REFERENCE_CHAR,
+      this._settings.fontFamily,
+      this._settings.fontSize,
+      this._settings.bold,
+      this._settings.italic,
+      this._measurementRoot
+    );
+    const avgCharHeight = this._settings.fontSize;
 
     const positions: CharPosition[] = [];
     let currentX = this._settings.marginLeft;
@@ -106,23 +123,42 @@ export class TextLayout {
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
 
-      // Check for character offset overrides
-      const offset = charOffsets?.get(node.id);
-      if (offset) {
-        if (offset.x !== undefined) {
-          currentX += offset.x;
-          this._logger.debug(
-            "TextLayout",
-            `Applied X offset ${offset.x} to node ${node.id}`
-          );
+      // Resolve character offset for this node.
+      // Priority: r_char-offsets (init feature) is the base; a per-node r_char-offset
+      // feature on the node itself can supplement or override it.
+      let offsetX: number | string | undefined = charOffsets?.get(node.id)?.x;
+      let offsetY: number | string | undefined = charOffsets?.get(node.id)?.y;
+
+      // Check per-node r_char-offset feature (singular)
+      const nodeOffsetFeature = node.features?.find(
+        (f) => f.name === "r_char-offset"
+      );
+      if (nodeOffsetFeature) {
+        const nodeOffsetMap = parseCharOffsets(nodeOffsetFeature.value);
+        const nodeOffset = nodeOffsetMap.get(node.id);
+        if (nodeOffset) {
+          // Per-node feature overrides the init-feature value when both are present
+          if (nodeOffset.x !== undefined) offsetX = nodeOffset.x;
+          if (nodeOffset.y !== undefined) offsetY = nodeOffset.y;
         }
-        if (offset.y !== undefined) {
-          currentY += offset.y;
-          this._logger.debug(
-            "TextLayout",
-            `Applied Y offset ${offset.y} to node ${node.id}`
-          );
-        }
+      }
+
+      // Apply resolved offsets (resolving tw/th units against avg char dimensions)
+      if (offsetX !== undefined) {
+        const resolvedX = parseOffset(offsetX, avgCharHeight, avgCharWidth);
+        currentX += resolvedX;
+        this._logger.debug(
+          "TextLayout",
+          `Applied X offset ${offsetX} (→${resolvedX}px) to node ${node.id}`
+        );
+      }
+      if (offsetY !== undefined) {
+        const resolvedY = parseOffset(offsetY, avgCharHeight, avgCharWidth);
+        currentY += resolvedY;
+        this._logger.debug(
+          "TextLayout",
+          `Applied Y offset ${offsetY} (→${resolvedY}px) to node ${node.id}`
+        );
       }
 
       if (isLineBreak(node)) {

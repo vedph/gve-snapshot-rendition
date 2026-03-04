@@ -92,16 +92,35 @@ export function filterRenditionFeatures(
 }
 
 /**
+ * Parse an individual offset value for r_char-offset(s).
+ * Accepts a plain number string (e.g. "10") or a suffixed value
+ * (e.g. "0.5th", "2tw").  Suffixed values are kept as strings so they can
+ * be resolved later when the average character dimensions are known.
+ */
+function parseCharOffsetValue(raw: string): number | string {
+  // If it carries a tw/th unit suffix, return as-is for deferred resolution
+  if (/^[-\d.]+(?:tw|th)$/.test(raw)) {
+    return raw;
+  }
+  const num = parseFloat(raw);
+  return isNaN(num) ? 0 : num;
+}
+
+/**
  * Parse char-offsets feature value.
  * Format: "ID:y=...,x=... ID:y=...,x=..." (multiple patterns separated by space)
  * Each pattern: ID:y=value,x=value (y and x are optional, can be in any order)
+ * Values can be plain pixels (e.g. "10") or use font-relative units:
+ *   tw = average character width of the base text font
+ *   th = average character height of the base text font (≈ font size)
+ * e.g. "0.5th" = half the average character height, "2tw" = twice the average width.
  *
- * @returns Map of node ID to {x?: number, y?: number}
+ * @returns Map of node ID to {x?: number|string, y?: number|string}
  */
 export function parseCharOffsets(
   value: string
-): Map<number, { x?: number; y?: number }> {
-  const result = new Map<number, { x?: number; y?: number }>();
+): Map<number, { x?: number | string; y?: number | string }> {
+  const result = new Map<number, { x?: number | string; y?: number | string }>();
 
   // Split by space to get individual patterns
   const patterns = value.trim().split(/\s+/);
@@ -114,7 +133,7 @@ export function parseCharOffsets(
     const nodeId = parseInt(match[1], 10);
     const offsetsStr = match[2];
 
-    const offsets: { x?: number; y?: number } = {};
+    const offsets: { x?: number | string; y?: number | string } = {};
 
     // Parse comma-separated x and y values
     const parts = offsetsStr.split(",");
@@ -122,7 +141,7 @@ export function parseCharOffsets(
       const kv = part.trim().split("=");
       if (kv.length === 2) {
         const key = kv[0].trim();
-        const val = parseFloat(kv[1].trim());
+        const val = parseCharOffsetValue(kv[1].trim());
         if (key === "x") offsets.x = val;
         else if (key === "y") offsets.y = val;
       }

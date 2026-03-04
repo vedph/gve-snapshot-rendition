@@ -87,7 +87,7 @@ export class VersionsListArea {
     icons.forEach((icon) => {
       const iconName = icon.getAttribute("data-feather");
       if (iconName && feather.icons[iconName]) {
-        const svg = feather.toSvg(iconName, {
+        const svg = feather.icons[iconName].toSvg({
           class: "feather-icon",
           width: 16,
           height: 16,

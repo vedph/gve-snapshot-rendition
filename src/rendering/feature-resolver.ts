@@ -261,11 +261,11 @@ export class FeatureResolver {
    * This is used for base text layout adjustments.
    *
    * @param features - Features from the first annotate operation (init features)
-   * @returns Map of node IDs to their offsets
+   * @returns Map of node IDs to their offsets (values may be numbers or "Ntw"/"Nth" strings)
    */
   extractCharOffsets(
     features: Feature[] | undefined
-  ): Map<number, { x?: number; y?: number }> {
+  ): Map<number, { x?: number | string; y?: number | string }> {
     if (!features) return new Map();
 
     const charOffsetsValue = getFeatureValue(features, "r_char-offsets");

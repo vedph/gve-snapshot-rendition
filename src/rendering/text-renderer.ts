@@ -62,7 +62,7 @@ export class TextRenderer {
   public async renderBaseText(
     nodes: CharNode[],
     rootSvg: SVGElement,
-    charOffsets?: Map<number, { x?: number; y?: number }>
+    charOffsets?: Map<number, { x?: number | string; y?: number | string }>
   ): Promise<void> {
     this._logger.time("renderBaseText");
     this._logger.info(`Rendering ${nodes.length} base text characters`);
