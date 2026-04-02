@@ -5,6 +5,7 @@ import { isLineBreak, isSpace } from "../utils/node-utils";
 import { getTextWidth } from "./svg-utils";
 import { parseOffset } from "../utils/text-utils";
 import { parseCharOffsets } from "../utils/feature-utils";
+import { RenditionConfig } from "./feature-resolver";
 
 /**
  * Position information for a character node.
@@ -98,7 +99,8 @@ export class TextLayout {
    */
   calculateBaseTextPositions(
     nodes: CharNode[],
-    charOffsets?: Map<number, { x?: number | string; y?: number | string }>
+    charOffsets?: Map<number, { x?: number | string; y?: number | string }>,
+    nodeConfigs?: Map<number, RenditionConfig>
   ): CharPosition[] {
     this._logger.time("calculateBaseTextPositions");
 
@@ -195,14 +197,16 @@ export class TextLayout {
           lineNumber,
         });
 
-        // Calculate character width for next position
-        // Use measurement root for consistent font metrics with actual rendering
+        // Calculate character width for next position.
+        // Use the node's own font size if overridden via nodeConfigs; otherwise fall back to the global setting.
+        const nodeConfig = nodeConfigs?.get(node.id);
+        const charFontSize = nodeConfig?.fontSize ?? this._settings.fontSize;
         const charWidth = getTextWidth(
           node.data,
-          this._settings.fontFamily,
-          this._settings.fontSize,
-          this._settings.bold,
-          this._settings.italic,
+          nodeConfig?.fontFamily ?? this._settings.fontFamily,
+          charFontSize,
+          nodeConfig?.bold ?? this._settings.bold,
+          nodeConfig?.italic ?? this._settings.italic,
           this._measurementRoot
         );
 

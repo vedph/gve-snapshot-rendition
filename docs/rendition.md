@@ -335,7 +335,7 @@ The following text rendition features are applicable ONLY to **added text** (=te
 
 ## Init Features
 
-Init-features, when set, are provided by an **initial annotation operation**. Annotation operations are those operations which just modify the set of features, in most cases by adding new ones, without changing the text. So, the purpose of an initial annotation operation is to provide a sort of initial rendering setup.
+Init-features, when set, are provided by an **initial annotation operation**. Annotation operations are those operations which just modify the set of features, in most cases by adding new ones, without changing the text. So, the purpose of an initial annotation operation is to provide a sort of initial rendering setup. For instance, often init features are used to set line indents, by just adding x-offsets to the first characters of each indented line.
 
 Init features are just _rendition features_ which happen to be used in the very first operation applied to the base text, which must be an annotation operation. So, when the result from a snapshot starts with an annotate operation and this operation contains rendition features, it is implied that these are going to override the component's settings themselves, thus defining new defaults.
 

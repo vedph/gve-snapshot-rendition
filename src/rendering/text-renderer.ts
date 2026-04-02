@@ -40,7 +40,7 @@ export class TextRenderer {
     logger: Logger,
     animationEngine: AnimationEngine,
     boundsCache: BoundsCache,
-    spreadingEngine: SpreadingEngine
+    spreadingEngine: SpreadingEngine,
   ) {
     this._settings = settings;
     this._logger = logger;
@@ -62,7 +62,8 @@ export class TextRenderer {
   public async renderBaseText(
     nodes: CharNode[],
     rootSvg: SVGElement,
-    charOffsets?: Map<number, { x?: number | string; y?: number | string }>
+    charOffsets?: Map<number, { x?: number | string; y?: number | string }>,
+    nodeConfigs?: Map<number, RenditionConfig>,
   ): Promise<void> {
     this._logger.time("renderBaseText");
     this._logger.info(`Rendering ${nodes.length} base text characters`);
@@ -76,7 +77,8 @@ export class TextRenderer {
 
     const positions = this._textLayout.calculateBaseTextPositions(
       nodes,
-      charOffsets
+      charOffsets,
+      nodeConfigs
     );
 
     // Get animation function if specified
@@ -86,13 +88,13 @@ export class TextRenderer {
           .resolveAnimation(
             `#${this._settings.charAnimationId}`,
             this._settings.animations,
-            "char"
+            "char",
           )
       : undefined;
     if (!animationFn) {
       this._logger.debug(
         "TextRenderer",
-        "No character animation function specified"
+        "No character animation function specified",
       );
     }
 
@@ -133,7 +135,14 @@ export class TextRenderer {
         continue;
       }
 
-      await this.renderCharacter(node, pos, rootSvg, "v0", animationFn);
+      await this.renderCharacter(
+        node,
+        pos,
+        rootSvg,
+        "v0",
+        animationFn,
+        nodeConfigs?.get(node.id),
+      );
     }
 
     this._logger.timeEnd("renderBaseText");
@@ -150,9 +159,9 @@ export class TextRenderer {
     animationFn?: (
       gsap: any,
       targetEl: SVGElement,
-      rootEl: SVGElement
+      rootEl: SVGElement,
     ) => Promise<void>,
-    config?: RenditionConfig
+    config?: RenditionConfig,
   ): Promise<void> {
     const textEl = createTextElement(node.data, {
       id: `n_${node.id}`,
@@ -219,11 +228,11 @@ export class TextRenderer {
     allBaseNodes: CharNode[],
     panZoomInstance?: any,
     viewportWidth?: number,
-    viewportHeight?: number
+    viewportHeight?: number,
   ): Promise<void> {
     this._logger.time(`renderAdditionalText-${versionTag}`);
     this._logger.info(
-      `Rendering ${nodes.length} additional text characters for ${versionTag}`
+      `Rendering ${nodes.length} additional text characters for ${versionTag}`,
     );
 
     if (nodes.length === 0) {
@@ -236,13 +245,13 @@ export class TextRenderer {
     if (config.textValue) {
       this._logger.debug(
         "TextRenderer",
-        `Applying r_t-value override: "${config.textValue}" (original text had ${nodes.length} characters)`
+        `Applying r_t-value override: "${config.textValue}" (original text had ${nodes.length} characters)`,
       );
 
       // Replace node data with characters from r_t-value
       // If r_t-value has fewer characters than nodes, we only override the first N nodes
       // If r_t-value has more characters, we only use the first N characters
-      const overrideChars = config.textValue.split('');
+      const overrideChars = config.textValue.split("");
       const charsToOverride = Math.min(nodes.length, overrideChars.length);
 
       for (let i = 0; i < charsToOverride; i++) {
@@ -254,7 +263,7 @@ export class TextRenderer {
         nodes = nodes.slice(0, overrideChars.length);
         this._logger.debug(
           "TextRenderer",
-          `r_t-value has fewer characters (${overrideChars.length}) than nodes (${nodes.length}), only rendering first ${overrideChars.length} characters`
+          `r_t-value has fewer characters (${overrideChars.length}) than nodes (${nodes.length}), only rendering first ${overrideChars.length} characters`,
         );
       }
     }
@@ -265,7 +274,7 @@ export class TextRenderer {
       const nodes = getNodeSpan(
         allBaseNodes,
         config.textDisplacedSpan.nodeId,
-        config.textDisplacedSpan.count
+        config.textDisplacedSpan.count,
       );
       rbrs = this.calculateRBRs(nodes);
     } else {
@@ -304,7 +313,7 @@ export class TextRenderer {
     const positions = this.calculateAdditionalTextPositions(
       nodes,
       baseX,
-      baseY
+      baseY,
     );
 
     // 4. Calculate bounding rectangle for the text (needed for spreading and prolog)
@@ -317,7 +326,7 @@ export class TextRenderer {
         this._logger.debug(
           "TextRenderer",
           `Applying spreading for solid additional text`,
-          textBounds
+          textBounds,
         );
 
         const spreading = this._spreadingEngine.calculateSpreading(textBounds, [
@@ -343,7 +352,7 @@ export class TextRenderer {
           await this._animationEngine.animateSpreading(
             combinedShifts,
             this._settings.spreadTime,
-            rootSvg
+            rootSvg,
           );
 
           // Update cached bounds for shifted elements
@@ -358,31 +367,37 @@ export class TextRenderer {
     } else {
       this._logger.debug(
         "TextRenderer",
-        `Skipping spreading - additional text is not solid (r_t-solid not set)`
+        `Skipping spreading - additional text is not solid (r_t-solid not set)`,
       );
     }
 
     // 6. Check if prolog panning is needed (element visibility check)
     // This must happen AFTER positioning and spreading, but BEFORE rendering characters
-    if (panZoomInstance && viewportWidth && viewportHeight && this._settings.prologDuration > 0 && textBounds) {
+    if (
+      panZoomInstance &&
+      viewportWidth &&
+      viewportHeight &&
+      this._settings.prologDuration > 0 &&
+      textBounds
+    ) {
       const isVisible = this._animationEngine.isElementVisible(
         textBounds,
         panZoomInstance,
         viewportWidth,
-        viewportHeight
+        viewportHeight,
       );
 
       if (!isVisible) {
         this._logger.debug(
           "TextRenderer",
-          `Additional text for ${versionTag} would be outside viewport, executing prolog`
+          `Additional text for ${versionTag} would be outside viewport, executing prolog`,
         );
         await this._animationEngine.animateProlog(
           panZoomInstance,
           textBounds,
           viewportWidth,
           viewportHeight,
-          this._settings.prologDuration
+          this._settings.prologDuration,
         );
       }
     }
@@ -394,7 +409,7 @@ export class TextRenderer {
           .resolveAnimation(
             `#${this._settings.charAnimationId}`,
             this._settings.animations,
-            "char"
+            "char",
           )
       : undefined;
 
@@ -408,7 +423,14 @@ export class TextRenderer {
         continue;
       }
 
-      await this.renderCharacter(node, pos, rootSvg, versionTag, animationFn, config);
+      await this.renderCharacter(
+        node,
+        pos,
+        rootSvg,
+        versionTag,
+        animationFn,
+        config,
+      );
     }
 
     this._logger.timeEnd(`renderAdditionalText-${versionTag}`);
@@ -421,7 +443,7 @@ export class TextRenderer {
   private calculateAdditionalTextPositions(
     nodes: CharNode[],
     baseX: number,
-    baseY: number
+    baseY: number,
   ): CharPosition[] {
     const positions: CharPosition[] = [];
     let currentX = baseX;
@@ -465,7 +487,7 @@ export class TextRenderer {
           this._settings.fontSize,
           this._settings.bold,
           this._settings.italic,
-          this._measurementRoot
+          this._measurementRoot,
         );
 
         currentX += charWidth + this._settings.charSpacing;
@@ -530,7 +552,7 @@ export class TextRenderer {
    */
   private calculateTargetPosition(
     position: string,
-    rbr: BoundingRect
+    rbr: BoundingRect,
   ): { x: number; y: number } {
     const centerX = rbr.x + rbr.width / 2;
     const centerY = rbr.y + rbr.height / 2;
@@ -563,7 +585,7 @@ export class TextRenderer {
    */
   private calculateTextBounds(
     nodes: CharNode[],
-    positions: CharPosition[]
+    positions: CharPosition[],
   ): BoundingRect | null {
     if (nodes.length === 0) return null;
 

@@ -10,7 +10,7 @@ import { BoundsCache } from "../rendering/bounds-cache";
 import { SpreadingEngine } from "../rendering/spreading-engine";
 import { TextRenderer } from "../rendering/text-renderer";
 import { HintRenderer } from "../rendering/hint-renderer";
-import { FeatureResolver } from "../rendering/feature-resolver";
+import { FeatureResolver, RenditionConfig } from "../rendering/feature-resolver";
 import { Toolbar } from "../ui/toolbar";
 import { VersionTextArea } from "../ui/version-text-area";
 import { DetailsArea } from "../ui/details-area";
@@ -627,10 +627,12 @@ export class GveSnapshotRendition extends HTMLElement {
 
     // Extract init features and render base text
     const charOffsets = this.extractCharOffsets();
+    const nodeConfigs = this.extractInitNodeConfigs();
     await this._textRenderer.renderBaseText(
       this._baseNodes,
       this._rootSvg,
-      charOffsets
+      charOffsets,
+      nodeConfigs
     );
 
     // NOTE: Do NOT process operations here!
@@ -1494,6 +1496,35 @@ export class GveSnapshotRendition extends HTMLElement {
       }
     }
     return undefined;
+  }
+
+  /**
+   * Extract per-node rendition configs from the first operation if it's an annotate.
+   * This allows init features like r_font-size, r_fore-color, etc. to override
+   * the component-wide settings for specific base text nodes.
+   */
+  private extractInitNodeConfigs(): Map<number, RenditionConfig> | undefined {
+    if (!this._data || this._data.steps.length === 0) return undefined;
+    const firstStep = this._data.steps[0];
+    if (firstStep.operation.type !== 7) return undefined; // annotate only
+    const features = firstStep.operation.features;
+    if (!features || features.length === 0) return undefined;
+
+    // Only proceed if there are text rendition features beyond r_char-offsets
+    const hasRenditionOverrides = features.some(
+      (f) =>
+        f.name.startsWith("r_") &&
+        f.name !== "r_char-offsets" &&
+        f.name !== "r_char-offset"
+    );
+    if (!hasRenditionOverrides) return undefined;
+
+    const config = this._featureResolver.resolve(this._settings, features);
+    const map = new Map<number, RenditionConfig>();
+    for (const nodeId of firstStep.refNodeIds) {
+      map.set(nodeId, config);
+    }
+    return map;
   }
 
   /**
