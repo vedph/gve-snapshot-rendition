@@ -36,17 +36,19 @@
       - [Component UI: Details Area](#component-ui-details-area)
   - [Example](#example)
 
-The purpose of this component is to render an interactive representation of the multiple versions of a text as defined by editing operations and their features.
+This library contains custom web components and their logic.
 
-As explained, text variants are built by accumulating the changes made to it by each editing operation from an ordered set of them. Except for the first operation, which works on the base text, each operation gets as input the output of a previous operation, and outputs a new version of the text, progressively numbered (`v1`, `v2`... etc.).
+The purpose of the main component is to render an interactive representation of the multiple versions of a text, as defined by editing operations (delete, insert, replace, etc.) and their features (=metadata, used for both visual and textual annotations which the operation injects into the output text).
+
+Text variants are built by accumulating the changes made to it by each editing operation from an ordered set of them. Except for the first operation, which works on the base text, each operation gets as input the output of a previous operation, and outputs a new version of the text, progressively numbered (`v1`, `v2`... etc.).
 
 Each operation has a set of features, which are name=value pairs where both name and value are strings. Among them, some are used by this component to define its rendering parameters for the visual counterpart of each operation (the so-called "hints").
 
 The component is completely based on **SVG** on a **text rendition area**, which is complemented by other areas used for toolbars and other purposes.
 
-The idea for this web component is to represent the changes to the text in a symbolic, yet fully diplomatic way. So we do not want to just output the text generated each time we execute an operation; we want to represent how it appears on the original sheet. Everything gets accumulated on the same display surface, operation after operation; just like everything accumulates on the same sheet, editing after editing.
+The idea for this web component is to represent the changes to the text in a symbolic, yet fully diplomatic way. So we do not want to just output the text generated each time we execute an operation; we want to represent how it appears on the original sheet. Everything gets _accumulated_ on the same display surface, operation after operation; just like everything accumulates on the same sheet, editing after editing.
 
-The display starts with the base text. Now, say a delete operation removes a word. Say this is represented in the original sheet by a line drawn on top of that word. This line hints at the deletion operation. So, while the delete operation effectively generates a text which no longer contains that word, graphically we still have that word, with a line on it.
+The display starts with the _base text_. Now, say a delete operation removes a word. Say this is represented in the original sheet by a line drawn on top of that word. This line hints at the deletion operation. So, while the delete operation effectively generates a text which no longer contains that word, graphically we still have that word, with a line on it.
 
 Thus, the component will display right this: a line on top of the word. The generated text is displayed in the text version area, but in the main text rendition area, we just add that: a line.
 
@@ -57,18 +59,19 @@ Now, say the next operation replaces a word X with another one Y, and that in th
 The component renders with SVG these entities:
 
 - **base text**: the `v0` text, the input text to start with to transform it via editing operations. In most cases, in real world it is visually identified by the text written on regular rows, with the same ink, by the same hand.
-- **additional text**: the text successively added by insert/replace operations. This is drawn character by character, just like the base text, but its size, position, and rendering features are calculated according to the operation's features and the default rendering settings.
+- **additional text**: the text successively _added_ by insert/replace operations. This is drawn character by character, just like the base text, but its size, position, and rendering features are calculated according to the operation's features and the default rendering settings.
 - **hints** which represent the visual counterparts of each editing operation. Each operation has 0-N hints, defined in the order they are meant to be displayed. Each hint can be any shape, e.g. a stroke on a word corresponding to a delete operation for that word, or also some static text like an annotation. Hints too are defined via SVG.
 
 So there is a fundamental difference between the SVG elements added to represent the base text and all the others added later, i.e. additional text and hints:
 
-- the base text elements are added all at once at the very start, following a predictable layout (even with some optional overrides defined by [init features](#init-features)).
-- the added elements are added later, when moving from one version to the next one; their position and size are computed according to their rendition properties and features, and refer to some specific portion of the base text.
-- all elements added stay there forever, thus accumulating when moving from one version to the next one. This implies that if moving backwards they are removed.
+- the _base text_ elements are added all at once at the very start, following a predictable layout (even with some optional overrides defined by [init features](#init-features)).
+- the _added_ elements are added later, when moving from one version to the next one; their position and size are computed according to their rendition properties and features, and refer to some specific portion of the base text.
 
-We thus call both _additional text_ and _hints_ as **added elements**, in contrast with **base elements** which exist since the beginning and are added only at once and never removed.
+All elements added stay there forever, thus accumulating when moving from one version to the next one. This implies that if moving backwards they are removed.
 
->A special class of temporarily added elements are [text hilites](#text-hilites). These are just a visualization artifact triggered by user action; they totally depend on existing SVG elements for their size and position, and they do not interact in any other way with them. So, when describing the component's rendition we can easily ignore them.
+We call both _additional text_ and _hints_ as **added elements**, in contrast with **base elements** which exist since the beginning and are added only at once and never removed.
+
+>A special class of temporarily added elements are [text hilites](#text-hilites). These are just a visualization artifact triggered by user action; they totally depend on existing SVG elements for their size and position, and they do not interact in any other way with them. So, when describing the component's rendition we can ignore them.
 
 ## Animations
 
@@ -106,11 +109,11 @@ All animations **target** a single designated element; for text characters, this
 
 ## Base Text
 
-The base text is rendered in a rather predictable and simple way, according to the component's **rendition settings** (font family, size, color, etc.), which are set in this order of increasing specificity:
+The base text is rendered in a predictable and simple way, according to the component's **rendition settings** (font family, size, color, etc.), which are set in this order of increasing specificity:
 
-1. the _default settings_ of the component, set when the component is initialized.
+1. the _default settings_ of the component (set when the component is initialized).
 2. the settings overridden by consumer code via _data binding_. So, the component uses all its default settings, unless overridden by the consumer code via binding.
-3. the settings overridden by data via [init-features](#init-features), i.e. those features which are added by an initial annotate operation.
+3. the settings overridden by data via [init-features](#init-features), i.e. those features which are added by an initial annotation operation.
 
 > The source for the base text is in `CharChainResult`.`text` as either an array of `CharNode`'s, or a string. When it is a string, the array of nodes is automatically generated by just creating one node per character, in their order, and assigning to each node a progressive ordinal number as its ID. So the first character of a text will get ID=1, the second ID=2, and so forth.
 
