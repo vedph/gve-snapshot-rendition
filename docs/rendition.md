@@ -639,6 +639,37 @@ When the available width is too small, the areas are repositioned so that each o
 - row 4: version text.
 - row 5: details.
 
+This diagram shows the general UI layout:
+
+```txt
++----------------------------------------------------------+
+| toolbar area                                             |
++----------+-----------------------------------------------+
+|versions  | text rendition area                           |
+|list area |                                               |
+|          |                                               |
+|          |                                               |
+|          |                                               |
+|          |                                               |
+|          |                                               |
+|          |                                               |
+|          |                                               |
+|          |                                               |
+|          |                                               |
++----------+------------------+----------------------------+
+| version text area | toolbar | details area               |
++- - - - - - - - - - - - - - -+- - - - - - - - - - - - - - |
+| text A                      |                            |
+|                             |                            |
++- - - - - - - - - - - - - - -|                            |
+| text B                      |                            |
+|                             |                            |
++- - - - - - - - - - - - - - -+                            |
+| text C                      |                            |
+|                             |                            |
++-----------------------------+----------------------------+
+```
+
 >The general layout is managed with the help of the [Split.js](https://github.com/nathancahill/split) library for robust panel resizing. A reset layout button can be used to reset the layout to its default.
 
 ⚙️ **Split.js Implementation Details**:
