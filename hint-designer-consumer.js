@@ -84,6 +84,88 @@ document.addEventListener("DOMContentLoaded", () => {
         solid: false,
         animation: "#wipe-down",
       },
+      "line-bottom": {
+        svg: `<g>
+  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        solid: false,
+        animation: "#wipe-right",
+      },
+      "line-top": {
+        svg: `<g>
+  <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="2" />
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        solid: false,
+        animation: "#wipe-right",
+      },
+      "line-left": {
+        svg: `<g>
+  <line x1="0" y1="0" x2="0" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        solid: false,
+        animation: "#wipe-right",
+      },
+      "line-right": {
+        svg: `<g>
+  <line x1="300" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        solid: false,
+        animation: "#wipe-right",
+      },
+      hamburger: {
+        svg: `<g>
+  <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="0" y1="50" x2="300" y2="50" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        solid: false,
+        animation: "#wipe-right",
+      },
+      hotdog: {
+        svg: `<g>
+  <line x1="50" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="0" y1="50" x2="250" y2="50" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="50" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        solid: false,
+        animation: "#wipe-right",
+      },
       box: {
         svg: `<g>
   <rect x="0" y="0" width="300" height="100" fill="none" stroke="{{r_fore-color}}" stroke-width="2" />
