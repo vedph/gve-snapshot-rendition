@@ -25,7 +25,6 @@ import {
   GoldenLayout,
   LayoutConfig,
   ComponentContainer,
-  ResolvedLayoutConfig,
 } from "golden-layout";
 import { GOLDEN_LAYOUT_CSS } from "../layout/golden-layout-styles";
 
@@ -87,9 +86,6 @@ export class GveSnapshotRendition extends HTMLElement {
   private _svgContainerEl?: HTMLElement;
   private _versionTextEl?: HTMLElement;
   private _detailsEl?: HTMLElement;
-
-  // Layout state storage key
-  private static readonly LAYOUT_STORAGE_KEY = "gve-snapshot-rendition-layout";
 
   /**
    * Get the library version.
@@ -546,45 +542,13 @@ export class GveSnapshotRendition extends HTMLElement {
       }
     );
 
-    // ── Load saved or default layout ────────────────────────────────────
+    // ── Load default layout ─────────────────────────────────────────────
 
-    // Only restore a config that is a proper GL ResolvedLayoutConfig (has
-    // resolved:true AND a root). Old Split.js sizes ({ main, bottom, vertical })
-    // and empty objects both lack these fields and would silently produce an
-    // empty layout if fed to loadLayout.
-    const raw = this.loadLayoutConfig();
-    const savedConfig =
-      raw && (raw as any).resolved === true && (raw as any).root !== undefined
-        ? raw
-        : undefined;
-    if (raw && !savedConfig) {
-      localStorage.removeItem(GveSnapshotRendition.LAYOUT_STORAGE_KEY);
+    try {
+      this._goldenLayout.loadLayout(this.getDefaultLayout());
+    } catch (err) {
+      console.error("[GL] Failed to load default layout:", err);
     }
-
-    let loadOk = false;
-
-    if (savedConfig) {
-      try {
-        this._goldenLayout.loadLayout(savedConfig as unknown as LayoutConfig);
-        loadOk = true;
-      } catch (err) {
-        console.warn("[GL] Saved layout rejected, discarding:", err);
-        localStorage.removeItem(GveSnapshotRendition.LAYOUT_STORAGE_KEY);
-      }
-    }
-
-    if (!loadOk) {
-      try {
-        this._goldenLayout.loadLayout(this.getDefaultLayout());
-      } catch (err) {
-        console.error("[GL] Failed to load default layout:", err);
-      }
-    }
-
-    // Only persist layout after a fully successful load
-    this._goldenLayout.on("stateChanged", () => {
-      this.saveLayoutConfig();
-    });
 
     this._logger.info("GL", "Golden Layout initialized");
 
@@ -654,47 +618,12 @@ export class GveSnapshotRendition extends HTMLElement {
   }
 
   /**
-   * Load persisted GL layout from localStorage.
-   */
-  private loadLayoutConfig(): ResolvedLayoutConfig | undefined {
-    try {
-      const saved = localStorage.getItem(
-        GveSnapshotRendition.LAYOUT_STORAGE_KEY
-      );
-      if (saved) {
-        return JSON.parse(saved) as ResolvedLayoutConfig;
-      }
-    } catch (err) {
-      this._logger.warn("GL", "Failed to load saved layout", err);
-    }
-    return undefined;
-  }
-
-  /**
-   * Persist current GL layout to localStorage.
-   */
-  private saveLayoutConfig(): void {
-    try {
-      if (this._goldenLayout) {
-        const config = this._goldenLayout.saveLayout();
-        localStorage.setItem(
-          GveSnapshotRendition.LAYOUT_STORAGE_KEY,
-          JSON.stringify(config)
-        );
-      }
-    } catch (err) {
-      this._logger.warn("GL", "Failed to save layout", err);
-    }
-  }
-
-  /**
    * Reset layout to default panel sizes by reloading the default config.
    */
   public resetLayout(): void {
     try {
       if (this._goldenLayout) {
         this._goldenLayout.loadLayout(this.getDefaultLayout());
-        localStorage.removeItem(GveSnapshotRendition.LAYOUT_STORAGE_KEY);
         this._logger.info("GL", "Layout reset to defaults");
       }
     } catch (error) {
