@@ -26,7 +26,6 @@ Both hints and animations are part of the **settings** for the component.
 
 - all controls are vanilla custom web components, in a single library designed to be consumed in any environment, totally encapsulated in its shadow DOM.
 - Rullup is used for building and ViTest for testing.
-- libraries used include GSAP for animations, Feather Icons for icons, `svg-pan-zoom` for rendition, and other utility libraries.
 - core shared models are in `models.ts`.
 
 - **top-level components**:
@@ -41,5 +40,16 @@ Both hints and animations are part of the **settings** for the component.
   - hint designer demo page: `hint-designer.html` with its code in `hint-designer-consumer.js`.
 - **essential scripts**:
   - build: `pnpm build`
-  - run: `pnpm start`
+  - run: `pnpm start`. To pick a non-default sample, add it to the URL with a `sample` argument, e.g. <localhost:3000?sample=h5-48>.
+  - run hint designer: `pnpm run start:designer`
   - test: `pnpm test`
+
+## Dependencies
+
+This component requires the following packages:
+
+- [GSAP](https://gsap.com) for animations (`pnpm i gsap @types/gsap`).
+- [svg-pan-zoom](https://github.com/bumbu/svg-pan-zoom) for zooming and panning (`pnpm i svg-pan-zoom @types/svg-pan-zoom`).
+- [fast-diff](https://github.com/jhchen/fast-diff) for text diffing (`pnpm i fast-diff @types/fast-diff`).
+- [feather-icons](https://github.com/feathericons/feather) for icons. See also the [icons list](https://feathericons.com) (`pnpm i feather-icons`).
+- [highlight.js](https://highlightjs.org/) for the hint designer (syntax highlight for SVG and JS code; `pnpm i highlight.js`).
