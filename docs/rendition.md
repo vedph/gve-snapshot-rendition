@@ -71,7 +71,7 @@ All elements added stay there forever, thus accumulating when moving from one ve
 
 We call both _additional text_ and _hints_ as **added elements**, in contrast with **base elements** which exist since the beginning and are added only at once and never removed.
 
->A special class of temporarily added elements are [text hilites](#text-hilites). These are just a visualization artifact triggered by user action; they totally depend on existing SVG elements for their size and position, and they do not interact in any other way with them. So, when describing the component's rendition we can ignore them.
+> A special class of temporarily added elements are [text hilites](#text-hilites). These are just a visualization artifact triggered by user action; they totally depend on existing SVG elements for their size and position, and they do not interact in any other way with them. So, when describing the component's rendition we can ignore them.
 
 ## Animations
 
@@ -255,7 +255,7 @@ Offsets use either a simple number, e.g. `10`, or a suffixed number, using these
 - `th` = reference text bounds height.
 - `tw` = reference text bounds width.
 
->This way we can offset proportionally to the reference text. So, `10`=offset by 10, but `0.5th` = offset by half of the reference text height.
+> This way we can offset proportionally to the reference text. So, `10`=offset by 10, but `0.5th` = offset by half of the reference text height.
 
 There are two offsets for X and Y:
 
@@ -296,7 +296,7 @@ Text rendition features are used to override the default rendering settings for 
 
 All rendering features have their name starting with `r_`. These are the only features taken into account by the renderer component for rendition purposes. Their list follows.
 
->As a general rule, all features starting with a prefix ending with underscore (like `r_` above) are conventionally considered to be functional features which are not usually displayed to end users.
+> As a general rule, all features starting with a prefix ending with underscore (like `r_` above) are conventionally considered to be functional features which are not usually displayed to end users.
 
 - `r_char-offsets` (this is applicable only as an [init-feature](#init-features)!): the character offsets for rendering some specific text nodes (and thus indirectly also all the character nodes following it, up to line end). In most cases, this is used to change line layout by adding indent, or increasing or decreasing space between lines. Usually, text is rendered in a regular, predictable way, just like text is normally rendered in frame: one character after another on the same baseline, until a newline character is found. When this happens, a new line starts below the previous one, left-aligned with it. This is the default layout which assigns the position to each baseline, according to general settings defined in the component's settings (default font size, default spacing between lines, etc.). This default position can be changed for specific characters by the value of this feature, whose format repeats the pattern `ID:y=...,x=...` (where we can specify only `x`, only `y`, or both, in any order; values represent `px` units). In this pattern:
   - `ID`=character ID. Each character has its unique numeric ID directly got from snapshot data. So here we target the character to be offset. As per the general text layout rules, once we offset this target characters, all the other characters will follow on the same baseline, unless any of them has another offset.
@@ -305,7 +305,7 @@ All rendering features have their name starting with `r_`. These are the only fe
   - both `x` and `y` can be followed by a unit specifier. When not specified, the default unit is just pixels; otherwise, the value is followed by suffixes `tw`=text character average width (computed according to the current font and size) or `th`=text character average height.
 - `r_char-offset`: this works as `r_char-offsets`, but it is provided in the features of a single character node, instead of being an initial setup for multiple characters. For instance, `3:y=10,x=20` means that before rendering the character with ID=3, the baseline will be shifted down by 10 and the X position of the next character will be offset by 20, thus effectively leaving a wider gap between the previous character and the next ones. All the following characters up will follow on this newly defined baseline, unless any of them happens to have another offset.
 
->The logic for these two features, `r_char-offsets` and `r_char-offset`, is equal; the only difference is that the former works on multiple characters at once. This is preferable to having just `r_char-offset` and using it multiple times, because when a character gets an offset, this affects not only it, but also all the following characters. So, order of application matters, and this could not be ensured when using multiple features, unless introducing ad-hoc logic which would be against generalization.
+> The logic for these two features, `r_char-offsets` and `r_char-offset`, is equal; the only difference is that the former works on multiple characters at once. This is preferable to having just `r_char-offset` and using it multiple times, because when a character gets an offset, this affects not only it, but also all the following characters. So, order of application matters, and this could not be ensured when using multiple features, unless introducing ad-hoc logic which would be against generalization.
 
 - `r_font-family`: the font family.
 - `r_font-size`: the font size.
@@ -670,25 +670,71 @@ This diagram shows the general UI layout:
 +-----------------------------+----------------------------+
 ```
 
->The general layout is managed with the help of the [Split.js](https://github.com/nathancahill/split) library for robust panel resizing. A reset layout button can be used to reset the layout to its default.
+> The general layout is managed with the help of the [Golden Layout](https://golden-layout.com) library for robust panel resizing. A reset layout button can be used to reset the layout to its default.
 
-⚙️ **Split.js Implementation Details**:
+⚙️ **Golden Layout Implementation Details**:
 
-- the component uses Shadow DOM, so Split.js must receive **actual DOM element references** (via `this._shadow.querySelector()`) rather than CSS selector strings.
-- three Split.js instances manage the layout:
-  - `_mainSplit`: Horizontal split between versions-list and SVG text-rendition (default: 15/85, min: 200/400px).
-  - `_bottomSplit`: Horizontal split between version-text and details panels (default: 60/40, min: 400/300px).
-  - `_verticalSplit`: Vertical split between top area and bottom panels (default: 60/40, min: 400/350px).
-- layout state persists to localStorage under key `"gve-snapshot-rendition-layout"`.
-- all Split instances must be destroyed in `disconnectedCallback()` to prevent memory leaks.
-- initialization happens in `requestAnimationFrame()` to ensure DOM is ready.
-- the toolbar is NOT part of Split.js (fixed position outside the split container).
+**Library**: [Golden Layout v2](https://golden-layout.com) (`golden-layout@2.6.0`), replacing the previous Split.js. It manages the four resizable panels via absolute pixel positioning, emitting typed resize events for each panel.
+
+**Registered panel types** and their default sizes:
+
+| Component type  | Position          | Default size | Header                                |
+| --------------- | ----------------- | ------------ | ------------------------------------- |
+| `VersionsList`  | left, top row     | 15 % width   | shown                                 |
+| `TextRendition` | right, top row    | 85 % width   | **hidden** (acts as fixed background) |
+| `VersionText`   | left, bottom row  | 60 % width   | shown                                 |
+| `Details`       | right, bottom row | 40 % width   | shown                                 |
+
+The root layout config is `column → [row (60 %), row (40 %)]` where each row holds two components. The full default config is returned by `getDefaultLayout()` in `gve-snapshot-rendition.ts`.
+
+**Shadow DOM CSS injection** (critical): GL normally injects its styles into `document.head`, which is blocked by Shadow DOM. The fix is to inline GL's base CSS and an adapted theme in `src/layout/golden-layout-styles.ts` as a TypeScript string constant, then include it in the component's `getStyles()` method so it is injected into the Shadow Root's own `<style>` element. When upgrading GL, update that file from the package's `dist/css/goldenlayout-base.css`.
+
+**`resizeWithContainerAutomatically = true`** (critical): GL defaults this flag to `false`, meaning its internal `ResizeObserver` callback is a no-op. Without setting it to `true` before calling `loadLayout()`, GL reads the container size once (potentially 0 if flex layout has not settled), never corrects itself, and all panels stay invisible.
+
+**Timing issue** (critical): the consumer often sets `data` synchronously before GL's `requestAnimationFrame` initialisation fires. `renderContent()` guards against this with `if (!this._svgContainerEl?.isConnected) return` — it defers rendering until the SVG container is actually inside a GL panel in the live DOM. After `loadLayout()` completes (panel factory functions have run, SVG is connected), `initializeGoldenLayout()` explicitly calls `renderContent()` if data is already loaded.
+
+**Stale localStorage config** (critical): GL emits `stateChanged` during `loadLayout`, which can save an empty or partial `ResolvedLayoutConfig`. On the next load, this is silently accepted by GL and produces an empty layout. Before trusting any saved config, validate it with `(raw as any).resolved === true && (raw as any).root !== undefined`; discard and clear localStorage otherwise. The old Split.js format (`{ main, bottom, vertical }`) passes this check and must be caught too.
+
+**Layout persistence**: panel sizes are saved to localStorage under key `"gve-snapshot-rendition-layout"` whenever the `stateChanged` event fires. On startup, the saved `ResolvedLayoutConfig` is loaded (subject to the validation above); on failure the default layout is used and the key is cleared.
+
+**Factory functions**: each panel type is registered with `registerComponentFactoryFunction` before `loadLayout` is called. Factory functions receive a `ComponentContainer` and append the pre-built DOM element (e.g., `this._versionsListEl`) to `container.element`. The TextRendition factory also subscribes to the container's `resize` event and calls `panZoomInstance.resize()` inside a `requestAnimationFrame` to keep the SVG viewport in sync without thrashing layout math.
+
+**Control height** is controlled in three layers (highest to lowest priority):
+
+1. **External CSS** targeting the custom element directly:
+
+   ```css
+   gve-snapshot-rendition {
+     height: calc(100vh - 60px);
+   }
+   ```
+
+2. **CSS custom properties** set inline or in a stylesheet:
+
+   ```html
+   <gve-snapshot-rendition
+     style="--gve-height: 1200px; --gve-min-height: 700px;"
+   ></gve-snapshot-rendition>
+   ```
+
+   | Variable           | Default | Meaning                         |
+   | ------------------ | ------- | ------------------------------- |
+   | `--gve-height`     | `900px` | Initial height of the component |
+   | `--gve-min-height` | `600px` | Minimum height (floor)          |
+
+3. **Built-in default** (`900px`) when neither of the above is set.
+
+The `:host` element uses `height: var(--gve-height, 900px)` and `min-height: var(--gve-min-height, 600px)`. `.gve-container` fills it with `height: 100%` and is a flex column: fixed toolbar → `#gl-container` (`flex: 1`).
+
+**Bottom drag handle** (`#component-resize-handle`): an absolutely-positioned 6 px bar at the bottom of `.gve-container` (cursor `ns-resize`, styled like GL's own splitter bars). Dragging it sets `this.style.height` on the host element directly, which overrides the CSS variable default for the current session; GL's `ResizeObserver` (via `resizeWithContainerAutomatically = true`) then reflowes all panels automatically. The logic lives in `setupBottomResizeHandle()` in `gve-snapshot-rendition.ts`.
+
+**Panel-level resize handles** in `VersionTextArea` and `DetailsArea` (`.version-text-resize-handle`, `.details-resize-handle`) are hidden via `display: none` in the component styles. They were designed for the old Split.js layout and conflict with GL's panel management. GL's own splitter bars resize the panels instead. The sub-panel handles inside `VersionTextArea` (for sizing the A/B/Diff text panels relative to each other within the GL panel) remain active.
 
 #### Component UI: Toolbar Area
 
 The toolbar area contains a toolbar with these buttons and labels:
 
-- at the right edge, the **current step** version tag (e.g. `v0`) and position (e.g. `1/N` where `N` is the total of all versions). If the step is a  _staged version_ (=the text has a `version` feature), also display the `version`'s value and emphasize this with a different background or similar accent hints. Also, if the step was generated by an operation with a `groupId` property, display it too. All the other buttons are stacked horizontally from the left edge.
+- at the right edge, the **current step** version tag (e.g. `v0`) and position (e.g. `1/N` where `N` is the total of all versions). If the step is a _staged version_ (=the text has a `version` feature), also display the `version`'s value and emphasize this with a different background or similar accent hints. Also, if the step was generated by an operation with a `groupId` property, display it too. All the other buttons are stacked horizontally from the left edge.
 - navigation buttons (disabled when not applicable):
   - **move to next version**.
   - **move to previous version**.
@@ -707,7 +753,7 @@ The toolbar area contains a toolbar with these buttons and labels:
   - an optional set of **custom buttons** whose icons, labels, tooltips and callback actions can be defined in `settings` (`customButtons`; `disabledButtonIds` is used to disable any of these custom buttons).
 - between the left row of buttons and the right current step indicator, the value of a global `log` feature from the last executed operation is displayed. This is because the `log` feature is meant to describe the function of the operation, and thus it can be useful for users to immediately see at a glance what the operation just executed did, when this log feature is available.
 
-> Buttons and other controls in the toolbar should reflow (you can use CSS flex and flex-wrap) when there is not enough horizontal space.
+> Buttons and other controls in the toolbar reflow when there is not enough horizontal space.
 
 Additionally, often some sequential operations are **logically grouped**. In this case, they all share the same value of their `groupId` property. To take this feature into account as an option, the `autoForwardOnGroup` setting can be used: when it is true, and user moves to a version generated by an operation belonging to a group (i.e. having its `groupId` property defined), the component automatically continues to move forward to the next version until the next version belongs to the SAME group ID. This is done so that when the user moves to a next version, but this version logically belongs to a group, the movement automatically continues (after the delay already set for slideshow), until the group is complete, and then stops at the output of the last operation belonging to it. This is just like starting a slideshow and stopping it when the version output by the last operation belonging to the same group has been reached.
 
@@ -827,7 +873,7 @@ The area has these sections:
 - a clone of that `text` SVG element, scaled up to fit a box with size equal to settings `refGlyphWidth` and `refGlyphHeight`.
 - to its right, the list of the features attached to the corresponding text node.
 
->Data about hovered text element is displayed below the operation, but above the global features, because it should be visible even when global features are many as they are visible only when hovering, and thus users could not leverage a vertical scrollbar to reveal them if they were at the bottom.
+> Data about hovered text element is displayed below the operation, but above the global features, because it should be visible even when global features are many as they are visible only when hovering, and thus users could not leverage a vertical scrollbar to reveal them if they were at the bottom.
 
 As for features, wherever they are:
 
@@ -936,7 +982,6 @@ The character nodes are shown in this image with their numeric IDs (blue) and in
   - `r_t-position`=`n`.
   - `r_t-displaced-span`=`21x7`. This is a displacement for the text being added by this replace operation (`HINTS`): instead of positioning the text with reference to its reference text (`STUFF`), we position it above an area approximately corresponding to `all ope` of `all operations` in the first line.
   - `r_t-offset-y`=`20`: this shifts the `HINTS` boxed text upper.
-  
 - `v14`: **annotate** `HINTS` with a box around it, which visually connects this replacement text the the replaced one which is a bit displaced. Features:
   - `r_hints`=`box` (border around `HINTS`).
   - `r_fore-color`=`green`.

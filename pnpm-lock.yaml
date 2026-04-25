@@ -17,15 +17,15 @@ importers:
       feather-icons:
         specifier: ^4.29.2
         version: 4.29.2
+      golden-layout:
+        specifier: ^2.6.0
+        version: 2.6.0
       gsap:
         specifier: ^3.15.0
         version: 3.15.0
       highlight.js:
         specifier: ^11.11.1
         version: 11.11.1
-      split.js:
-        specifier: ^1.6.5
-        version: 1.6.5
       svg-pan-zoom:
         specifier: ^3.6.2
         version: 3.6.2
@@ -842,6 +842,9 @@ packages:
   glob-to-regexp@0.4.1:
     resolution: {integrity: sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==}
 
+  golden-layout@2.6.0:
+    resolution: {integrity: sha512-sIVQCiRWOymHbVD1Aw/T9/ijbPYAVGBlgGYd1N9MRKfcyBNSpjr87Vg9nSHm+RCT8ELrvK8IJYJV0QRJuVUkCQ==}
+
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
@@ -1208,9 +1211,6 @@ packages:
   source-map@0.7.6:
     resolution: {integrity: sha512-i5uvt8C3ikiWeNZSVZNWcfZPItFQOsYTUAOkcUPGd8DqDy1uOUikjt5dG+uRlwyvR108Fb9DOd4GvXfT0N2/uQ==}
     engines: {node: '>= 12'}
-
-  split.js@1.6.5:
-    resolution: {integrity: sha512-mPTnGCiS/RiuTNsVhCm9De9cCAUsrNFFviRbADdKiiV+Kk8HKp/0fWu7Kr8pi3/yBmsqLFHuXGT9UUZ+CNLwFw==}
 
   stackback@0.0.2:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
@@ -2264,6 +2264,8 @@ snapshots:
 
   glob-to-regexp@0.4.1: {}
 
+  golden-layout@2.6.0: {}
+
   graceful-fs@4.2.11: {}
 
   gsap@3.15.0: {}
@@ -2646,8 +2648,6 @@ snapshots:
   source-map@0.6.1: {}
 
   source-map@0.7.6: {}
-
-  split.js@1.6.5: {}
 
   stackback@0.0.2: {}
 

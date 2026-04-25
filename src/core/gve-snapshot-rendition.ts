@@ -16,14 +16,18 @@ import { VersionTextArea } from "../ui/version-text-area";
 import { DetailsArea } from "../ui/details-area";
 import { VersionsListArea } from "../ui/versions-list-area";
 import { Hilites } from "../ui/hilites";
-import { generateVersionPalette } from "../utils/color-palette";
 
 // External libraries
 import svgPanZoom from "svg-pan-zoom";
 type SvgPanZoomInstance = ReturnType<typeof svgPanZoom>;
 import gsap from "gsap";
-import Split from "split.js";
-type SplitInstance = ReturnType<typeof Split>;
+import {
+  GoldenLayout,
+  LayoutConfig,
+  ComponentContainer,
+  ResolvedLayoutConfig,
+} from "golden-layout";
+import { GOLDEN_LAYOUT_CSS } from "../layout/golden-layout-styles";
 
 /**
  * Relative position for elements (hints and additional text) with respect to the RBR.
@@ -77,10 +81,12 @@ export class GveSnapshotRendition extends HTMLElement {
   private _panZoomInstance?: SvgPanZoomInstance;
   private _keyboardHandler?: (e: KeyboardEvent) => void;
 
-  // Split.js instances for resizable panels
-  private _mainSplit?: SplitInstance; // Horizontal: versions-list | text-rendition
-  private _bottomSplit?: SplitInstance; // Horizontal: version-text | details
-  private _verticalSplit?: SplitInstance; // Vertical: top | bottom-panels
+  // Golden Layout instance and pre-built panel elements
+  private _goldenLayout?: GoldenLayout;
+  private _versionsListEl?: HTMLElement;
+  private _svgContainerEl?: HTMLElement;
+  private _versionTextEl?: HTMLElement;
+  private _detailsEl?: HTMLElement;
 
   // Layout state storage key
   private static readonly LAYOUT_STORAGE_KEY = "gve-snapshot-rendition-layout";
@@ -98,7 +104,6 @@ export class GveSnapshotRendition extends HTMLElement {
   // State
   private _baseNodes: CharNode[] = [];
   private _nodeMap: Map<number, CharNode> = new Map();
-  private _versionPalette: Map<string, string> = new Map();
   private _slideshowTimerId: number | null = null;
   private _currentVersion: string = "v0";
   private _currentVersionIndex: number = 0;
@@ -162,18 +167,10 @@ export class GveSnapshotRendition extends HTMLElement {
       this._panZoomInstance = undefined;
       this._logger.info("Pan/zoom destroyed");
     }
-    // Cleanup Split.js instances
-    if (this._mainSplit) {
-      this._mainSplit.destroy();
-      this._mainSplit = undefined;
-    }
-    if (this._bottomSplit) {
-      this._bottomSplit.destroy();
-      this._bottomSplit = undefined;
-    }
-    if (this._verticalSplit) {
-      this._verticalSplit.destroy();
-      this._verticalSplit = undefined;
+    // Cleanup Golden Layout
+    if (this._goldenLayout) {
+      this._goldenLayout.destroy();
+      this._goldenLayout = undefined;
     }
     // Cleanup keyboard shortcuts
     if (this._keyboardHandler) {
@@ -301,8 +298,6 @@ export class GveSnapshotRendition extends HTMLElement {
       .map((id) => this._nodeMap.get(id))
       .filter((n): n is CharNode => n !== undefined);
 
-    // Generate version color palette
-    this._versionPalette = generateVersionPalette(this._data.chainTags);
 
     this._logger.info(
       `Processed data: ${this._baseNodes.length} base nodes, ${this._data.steps.length} steps`
@@ -370,40 +365,37 @@ export class GveSnapshotRendition extends HTMLElement {
    * Render the component UI.
    */
   private render(): void {
+    // Destroy existing GL instance before clearing the DOM
+    if (this._goldenLayout) {
+      this._goldenLayout.destroy();
+      this._goldenLayout = undefined;
+    }
+
     this._shadow.innerHTML = "";
 
-    // Add styles
+    // Add styles (includes inlined GL CSS for Shadow DOM compatibility)
     const style = document.createElement("style");
     style.textContent = this.getStyles();
     this._shadow.appendChild(style);
 
-    // Create container
+    // Root container
     this._container = document.createElement("div");
     this._container.className = "gve-container";
 
-    // Create toolbar container (not part of Split.js)
+    // Toolbar sits outside GL so it is always fixed at the top
     const toolbarContainer = document.createElement("div");
     toolbarContainer.id = "toolbar-container";
     this._container.appendChild(toolbarContainer);
 
-    // Create main split container (vertical split)
-    const mainSplitContainer = document.createElement("div");
-    mainSplitContainer.id = "main-split-container";
-    mainSplitContainer.className = "split-container";
+    // GL occupies all remaining vertical space
+    const glContainer = document.createElement("div");
+    glContainer.id = "gl-container";
+    this._container.appendChild(glContainer);
 
-    // Create top area container (horizontal split: versions-list | text-rendition)
-    const topArea = document.createElement("div");
-    topArea.id = "top-area";
-    topArea.className = "split-horizontal";
-
-    // Create versions list area
+    // Pre-build panel elements; GL factory functions will move them into GL panes
     this._versionsListArea = new VersionsListArea(this._settings, this._logger);
-    const versionsListContainer = this._versionsListArea.create();
-    versionsListContainer.id = "versions-list-container";
-    versionsListContainer.className = "split-panel";
-    topArea.appendChild(versionsListContainer);
+    this._versionsListEl = this._versionsListArea.create();
 
-    // Set up versions list callbacks
     this._versionsListArea.setNavigateCallback((versionTag: string) => {
       this.navigateToVersion(versionTag);
     });
@@ -413,12 +405,9 @@ export class GveSnapshotRendition extends HTMLElement {
       }
     );
 
-    // Create SVG container
-    const svgContainer = document.createElement("div");
-    svgContainer.id = "svg-container";
-    svgContainer.className = "split-panel";
-
-    // Create SVG root
+    // SVG container + root SVG
+    this._svgContainerEl = document.createElement("div");
+    this._svgContainerEl.id = "svg-container";
     this._rootSvg = document.createElementNS(
       "http://www.w3.org/2000/svg",
       "svg"
@@ -426,177 +415,290 @@ export class GveSnapshotRendition extends HTMLElement {
     this._rootSvg.setAttribute("class", "gve-text-rendition");
     this._rootSvg.setAttribute("width", "100%");
     this._rootSvg.setAttribute("height", "100%");
-    svgContainer.appendChild(this._rootSvg);
-    topArea.appendChild(svgContainer);
+    this._svgContainerEl.appendChild(this._rootSvg);
 
-    mainSplitContainer.appendChild(topArea);
-
-    // Create bottom panels container (horizontal split: version-text | details)
-    const bottomPanels = document.createElement("div");
-    bottomPanels.id = "bottom-panels";
-    bottomPanels.className = "split-horizontal";
-
-    // Create version text area
     this._versionTextArea = new VersionTextArea(this._settings, this._logger);
-    const versionTextContainer = this._versionTextArea.create();
-    versionTextContainer.id = "version-text-container";
-    versionTextContainer.className = "split-panel";
-    bottomPanels.appendChild(versionTextContainer);
+    this._versionTextEl = this._versionTextArea.create();
 
-    // Create details area
     this._detailsArea = new DetailsArea(this._settings, this._logger);
-    const detailsContainer = this._detailsArea.create();
-    detailsContainer.id = "details-container";
-    detailsContainer.className = "split-panel";
-    bottomPanels.appendChild(detailsContainer);
+    this._detailsEl = this._detailsArea.create();
 
-    mainSplitContainer.appendChild(bottomPanels);
-    this._container.appendChild(mainSplitContainer);
-
-    // Create hilites manager
     this._hilites = new Hilites(
       this._logger,
       this._settings.hilitePadding,
       this._settings.hiliteFadeTime
     );
 
+    // Custom drag handle that lets users grow / shrink the whole component
+    const bottomHandle = document.createElement("div");
+    bottomHandle.id = "component-resize-handle";
+    this._container.appendChild(bottomHandle);
+    this.setupBottomResizeHandle(bottomHandle);
+
     this._shadow.appendChild(this._container);
 
-    // Initialize Split.js after DOM is ready
+    // Initialize GL after the DOM is ready
     requestAnimationFrame(() => {
-      this.initializeSplitPanes();
+      this.initializeGoldenLayout();
     });
 
     this._logger.debug("Component", "UI structure rendered");
   }
 
   /**
-   * Initialize Split.js panes for resizable panels.
+   * Wire up the drag-to-resize handle at the bottom of the component.
+   * Dragging it adjusts the host element's inline height, which overrides
+   * the --gve-height CSS variable while keeping GL's ResizeObserver in sync.
    */
-  private initializeSplitPanes(): void {
-    try {
-      // Load saved sizes or use defaults
-      const savedSizes = this.loadLayoutSizes();
+  private setupBottomResizeHandle(handle: HTMLElement): void {
+    let startY = 0;
+    let startHeight = 0;
+    let minHeight = 0;
 
-      // Get element references from Shadow DOM
-      const versionsListContainer = this._shadow.querySelector(
-        "#versions-list-container"
-      ) as HTMLElement;
-      const svgContainer = this._shadow.querySelector(
-        "#svg-container"
-      ) as HTMLElement;
-      const versionTextContainer = this._shadow.querySelector(
-        "#version-text-container"
-      ) as HTMLElement;
-      const detailsContainer = this._shadow.querySelector(
-        "#details-container"
-      ) as HTMLElement;
-      const topArea = this._shadow.querySelector("#top-area") as HTMLElement;
-      const bottomPanels = this._shadow.querySelector(
-        "#bottom-panels"
-      ) as HTMLElement;
+    const onMouseMove = (e: MouseEvent) => {
+      const newHeight = Math.max(minHeight, startHeight + (e.clientY - startY));
+      this.style.height = `${newHeight}px`;
+    };
 
-      // Validate all elements exist
-      if (
-        !versionsListContainer ||
-        !svgContainer ||
-        !versionTextContainer ||
-        !detailsContainer ||
-        !topArea ||
-        !bottomPanels
-      ) {
-        throw new Error("Required elements not found in Shadow DOM");
+    const onMouseUp = () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    handle.addEventListener("mousedown", (e: MouseEvent) => {
+      e.preventDefault();
+      startY = e.clientY;
+      startHeight = this.offsetHeight;
+      minHeight = parseInt(getComputedStyle(this).minHeight) || 600;
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    });
+  }
+
+  /**
+   * Initialize Golden Layout with the four resizable panels.
+   * The SVG rendition panel has no header and acts as the fixed background.
+   */
+  private initializeGoldenLayout(): void {
+    const glContainer = this._shadow.getElementById(
+      "gl-container"
+    ) as HTMLElement;
+    if (!glContainer) {
+      this._logger.error("GL", "gl-container not found in Shadow DOM");
+      return;
+    }
+
+    this._goldenLayout = new GoldenLayout(glContainer);
+
+    // GL's ResizeObserver callback only fires when resizeWithContainerAutomatically
+    // is true (defaults to false).  Without this flag, GL reads offsetWidth/offsetHeight
+    // once during loadLayout — which can be 0 when the flex layout hasn't settled —
+    // and never corrects itself.
+    this._goldenLayout.resizeWithContainerAutomatically = true;
+
+    // ── Register component factories ────────────────────────────────────
+
+    this._goldenLayout.registerComponentFactoryFunction(
+      "VersionsList",
+      (container: ComponentContainer) => {
+        if (this._versionsListEl) {
+          container.element.style.overflow = "hidden";
+          container.element.appendChild(this._versionsListEl);
+        }
       }
+    );
 
-      // Initialize horizontal split in top area (versions-list | svg-container)
-      this._mainSplit = Split([versionsListContainer, svgContainer], {
-        sizes: savedSizes.main || [15, 85],
-        minSize: [200, 400],
-        gutterSize: 6,
-        cursor: "col-resize",
-        direction: "horizontal",
-        onDragEnd: () => this.saveLayoutSizes(),
-      });
+    this._goldenLayout.registerComponentFactoryFunction(
+      "TextRendition",
+      (container: ComponentContainer) => {
+        if (this._svgContainerEl) {
+          container.element.style.overflow = "hidden";
+          container.element.appendChild(this._svgContainerEl);
+        }
+        // Throttle SVG resize math behind rAF so the browser is ready to paint
+        container.on("resize", () => {
+          requestAnimationFrame(() => {
+            if (this._panZoomInstance) {
+              this._panZoomInstance.resize();
+            }
+          });
+        });
+      }
+    );
 
-      // Initialize horizontal split in bottom panels (version-text | details)
-      this._bottomSplit = Split([versionTextContainer, detailsContainer], {
-        sizes: savedSizes.bottom || [60, 40],
-        minSize: [400, 300],
-        gutterSize: 6,
-        cursor: "col-resize",
-        direction: "horizontal",
-        onDragEnd: () => this.saveLayoutSizes(),
-      });
+    this._goldenLayout.registerComponentFactoryFunction(
+      "VersionText",
+      (container: ComponentContainer) => {
+        if (this._versionTextEl) {
+          container.element.style.overflow = "hidden";
+          container.element.appendChild(this._versionTextEl);
+        }
+      }
+    );
 
-      // Initialize vertical split (top-area | bottom-panels)
-      this._verticalSplit = Split([topArea, bottomPanels], {
-        sizes: savedSizes.vertical || [60, 40],
-        minSize: [400, 350],
-        gutterSize: 6,
-        cursor: "row-resize",
-        direction: "vertical",
-        onDragEnd: () => this.saveLayoutSizes(),
-      });
+    this._goldenLayout.registerComponentFactoryFunction(
+      "Details",
+      (container: ComponentContainer) => {
+        if (this._detailsEl) {
+          container.element.style.overflow = "hidden";
+          container.element.appendChild(this._detailsEl);
+        }
+      }
+    );
 
-      this._logger.info("Split.js", "Resizable panels initialized");
-    } catch (error) {
-      this._logger.error("Split.js", "Failed to initialize split panes", error);
+    // ── Load saved or default layout ────────────────────────────────────
+
+    // Only restore a config that is a proper GL ResolvedLayoutConfig (has
+    // resolved:true AND a root). Old Split.js sizes ({ main, bottom, vertical })
+    // and empty objects both lack these fields and would silently produce an
+    // empty layout if fed to loadLayout.
+    const raw = this.loadLayoutConfig();
+    const savedConfig =
+      raw && (raw as any).resolved === true && (raw as any).root !== undefined
+        ? raw
+        : undefined;
+    if (raw && !savedConfig) {
+      localStorage.removeItem(GveSnapshotRendition.LAYOUT_STORAGE_KEY);
+    }
+
+    let loadOk = false;
+
+    if (savedConfig) {
+      try {
+        this._goldenLayout.loadLayout(savedConfig as unknown as LayoutConfig);
+        loadOk = true;
+      } catch (err) {
+        console.warn("[GL] Saved layout rejected, discarding:", err);
+        localStorage.removeItem(GveSnapshotRendition.LAYOUT_STORAGE_KEY);
+      }
+    }
+
+    if (!loadOk) {
+      try {
+        this._goldenLayout.loadLayout(this.getDefaultLayout());
+      } catch (err) {
+        console.error("[GL] Failed to load default layout:", err);
+      }
+    }
+
+    // Only persist layout after a fully successful load
+    this._goldenLayout.on("stateChanged", () => {
+      this.saveLayoutConfig();
+    });
+
+    this._logger.info("GL", "Golden Layout initialized");
+
+    // If data arrived before GL was ready (consumer set data synchronously
+    // before the rAF fired), kick off content rendering now that the SVG
+    // container is actually in the DOM inside a GL panel.
+    if (this._textRenderer && this._rootSvg && this._baseNodes.length > 0) {
+      this.renderContent();
     }
   }
 
   /**
-   * Load saved layout sizes from localStorage.
+   * Default layout: mirrors the original Split.js arrangement.
+   *  Column:
+   *    Row (60 %): VersionsList (15 %) | TextRendition (85 %, no header)
+   *    Row (40 %): VersionText (60 %)  | Details (40 %)
    */
-  private loadLayoutSizes(): {
-    main?: number[];
-    bottom?: number[];
-    vertical?: number[];
-  } {
+  private getDefaultLayout(): LayoutConfig {
+    return {
+      settings: {
+        showPopoutIcon: false,
+        showMaximiseIcon: false,
+        showCloseIcon: false,
+      },
+      root: {
+        type: "column",
+        content: [
+          {
+            type: "row",
+            size: "60%",
+            content: [
+              {
+                type: "component",
+                componentType: "VersionsList",
+                title: "Versions",
+                size: "15%",
+              },
+              {
+                type: "component",
+                componentType: "TextRendition",
+                title: "Text Rendition",
+                size: "85%",
+              },
+            ],
+          },
+          {
+            type: "row",
+            size: "40%",
+            content: [
+              {
+                type: "component",
+                componentType: "VersionText",
+                title: "Version Text",
+                size: "60%",
+              },
+              {
+                type: "component",
+                componentType: "Details",
+                title: "Details",
+                size: "40%",
+              },
+            ],
+          },
+        ],
+      },
+    };
+  }
+
+  /**
+   * Load persisted GL layout from localStorage.
+   */
+  private loadLayoutConfig(): ResolvedLayoutConfig | undefined {
     try {
       const saved = localStorage.getItem(
         GveSnapshotRendition.LAYOUT_STORAGE_KEY
       );
       if (saved) {
-        return JSON.parse(saved);
+        return JSON.parse(saved) as ResolvedLayoutConfig;
       }
-    } catch (error) {
-      this._logger.warn("Split.js", "Failed to load saved layout", error);
+    } catch (err) {
+      this._logger.warn("GL", "Failed to load saved layout", err);
     }
-    return {};
+    return undefined;
   }
 
   /**
-   * Save current layout sizes to localStorage.
+   * Persist current GL layout to localStorage.
    */
-  private saveLayoutSizes(): void {
+  private saveLayoutConfig(): void {
     try {
-      const sizes = {
-        main: this._mainSplit?.getSizes(),
-        bottom: this._bottomSplit?.getSizes(),
-        vertical: this._verticalSplit?.getSizes(),
-      };
-      localStorage.setItem(
-        GveSnapshotRendition.LAYOUT_STORAGE_KEY,
-        JSON.stringify(sizes)
-      );
-      this._logger.debug("Split.js", "Layout sizes saved");
-    } catch (error) {
-      this._logger.warn("Split.js", "Failed to save layout", error);
+      if (this._goldenLayout) {
+        const config = this._goldenLayout.saveLayout();
+        localStorage.setItem(
+          GveSnapshotRendition.LAYOUT_STORAGE_KEY,
+          JSON.stringify(config)
+        );
+      }
+    } catch (err) {
+      this._logger.warn("GL", "Failed to save layout", err);
     }
   }
 
   /**
-   * Reset layout to default sizes.
+   * Reset layout to default panel sizes by reloading the default config.
    */
   public resetLayout(): void {
     try {
-      this._mainSplit?.setSizes([15, 85]);
-      this._bottomSplit?.setSizes([60, 40]);
-      this._verticalSplit?.setSizes([60, 40]);
-      this.saveLayoutSizes();
-      this._logger.info("Split.js", "Layout reset to defaults");
+      if (this._goldenLayout) {
+        this._goldenLayout.loadLayout(this.getDefaultLayout());
+        localStorage.removeItem(GveSnapshotRendition.LAYOUT_STORAGE_KEY);
+        this._logger.info("GL", "Layout reset to defaults");
+      }
     } catch (error) {
-      this._logger.error("Split.js", "Failed to reset layout", error);
+      this._logger.error("GL", "Failed to reset layout", error);
     }
   }
 
@@ -606,6 +708,13 @@ export class GveSnapshotRendition extends HTMLElement {
    */
   private async renderContent(): Promise<void> {
     if (!this._textRenderer || !this._rootSvg || this._baseNodes.length === 0) {
+      return;
+    }
+    // SVG must be in the live DOM (inside a GL panel) before rendering.
+    // If GL hasn't initialised yet the container is detached; renderContent()
+    // will be called again from initializeGoldenLayout() once GL is ready.
+    if (!this._svgContainerEl?.isConnected) {
+      this._logger.debug("Component", "Deferring renderContent – SVG not yet in DOM");
       return;
     }
 
@@ -700,25 +809,6 @@ export class GveSnapshotRendition extends HTMLElement {
     });
   }
 
-  /**
-   * Process operations to render text transformations.
-   * Processes operations in order, rendering hints and additional text.
-   */
-  private async processOperations(): Promise<void> {
-    if (!this._data || !this._data.steps) {
-      this._logger.warn("No operations to process");
-      return;
-    }
-
-    this._logger.time("processOperations");
-    this._logger.info(`Processing ${this._data.steps.length} operations`);
-
-    for (const step of this._data.steps) {
-      await this.processOperation(step);
-    }
-
-    this._logger.timeEnd("processOperations");
-  }
 
   /**
    * Process a single operation step.
@@ -1426,10 +1516,7 @@ export class GveSnapshotRendition extends HTMLElement {
    * Update toolbar with current zoom level.
    */
   private updateToolbarZoom(): void {
-    if (!this._toolbar || !this._panZoomInstance) return;
-    const zoom = this._panZoomInstance.getZoom();
-    // Note: toolbar no longer has updateZoomLevel method in new version
-    // Zoom level is displayed via other means
+    // Toolbar zoom display removed; zoom level shown via other means
   }
 
   /**
@@ -1995,14 +2082,25 @@ export class GveSnapshotRendition extends HTMLElement {
   }
 
   /**
-   * Get component styles.
+   * Get component styles (includes inlined GL CSS for Shadow DOM compatibility).
    */
   private getStyles(): string {
     return `
+      ${GOLDEN_LAYOUT_CSS}
+
       :host {
         display: block;
         width: 100%;
-        height: 100%;
+        /* Height can be set three ways (highest to lowest priority):
+           1. External CSS:  gve-snapshot-rendition { height: 1200px }
+           2. CSS variable:  gve-snapshot-rendition { --gve-height: 1200px }
+                             or inline style="--gve-height:1200px"
+           3. Built-in default: 900px
+           Dragging the bottom handle sets this.style.height directly,
+           overriding the CSS-variable default for the current session. */
+        height: var(--gve-height, 900px);
+        min-height: var(--gve-min-height, 600px);
+        overflow: hidden;
       }
 
       .gve-container {
@@ -2011,67 +2109,47 @@ export class GveSnapshotRendition extends HTMLElement {
         overflow: hidden;
         display: flex;
         flex-direction: column;
-      }
-
-      #main-split-container {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        min-height: 0;
-      }
-
-      /* Split.js containers */
-      .split-container {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-      }
-
-      .split-horizontal {
-        display: flex;
-        flex-direction: row;
-        overflow: hidden;
-      }
-
-      .split-panel {
-        overflow: hidden;
+        /* Needed so #component-resize-handle can be absolute-positioned
+           relative to this container, not to the viewport. */
         position: relative;
       }
 
-      /* Split.js gutter styles */
-      .gutter {
-        background-color: var(--gve-border-color, #ddd);
-        background-repeat: no-repeat;
-        background-position: 50%;
-        flex-shrink: 0;
+      /* Drag handle that lets users grow/shrink the whole component.
+         Styled like GL's own splitter bars for visual consistency. */
+      #component-resize-handle {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        cursor: ns-resize;
+        background: var(--gve-border-color, #ccc);
+        opacity: 0.4;
+        transition: opacity 200ms ease;
+        z-index: 100;
+      }
+      #component-resize-handle:hover,
+      #component-resize-handle:active {
+        opacity: 1;
       }
 
-      .gutter.gutter-horizontal {
-        cursor: col-resize;
-        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+      /* GL container fills all remaining vertical space below the toolbar.
+         min-height: 0 lets flex: 1 shrink below the content size;
+         :host min-height: 600px is the real floor. */
+      #gl-container {
+        flex: 1;
+        overflow: hidden;
+        min-height: 0;
+        position: relative;
       }
 
-      .gutter.gutter-vertical {
-        cursor: row-resize;
-        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFCAYAAABSGeOsAAAAGklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjgEAXNPW8Nhz8+wAAAAASUVORK5CYII=');
-      }
-
-      /* Top area (versions-list | text-rendition) */
-      #top-area {
-        min-height: 400px;
-      }
-
-      /* Bottom panels container (version-text | details) */
-      #bottom-panels {
-        border-top: 1px solid var(--gve-border-color, #ddd);
-        min-height: 350px;
-      }
-
-      /* SVG container wrapper */
+      /* SVG container fills its GL pane completely */
       #svg-container {
+        width: 100%;
+        height: 100%;
         display: flex;
         flex-direction: column;
+        overflow: hidden;
       }
 
       #toolbar-container {
@@ -2176,22 +2254,16 @@ export class GveSnapshotRendition extends HTMLElement {
         opacity: 0.7;
       }
 
-      /* Version Text Area */
-      #version-text-container {
-        display: flex;
-        flex-direction: column;
-        border-right: 1px solid var(--gve-border-color, #ddd);
-        overflow: hidden;
-        height: 100%;
-      }
-
+      /* Version Text Area — fills GL component pane */
       .version-text-area {
-        flex: 1;
+        width: 100%;
+        height: 100%;
         display: flex;
         flex-direction: column;
         background: var(--gve-text-pane-bg, #fff);
         min-height: 0;
         overflow: hidden;
+        border-right: 1px solid var(--gve-border-color, #ddd);
       }
 
       .version-text-area.collapsed {
@@ -2263,19 +2335,11 @@ export class GveSnapshotRendition extends HTMLElement {
         font-style: italic;
       }
 
+      /* Panel-level resize handles are hidden: GL's own splitter bars
+         resize these panels. Keeping the rule (not removing the element)
+         avoids JS errors in the area components. */
       .version-text-resize-handle {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 6px;
-        cursor: ns-resize;
-        background: transparent;
-        transition: background-color 0.2s ease;
-      }
-
-      .version-text-resize-handle:hover {
-        background-color: var(--gve-border-color, #ddd);
+        display: none;
       }
 
       /* Text Panels (A, B, Diff) */
@@ -2387,27 +2451,18 @@ export class GveSnapshotRendition extends HTMLElement {
         border-color: var(--gve-primary-dark, #0056b3);
       }
 
-      /* Versions List Area */
-      #versions-list-container {
-        height: 100%;
-        overflow: hidden;
-      }
-
+      /* Versions List Area — fills GL component pane */
       .versions-list-area {
-        flex-shrink: 0;
         display: flex;
         flex-direction: column;
         background: var(--gve-versions-list-bg, #fff);
         border-right: 1px solid var(--gve-border-color, #ddd);
-        max-width: 250px;
-        min-width: 200px;
-        width: 250px;
+        width: 100%;
         height: 100%;
       }
 
       .versions-list-area.collapsed {
-        width: auto !important;
-        max-width: none !important;
+        overflow: hidden;
       }
 
       .versions-list-area.collapsed .versions-list-content {
@@ -2533,16 +2588,10 @@ export class GveSnapshotRendition extends HTMLElement {
         color: var(--gve-badge-text, #666);
       }
 
-      /* Details Area */
-      #details-container {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        height: 100%;
-      }
-
+      /* Details Area — fills GL component pane */
       .details-area {
-        flex: 1;
+        width: 100%;
+        height: 100%;
         display: flex;
         flex-direction: column;
         background: var(--gve-details-bg, #fff);
@@ -2565,19 +2614,7 @@ export class GveSnapshotRendition extends HTMLElement {
       }
 
       .details-resize-handle {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 6px;
-        cursor: ns-resize;
-        background: transparent;
-        transition: background-color 0.2s ease;
-        z-index: 10;
-      }
-
-      .details-resize-handle:hover {
-        background-color: var(--gve-border-color, #ddd);
+        display: none;
       }
 
       .details-header {
