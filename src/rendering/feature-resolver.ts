@@ -1,4 +1,4 @@
-import { Feature, OperationFeature } from "../models";
+import { Feature, OperationFeature, CharNode } from "../models";
 import { GveRenditionSettings } from "../settings/settings";
 import { Logger } from "../core/logger";
 import {
@@ -80,9 +80,8 @@ export class FeatureResolver {
     baseSettings: GveRenditionSettings,
     features: Feature[] | undefined,
     nodeFeatureContext?: {
-      nodeFeatures: Record<string, OperationFeature[]>;
+      refNodes: CharNode[];
       outputTag: string;
-      refNodeIds: number[];
     }
   ): RenditionConfig {
     const config: RenditionConfig = {
@@ -110,30 +109,24 @@ export class FeatureResolver {
     // Initialize hintOverrides map for r_h-* features
     config.hintOverrides = new Map<string, HintOverrides>();
 
-    // First, extract ALL features from reference nodes for placeholder resolution
-    // This includes features like "note", "group", etc. that don't have r_ prefix
-    // Features are stored in featureSet.nodeFeatures with keys like "v6_64" (outputTag_nodeId)
+    // Extract ALL features from reference nodes for placeholder resolution.
+    // This includes features like "note", "group", etc. that don't have r_ prefix.
+    // Features are now stored per-node keyed by version tag.
     if (nodeFeatureContext) {
-      const { nodeFeatures, outputTag, refNodeIds } = nodeFeatureContext;
+      const { refNodes, outputTag } = nodeFeatureContext;
 
-      for (const nodeId of refNodeIds) {
-        // Construct the key: outputTag + "_" + nodeId (e.g., "v6_64")
-        const key = `${outputTag}_${nodeId}`;
-        const nodeFeaturesArray = nodeFeatures[key];
-
+      for (const node of refNodes) {
+        const nodeFeaturesArray = node.features?.[outputTag];
         if (!nodeFeaturesArray) continue;
 
         for (const nodeFeature of nodeFeaturesArray) {
-          // Skip internal features (starting with $)
           if (nodeFeature.name.startsWith("$")) continue;
 
-          // Add feature to hintVars if not already present
-          // Note: we take the first occurrence if multiple nodes have the same feature
           if (!config.hintVars.has(nodeFeature.name)) {
             config.hintVars.set(nodeFeature.name, nodeFeature.value);
             this._logger.debug(
               "FeatureResolver",
-              `Added node feature to hintVars from ${key}: ${nodeFeature.name}=${nodeFeature.value}`
+              `Added node feature to hintVars from node ${node.id} @ ${outputTag}: ${nodeFeature.name}=${nodeFeature.value}`
             );
           }
         }

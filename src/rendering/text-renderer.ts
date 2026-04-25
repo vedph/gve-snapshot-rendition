@@ -129,9 +129,13 @@ export class TextRenderer {
         continue;
       }
 
-      // Skip nodes that have opid feature - they'll be rendered by operations
-      const opidFeature = node.features?.find((f) => f.name === "opid");
-      if (opidFeature) {
+      // Skip nodes added by operations (have opid in any version) — rendered later
+      const hasOpid =
+        node.features &&
+        Object.values(node.features).some((vf) =>
+          vf.some((f) => f.name === "opid")
+        );
+      if (hasOpid) {
         continue;
       }
 

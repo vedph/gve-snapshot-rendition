@@ -1,5 +1,4 @@
 import { Logger } from "../core/logger";
-import { CharChainResult } from "../models";
 
 /**
  * Hilites manager - handles creating and animating hilite rectangles.
@@ -43,38 +42,30 @@ export class Hilites {
 
   /**
    * Show hilites for a specific version.
-   * @param data - The CharChainResult data
-   * @param versionTag - Version tag to hilite
+   * @param nodeIds - IDs of nodes to hilite (from versionNodeIds[versionTag])
+   * @param versionTag - Version tag label (for logging)
    * @param color - Hilite color
    */
-  async showHilites(data: CharChainResult, versionTag: string, color: string): Promise<void> {
+  async showHilites(nodeIds: number[], versionTag: string, color: string): Promise<void> {
     if (!this._rootSvg || !this._hilitesGroup) {
       this._logger.warn("Hilites", "Root SVG not set");
       return;
     }
 
-    // Clear any existing hilites first
     await this.clearHilites();
 
-    // Get the correct container for hilites (viewport group if pan/zoom is active)
-    // The viewport group is where all content lives and gets transformed
     const container = this.getSvgContainer();
 
-    // Ensure hilites group is in the container and at the back (for z-ordering)
     if (!container.contains(this._hilitesGroup)) {
-      // Insert at the beginning so hilites are behind everything
       container.insertBefore(this._hilitesGroup, container.firstChild);
       this._logger.debug("Hilites", "Inserted hilites group into viewport container");
     }
 
-    // Get node IDs for this version
-    const nodeIds = this.getVersionNodeIds(data, versionTag);
     if (nodeIds.length === 0) {
-      this._logger.warn("Hilites", `No nodes found for version ${versionTag}`);
+      this._logger.warn("Hilites", `No nodes for version ${versionTag}`);
       return;
     }
 
-    // Create hilite rectangles for each text element
     const hilites: SVGRectElement[] = [];
     for (const nodeId of nodeIds) {
       const textEl = container.querySelector<SVGTextElement>(`text.node#n_${nodeId}`);
@@ -86,8 +77,6 @@ export class Hilites {
     }
 
     this._activeHilites = hilites;
-
-    // Animate hilites in
     await this.animateHilitesIn();
 
     this._logger.debug("Hilites", `Showed ${hilites.length} hilites for ${versionTag}`);
@@ -111,30 +100,6 @@ export class Hilites {
     this._logger.debug("Hilites", "Cleared hilites");
   }
 
-  /**
-   * Get node IDs for a specific version.
-   * For v0, if not found in taggedNodes, falls back to extracting from base text.
-   */
-  private getVersionNodeIds(data: CharChainResult, versionTag: string): number[] {
-    // Try to get from taggedNodes first
-    if (data.taggedNodes && data.taggedNodes[versionTag]) {
-      return data.taggedNodes[versionTag].map((node) => node.id);
-    }
-
-    // Special handling for v0: fall back to base text if not in taggedNodes
-    if (versionTag === "v0" && data.text) {
-      // If text is a string, we need to generate node IDs (1, 2, 3, ...)
-      if (typeof data.text === "string") {
-        return Array.from({ length: data.text.length }, (_, i) => i + 1);
-      }
-      // If text is already an array of nodes, extract their IDs
-      else if (Array.isArray(data.text)) {
-        return data.text.map((node) => node.id);
-      }
-    }
-
-    return [];
-  }
 
   /**
    * Create a hilite rectangle for a text element.

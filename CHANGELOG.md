@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0]
+
+- 2026-04-25: ⚠️ refactored for new API response model. The backend has been refactored for its core models and API layers: changes are described in `\Projects\Gve\Gve\REFACTOR.md`. Code has been updated to the new model, which primarily affected models in `models.ts` and `GveSnapshotRendition` with its dependencies. Some code has been simplified, because now `v0` is included in the results, and all nodes are returned separately from versions, while before each version only had a list of nodes which belonged to it, so to get other nodes (e.g. a deleted one or base text nodes) one had to go back to other versions.
+
+## [0.0.9]
+
 - 2026-04-16: updated packages.
 
 ## [0.0.8]

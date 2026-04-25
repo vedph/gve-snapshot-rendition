@@ -131,10 +131,11 @@ export class TextLayout {
       let offsetX: number | string | undefined = charOffsets?.get(node.id)?.x;
       let offsetY: number | string | undefined = charOffsets?.get(node.id)?.y;
 
-      // Check per-node r_char-offset feature (singular)
-      const nodeOffsetFeature = node.features?.find(
-        (f) => f.name === "r_char-offset"
-      );
+      // Check per-node r_char-offset feature (singular).
+      // Features are now keyed by version tag; flatten across all versions to find it.
+      const nodeOffsetFeature = node.features
+        ? Object.values(node.features).flat().find((f) => f.name === "r_char-offset")
+        : undefined;
       if (nodeOffsetFeature) {
         const nodeOffsetMap = parseCharOffsets(nodeOffsetFeature.value);
         const nodeOffset = nodeOffsetMap.get(node.id);

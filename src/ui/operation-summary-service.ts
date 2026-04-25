@@ -67,32 +67,16 @@ export class OperationSummaryService {
   }
 
   /**
-   * Get a node by ID, searching in version tagged nodes.
-   *
-   * Searches backwards from the specified version to v0. Since v0 is normalized
-   * and added to taggedNodes by the component during data processing, no special
-   * handling is needed.
+   * Get a node by ID from the flat nodes array.
+   * All nodes (including deleted ones) are always present.
    *
    * @param nodeId - Node ID
-   * @param versionTag - Version tag to search in (searches backwards if not found)
+   * @param versionTag - Unused in new model; kept for API compatibility
    * @returns The node, or null
    */
-  getNode(nodeId: number, versionTag: string): CharNode | null {
-    if (!this._data || !this._data.taggedNodes) return null;
-
-    // Search from the specified version backwards to v0
-    const versionIndex = this.getVersionIndex(versionTag);
-
-    for (let idx = versionIndex; idx >= 0; idx--) {
-      const tag = `v${idx}`;
-      const nodes = this._data.taggedNodes[tag];
-      if (nodes) {
-        const node = nodes.find((n) => n.id === nodeId);
-        if (node) return node;
-      }
-    }
-
-    return null;
+  getNode(nodeId: number, versionTag?: string): CharNode | null {
+    if (!this._data?.nodes) return null;
+    return this._data.nodes.find((n) => n.id === nodeId) ?? null;
   }
 
   /**
@@ -122,12 +106,18 @@ export class OperationSummaryService {
     atAsIndex: boolean = false,
     contextSize: number = 20
   ): string {
-    if (!this._data || !this._data.taggedNodes || nodeIds.length === 0) {
+    if (!this._data?.nodes || nodeIds.length === 0) {
       return "";
     }
 
-    const versionNodes = this._data.taggedNodes[versionTag];
-    if (!versionNodes) return "";
+    // Build the ordered node list for this version
+    const nodeIds_ = this._data.versionNodeIds?.[versionTag];
+    if (!nodeIds_) return "";
+    const nodeMap = new Map(this._data.nodes.map((n) => [n.id, n]));
+    const versionNodes: CharNode[] = nodeIds_
+      .map((id) => nodeMap.get(id))
+      .filter((n): n is CharNode => n !== undefined);
+    if (!versionNodes.length) return "";
 
     // Find the index of the first node in the span
     let firstNodeIndex = -1;

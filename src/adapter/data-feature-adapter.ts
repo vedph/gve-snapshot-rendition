@@ -23,46 +23,30 @@ export class DataFeatureAdapter {
    * Returns a new copy of the data with adapted features.
    *
    * Features adapted:
-   * - steps[i].featureSet.features (global features)
-   * - steps[i].featureSet.nodeFeatures (node-specific features)
-   * - taggedNodes[version][i].features (features on nodes)
+   * - globalFeatures[tag][i] (global features per version)
+   * - nodes[i].features[tag][j] (per-node, per-version features)
    *
    * Features NOT adapted:
    * - steps[i].operation.features (operation metadata)
    */
   adaptData(data: CharChainResult): CharChainResult {
-    // Deep copy the data to avoid modifying the original
     const adaptedData = this.deepCopyData(data);
 
-    // Adapt features in steps
-    for (const step of adaptedData.steps) {
-      // Adapt global features
-      if (step.featureSet.features) {
-        step.featureSet.features = this.featureAdapter.adapt(
-          step.featureSet.features
+    // Adapt global features (keyed by version tag)
+    if (adaptedData.globalFeatures) {
+      for (const tag in adaptedData.globalFeatures) {
+        adaptedData.globalFeatures[tag] = this.featureAdapter.adapt(
+          adaptedData.globalFeatures[tag]
         ) as any[];
       }
-
-      // Adapt node features
-      if (step.featureSet.nodeFeatures) {
-        for (const nodeKey in step.featureSet.nodeFeatures) {
-          const nodeFeatures = step.featureSet.nodeFeatures[nodeKey];
-          step.featureSet.nodeFeatures[nodeKey] = this.featureAdapter.adapt(
-            nodeFeatures
-          ) as any[];
-        }
-      }
-
-      // Note: We do NOT adapt step.operation.features as specified
     }
 
-    // Adapt features in taggedNodes
-    if (adaptedData.taggedNodes) {
-      for (const versionTag in adaptedData.taggedNodes) {
-        const nodes = adaptedData.taggedNodes[versionTag];
-        for (const node of nodes) {
-          if (node.features) {
-            node.features = this.featureAdapter.adapt(node.features);
+    // Adapt node features (each node has a dict keyed by version tag)
+    if (adaptedData.nodes) {
+      for (const node of adaptedData.nodes) {
+        if (node.features) {
+          for (const tag in node.features) {
+            node.features[tag] = this.featureAdapter.adapt(node.features[tag]);
           }
         }
       }

@@ -16,7 +16,6 @@ import { VersionTextArea } from "../ui/version-text-area";
 import { DetailsArea } from "../ui/details-area";
 import { VersionsListArea } from "../ui/versions-list-area";
 import { Hilites } from "../ui/hilites";
-import { stringToNodes } from "../utils/node-utils";
 import { generateVersionPalette } from "../utils/color-palette";
 
 // External libraries
@@ -98,6 +97,7 @@ export class GveSnapshotRendition extends HTMLElement {
 
   // State
   private _baseNodes: CharNode[] = [];
+  private _nodeMap: Map<number, CharNode> = new Map();
   private _versionPalette: Map<string, string> = new Map();
   private _slideshowTimerId: number | null = null;
   private _currentVersion: string = "v0";
@@ -289,24 +289,17 @@ export class GveSnapshotRendition extends HTMLElement {
   private processData(): void {
     if (!this._data) return;
 
-    // Convert text to nodes if it's a string
-    if (typeof this._data.text === "string") {
-      this._baseNodes = stringToNodes(this._data.text);
-    } else if (Array.isArray(this._data.text)) {
-      this._baseNodes = this._data.text;
+    // Build fast node lookup map from the flat nodes array
+    this._nodeMap = new Map<number, CharNode>();
+    for (const node of this._data.nodes) {
+      this._nodeMap.set(node.id, node);
     }
 
-    // Data normalization: Add v0 to taggedNodes if not present
-    // This simplifies all node lookup logic by eliminating v0 as a special case
-    if (this._baseNodes.length > 0 && this._data.taggedNodes) {
-      if (!this._data.taggedNodes["v0"]) {
-        this._data.taggedNodes["v0"] = this._baseNodes;
-        this._logger.debug(
-          "Data normalization",
-          `Added v0 with ${this._baseNodes.length} base nodes to taggedNodes`
-        );
-      }
-    }
+    // Build base nodes list from v0 version node IDs
+    const v0Ids = this._data.versionNodeIds["v0"] ?? [];
+    this._baseNodes = v0Ids
+      .map((id) => this._nodeMap.get(id))
+      .filter((n): n is CharNode => n !== undefined);
 
     // Generate version color palette
     this._versionPalette = generateVersionPalette(this._data.chainTags);
@@ -786,16 +779,14 @@ export class GveSnapshotRendition extends HTMLElement {
       return;
     }
 
-    // Resolve features to config
-    // Pass node feature context so all node features (including "note", etc.)
-    // are available for placeholder resolution
+    // Resolve features to config; pass ref nodes so their per-version features
+    // (e.g. "note") are available for hint placeholder resolution
     const config = this._featureResolver.resolve(
       this._settings,
       operation.features,
       {
-        nodeFeatures: step.featureSet.nodeFeatures,
+        refNodes,
         outputTag: step.outputTag,
-        refNodeIds: step.refNodeIds,
       }
     );
 
@@ -857,97 +848,58 @@ export class GveSnapshotRendition extends HTMLElement {
   }
 
   /**
-   * Get reference nodes for an operation using node IDs from trace features.
-   * Reference nodes are the nodes affected by the operation.
+   * Get reference nodes for an operation from the flat node map.
+   * All nodes (including deleted ones) are always present in the map.
    *
-   * According to the snapshot model, deleted nodes are not included in subsequent
-   * versions' taggedNodes. To find a deleted node, we must search backwards through
-   * previous versions until we find it.
-   *
-   * @param nodeIds - Array of node IDs from step.refNodeIds (extracted from trace features)
-   * @param inputTag - The input version tag to look for nodes (e.g., "v11")
+   * @param nodeIds - Array of node IDs from step.refNodeIds
+   * @param inputTag - Kept for API compatibility; unused in new model
    * @returns Array of CharNode objects matching the IDs
    */
   private getReferenceNodes(nodeIds: number[], inputTag: string): CharNode[] {
-    if (!this._data || !nodeIds || nodeIds.length === 0) return [];
+    if (!nodeIds || nodeIds.length === 0) return [];
 
     const nodes: CharNode[] = [];
-
-    // Find nodes by their IDs, searching backwards through versions if needed
     for (const nodeId of nodeIds) {
-      const node = this.findNodeById(nodeId, inputTag);
+      const node = this._nodeMap.get(nodeId);
       if (node) {
         nodes.push(node);
       } else {
         this._logger.warn(
           "Navigation",
-          `Node with ID ${nodeId} not found in any version up to ${inputTag}`
+          `Node with ID ${nodeId} not found (inputTag=${inputTag})`
         );
       }
     }
-
     return nodes;
   }
 
   /**
-   * Find a node by ID, searching backwards through versions if needed.
-   * This handles the case where a node was deleted in a previous version but
-   * is still referenced by a later operation (e.g., to add a hint to a deleted node).
-   *
-   * Searches backwards from the specified version to v0. Since v0 is now normalized
-   * and added to taggedNodes during data processing, no special handling is needed.
-   *
-   * @param nodeId - The node ID to find
-   * @param startTag - The version tag to start searching from (e.g., "v11")
-   * @returns The node if found, undefined otherwise
-   */
-  private findNodeById(nodeId: number, startTag: string): CharNode | undefined {
-    if (!this._data?.taggedNodes) return undefined;
-
-    // Extract version number from tag (e.g., "v11" → 11)
-    const match = startTag.match(/v(\d+)/);
-    if (!match) return undefined;
-
-    let versionNum = parseInt(match[1]);
-
-    // Search backwards from startTag to v0
-    while (versionNum >= 0) {
-      const versionTag = `v${versionNum}`;
-      const versionNodes = this._data.taggedNodes[versionTag];
-
-      if (versionNodes) {
-        const node = versionNodes.find((n) => n.id === nodeId);
-        if (node) {
-          return node;
-        }
-      }
-
-      versionNum--;
-    }
-
-    return undefined;
-  }
-
-  /**
    * Get nodes added by a specific operation.
-   * These are nodes with opid feature matching the operation ID.
+   * Nodes added by an operation carry an `opid` feature in their per-version
+   * features for the output tag.
    *
    * @param operationId - The operation ID to match
    * @param outputTag - The output version tag (e.g., "v3") where the nodes were added
    * @returns Array of nodes added by this operation
    */
   private getAddedNodes(operationId: string, outputTag: string): CharNode[] {
-    if (!this._data || !this._data.taggedNodes) return [];
+    if (!this._data) return [];
 
-    // Get nodes from the output version
-    const versionNodes = this._data.taggedNodes[outputTag];
-    if (!versionNodes) return [];
+    const nodeIds = this._data.versionNodeIds[outputTag];
+    if (!nodeIds) return [];
 
-    // Filter nodes that have opid feature matching this operation
-    return versionNodes.filter((node) => {
-      const opidFeature = node.features?.find((f) => f.name === "opid");
-      return opidFeature && opidFeature.value === operationId;
-    });
+    const added: CharNode[] = [];
+    for (const nodeId of nodeIds) {
+      const node = this._nodeMap.get(nodeId);
+      if (!node) continue;
+      const vFeatures = node.features?.[outputTag];
+      if (!vFeatures) continue;
+      const opidFeature = vFeatures.find((f) => f.name === "opid");
+      if (opidFeature && opidFeature.value === operationId) {
+        added.push(node);
+      }
+    }
+    return added;
   }
 
   /**
@@ -1079,16 +1031,9 @@ export class GveSnapshotRendition extends HTMLElement {
     let text = "";
 
     if (versionIndex === 0) {
-      // For v0, use the base text
       text = this._baseNodes.map((node) => node.data).join("");
-    } else if (
-      this._data.steps &&
-      versionIndex > 0 &&
-      versionIndex <= this._data.steps.length
-    ) {
-      // For other versions, use the result from the corresponding step
-      const step = this._data.steps[versionIndex - 1];
-      text = step.result || "";
+    } else if (versionIndex > 0 && versionIndex <= this._data.steps.length) {
+      text = this._data.steps[versionIndex - 1].result || "";
     }
 
     this._versionTextArea.updateText(text);
@@ -1158,46 +1103,15 @@ export class GveSnapshotRendition extends HTMLElement {
   }
 
   /**
-   * Attach features from featureSet to a node.
-   * Features are stored separately in the step's featureSet.nodeFeatures map.
+   * Get the node from the node map by its SVG element ID.
+   * Returns the node and the version tag at which to read its features.
    */
-  private attachNodeFeatures(node: CharNode, versionTag: string): CharNode {
-    // Create a copy of the node to avoid modifying the original
-    const nodeWithFeatures: CharNode = { ...node };
-
-    this._logger.debug("Features", `Looking up features for node ${node.id} at ${versionTag}`);
-
-    // Look up features in the step's featureSet
-    if (this._data?.steps) {
-      // Find the step that produced this version
-      const step = this._data.steps.find((s) => s.outputTag === versionTag);
-      if (step) {
-        this._logger.debug("Features", `Found step for ${versionTag}: ${step.operation?.type}`);
-
-        if (step.featureSet?.nodeFeatures) {
-          // Features are keyed as "v{version}_{nodeId}"
-          const featureKey = `${versionTag}_${node.id}`;
-          const features = step.featureSet.nodeFeatures[featureKey];
-
-          this._logger.debug("Features", `Feature key: ${featureKey}, found ${features?.length || 0} features`);
-
-          if (features) {
-            nodeWithFeatures.features = features;
-            this._logger.info("Features", `Attached ${features.length} features to node ${node.id}`);
-          } else {
-            this._logger.debug("Features", `No features found for key ${featureKey}`);
-          }
-        } else {
-          this._logger.debug("Features", `Step ${versionTag} has no nodeFeatures`);
-        }
-      } else {
-        this._logger.warn("Features", `No step found with outputTag=${versionTag}`);
-      }
-    } else {
-      this._logger.warn("Features", `No steps data available`);
-    }
-
-    return nodeWithFeatures;
+  private getNodeForElement(
+    nodeId: number
+  ): { node: CharNode; versionTag: string } | null {
+    const node = this._nodeMap.get(nodeId);
+    if (!node) return null;
+    return { node, versionTag: this._currentVersion };
   }
 
   /**
@@ -1206,7 +1120,6 @@ export class GveSnapshotRendition extends HTMLElement {
   private handleTextElementHover(textEl: SVGTextElement): void {
     if (!this._detailsArea || !this._rootSvg) return;
 
-    // Extract node ID from the hovered element (format: "n_{nodeId}")
     const elementId = textEl.id;
     const match = elementId.match(/^n_(\d+)$/);
     if (!match) {
@@ -1215,61 +1128,18 @@ export class GveSnapshotRendition extends HTMLElement {
     }
 
     const hoveredNodeId = parseInt(match[1], 10);
+    const result = this.getNodeForElement(hoveredNodeId);
 
-    // Search from current version backwards to find this specific node
-    let foundElement: SVGTextElement | null = null;
-    let foundNode: CharNode | null = null;
-
-    for (
-      let versionIdx = this._currentVersionIndex;
-      versionIdx >= 0;
-      versionIdx--
-    ) {
-      const versionTag = `v${versionIdx}`;
-      const versionClass = `version-${versionTag}`;
-
-      // Look for this specific node in this version
-      const elementInVersion = this._rootSvg.querySelector(
-        `text.${versionClass}#n_${hoveredNodeId}`
-      ) as SVGTextElement;
-
-      if (elementInVersion) {
-        // Found the element in this version, now get the node data
-        // First try taggedNodes for this version (nodes with accumulated features)
-        let node: CharNode | undefined;
-        if (this._data?.taggedNodes) {
-          const versionNodes = this._data.taggedNodes[versionTag];
-          if (versionNodes) {
-            node = versionNodes.find((n) => n.id === hoveredNodeId);
-          }
-        }
-
-        // If not found in taggedNodes, fall back to baseNodes (for v0 nodes)
-        if (!node) {
-          node = this._baseNodes.find((n) => n.id === hoveredNodeId);
-        }
-
-        if (node) {
-          // Get features for this node from the current version's step
-          const nodeWithFeatures = this.attachNodeFeatures(node, this._currentVersion);
-          foundElement = elementInVersion;
-          foundNode = nodeWithFeatures;
-          break; // Stop at first match (most recent version)
-        }
-      }
-    }
-
-    // Update details area with the found element
-    if (foundElement && foundNode) {
+    if (result) {
       this._detailsArea.updateHoveredElements([
-        { element: foundElement, node: foundNode },
+        { element: textEl, node: result.node, versionTag: result.versionTag },
       ]);
       this._logger.debug(
         "Component",
         `Hovered over node ${hoveredNodeId} in ${this._currentVersion}`
       );
     } else {
-      this._logger.warn(`Node ${hoveredNodeId} not found in any version`);
+      this._logger.warn(`Node ${hoveredNodeId} not found`);
     }
   }
 
@@ -1289,7 +1159,6 @@ export class GveSnapshotRendition extends HTMLElement {
   private handleTextElementClick(textEl: SVGTextElement): void {
     if (!this._detailsArea || !this._rootSvg) return;
 
-    // Extract node ID from the clicked element (format: "n_{nodeId}")
     const elementId = textEl.id;
     const match = elementId.match(/^n_(\d+)$/);
     if (!match) {
@@ -1298,63 +1167,17 @@ export class GveSnapshotRendition extends HTMLElement {
     }
 
     const clickedNodeId = parseInt(match[1], 10);
-    this._logger.info(
-      "Component",
-      `Click event fired on node ${clickedNodeId}`
-    );
+    this._logger.info("Component", `Click event fired on node ${clickedNodeId}`);
 
-    // Search from current version backwards to find this specific node
-    let foundElement: SVGTextElement | null = null;
-    let foundNode: CharNode | null = null;
-
-    for (
-      let versionIdx = this._currentVersionIndex;
-      versionIdx >= 0;
-      versionIdx--
-    ) {
-      const versionTag = `v${versionIdx}`;
-      const versionClass = `version-${versionTag}`;
-
-      // Look for this specific node in this version
-      const elementInVersion = this._rootSvg.querySelector(
-        `text.${versionClass}#n_${clickedNodeId}`
-      ) as SVGTextElement;
-
-      if (elementInVersion) {
-        // Found the element in this version, now get the node data
-        // First try taggedNodes for this version (nodes with accumulated features)
-        let node: CharNode | undefined;
-        if (this._data?.taggedNodes) {
-          const versionNodes = this._data.taggedNodes[versionTag];
-          if (versionNodes) {
-            node = versionNodes.find((n) => n.id === clickedNodeId);
-          }
-        }
-
-        // If not found in taggedNodes, fall back to baseNodes (for v0 nodes)
-        if (!node) {
-          node = this._baseNodes.find((n) => n.id === clickedNodeId);
-        }
-
-        if (node) {
-          // Get features for this node from the current version's step
-          const nodeWithFeatures = this.attachNodeFeatures(node, this._currentVersion);
-          foundElement = elementInVersion;
-          foundNode = nodeWithFeatures;
-          break; // Stop at first match (most recent version)
-        }
-      }
-    }
-
-    // Pin the element in details area
-    if (foundElement && foundNode) {
-      this._detailsArea.pinElement(foundElement, foundNode);
+    const result = this.getNodeForElement(clickedNodeId);
+    if (result) {
+      this._detailsArea.pinElement(textEl, result.node, result.versionTag);
       this._logger.debug(
         "Component",
         `Clicked on node ${clickedNodeId} to pin/unpin in ${this._currentVersion}`
       );
     } else {
-      this._logger.warn(`Node ${clickedNodeId} not found in any version`);
+      this._logger.warn(`Node ${clickedNodeId} not found`);
     }
   }
 
@@ -1644,6 +1467,16 @@ export class GveSnapshotRendition extends HTMLElement {
   }
 
   /**
+   * Returns true when the given version tag is a staged version.
+   * Checks globalFeatures (from new API) for a "version" feature.
+   */
+  private isStagedVersion(versionTag: string): boolean {
+    if (!this._data) return false;
+    const gf = this._data.globalFeatures[versionTag];
+    return gf ? gf.some((f) => f.name === "version") : false;
+  }
+
+  /**
    * Navigate to previous staged version.
    */
   private async goToPrevStagedVersion(): Promise<void> {
@@ -1651,21 +1484,13 @@ export class GveSnapshotRendition extends HTMLElement {
 
     for (let i = this._currentVersionIndex - 1; i >= 0; i--) {
       if (i === 0) {
-        // v0 is always considered staged
         await this.goToVersionIndex(0);
         return;
       }
 
-      const stepIndex = i - 1;
-      const step = this._data.steps[stepIndex];
-      if (step?.operation?.features) {
-        const hasVersion = step.operation.features.some(
-          (f) => f.name === "version" && f.isGlobal
-        );
-        if (hasVersion) {
-          await this.goToVersionIndex(i);
-          return;
-        }
+      if (this.isStagedVersion(`v${i}`)) {
+        await this.goToVersionIndex(i);
+        return;
       }
     }
   }
@@ -1678,16 +1503,9 @@ export class GveSnapshotRendition extends HTMLElement {
 
     const totalVersions = this._data.steps.length;
     for (let i = this._currentVersionIndex + 1; i <= totalVersions; i++) {
-      const stepIndex = i - 1;
-      const step = this._data.steps[stepIndex];
-      if (step?.operation?.features) {
-        const hasVersion = step.operation.features.some(
-          (f) => f.name === "version" && f.isGlobal
-        );
-        if (hasVersion) {
-          await this.goToVersionIndex(i);
-          return;
-        }
+      if (this.isStagedVersion(`v${i}`)) {
+        await this.goToVersionIndex(i);
+        return;
       }
     }
   }
@@ -2165,14 +1983,13 @@ export class GveSnapshotRendition extends HTMLElement {
     if (!this._hilites || !this._data) return;
 
     if (versionTag === null) {
-      // Clear hilites
       await this._hilites.clearHilites();
       this._logger.debug("Component", "Cleared hilites");
     } else {
-      // Show hilites for the version
       const color =
         this._versionsListArea?.getVersionColor(versionTag) || "#FFE4E1";
-      await this._hilites.showHilites(this._data, versionTag, color);
+      const nodeIds = this._data.versionNodeIds[versionTag] ?? [];
+      await this._hilites.showHilites(nodeIds, versionTag, color);
       this._logger.debug("Component", `Showing hilites for ${versionTag}`);
     }
   }

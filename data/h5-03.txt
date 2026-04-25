@@ -1,0 +1,28 @@
+:title
+03-H5
+
+:base
+3.
+Immer halt ich die Liebſte begierig im Arme geſchloſſen ,
+Immer drängt ſich mein Herz faſt an den Buſen ihr an ,
+Immer lehnet mein Haupt an ihren Knieen; ich blicke
+Nach dem lieblichen Mund , ihr nach den Augen hinauf .
+Weichling! ſchölte mich einer , und ſo verbringſt du die Tage ?
+Ach! ich verbringe ſie ſchlimm ! Höre nur , wie mir geſchieht !
+Leider , ich werde den Rücken der einzigen Freude des Lebens ,
+Schon den zwanzigſten Tag ſchleppt mich der Wagen dahin .
+Vetturine trotzen mir nun , es ſchmeichelt der Kämmrer
+Und der der Bediente vom Platz ſinnet auf Lügen und Trug .
+Will ich ihnen entgehn , ſo fäßt mich der Meiſter der Poſten ,
+Poſtillone ſind Herrn , dann die Dogane dazu !
+” Ich verſtehe dich nicht ! du widerſprichſt dir ! du ſchieneſt
+Paradieſiſch zu ruhn , ganz wie Rinaldo beglückt? “
+Ach ! ich verſtehe mich wohl : es iſt mein Körper auf Reiſen,
+Und es ruhet mein Geiſt ſtets der Geliebten im Schooß.
+
+:operations
+1×1: [r_char-offsets="1:x=18tw 4:y=0.5th 62:x=4tw,y=0.5th 117:y=0.5th 169:x=4tw,y=0.5th 224:y=0.5th 288:x=4tw,y=0.5th 352:y=0.5th 415:x=4tw,y=0.5th 473:y=0.5th 528:x=4tw,y=0.5th 587:y=0.5th 650:x=4tw,y=0.5th 697:y=0.5th 761:x=4tw,y=0.5th 813:y=0.5th 875:x=4tw,y=0.5th"]
+361×9="werd' ich" [r_hints=horizontal-stroke r_fore-color=red log="replace ich werde with werd'ich" version=AS1]
+
+:dsc
+A real-word partial example from Goethe's notebook H5, epigram 3.

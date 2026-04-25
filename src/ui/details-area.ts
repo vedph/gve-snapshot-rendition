@@ -27,7 +27,7 @@ export class DetailsArea {
   private _initialHeight = 0;
   private _initialMouseY = 0;
   private _isPinned = false;
-  private _pinnedElements: Array<{ element: SVGTextElement; node: CharNode }> = [];
+  private _pinnedElements: Array<{ element: SVGTextElement; node: CharNode; versionTag: string }> = [];
 
   constructor(settings: GveRenditionSettings, logger: Logger) {
     this._settings = settings;
@@ -277,20 +277,8 @@ export class DetailsArea {
    * Update the version features section with global features.
    */
   private updateVersionFeaturesSection(data: CharChainResult, versionTag: string): void {
-    const versionIndex = this.getVersionIndex(versionTag);
-
-    // Get global features for this version
-    const globalFeatures: OperationFeature[] = [];
-
-    // Collect global features from all steps up to this version
-    for (let i = 0; i < versionIndex && i < data.steps.length; i++) {
-      const step = data.steps[i];
-      if (step.operation?.features) {
-        const stepGlobalFeatures = step.operation.features.filter((f: OperationFeature) => f.isGlobal);
-        globalFeatures.push(...stepGlobalFeatures);
-      }
-    }
-
+    // Global features for this version are directly available in the new API
+    const globalFeatures: OperationFeature[] = data.globalFeatures?.[versionTag] ?? [];
     const filteredFeatures = this.filterFeatures(globalFeatures);
 
     // Build HTML
@@ -316,8 +304,7 @@ export class DetailsArea {
    * Update the hovered elements section.
    * @param hoveredElements - Array of hovered text SVG elements with their node data
    */
-  updateHoveredElements(hoveredElements: Array<{ element: SVGTextElement; node: CharNode }>): void {
-    // If pinned, ignore hover updates
+  updateHoveredElements(hoveredElements: Array<{ element: SVGTextElement; node: CharNode; versionTag: string }>): void {
     if (this._isPinned) {
       return;
     }
@@ -333,15 +320,13 @@ export class DetailsArea {
   /**
    * Render hovered elements with pin button.
    */
-  private renderHoveredElements(hoveredElements: Array<{ element: SVGTextElement; node: CharNode }>): void {
-    // Clear section
+  private renderHoveredElements(hoveredElements: Array<{ element: SVGTextElement; node: CharNode; versionTag: string }>): void {
     this.hoveredElementsSection.innerHTML = "";
 
     if (hoveredElements.length === 0) {
       return;
     }
 
-    // Create header with pin button
     const headerDiv = document.createElement("div");
     headerDiv.className = "hovered-section-header";
 
@@ -357,28 +342,22 @@ export class DetailsArea {
     headerDiv.appendChild(pinBtn);
     this.hoveredElementsSection.appendChild(headerDiv);
 
-    // Render each hovered element
-    for (const { element, node } of hoveredElements) {
-      // Clone the SVG text element
+    for (const { element, node, versionTag } of hoveredElements) {
       const clonedElement = element.cloneNode(true) as SVGTextElement;
 
-      // Create a container for this hovered element
       const elementContainer = document.createElement("div");
       elementContainer.className = "hovered-element-container";
 
-      // Create SVG wrapper for scaled glyph
       const svgWrapper = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svgWrapper.setAttribute("class", "hovered-glyph-svg");
       svgWrapper.setAttribute("width", this._settings.refGlyphWidth.toString());
       svgWrapper.setAttribute("height", this._settings.refGlyphHeight.toString());
 
-      // Get the bounding box of the original element to calculate scale
       const bbox = element.getBBox();
       const scaleX = this._settings.refGlyphWidth / (bbox.width || 1);
       const scaleY = this._settings.refGlyphHeight / (bbox.height || 1);
-      const scale = Math.min(scaleX, scaleY) * 0.8; // Use 80% to add padding
+      const scale = Math.min(scaleX, scaleY) * 0.8;
 
-      // Center the glyph
       const translateX = (this._settings.refGlyphWidth - bbox.width * scale) / 2 - bbox.x * scale;
       const translateY = (this._settings.refGlyphHeight - bbox.height * scale) / 2 - bbox.y * scale;
 
@@ -386,8 +365,8 @@ export class DetailsArea {
 
       svgWrapper.appendChild(clonedElement);
 
-      // Get node features
-      const nodeFeatures = node.features || [];
+      // Features are keyed by version tag in the new model
+      const nodeFeatures = (node.features?.[versionTag] ?? []) as OperationFeature[];
       const filteredFeatures = this.filterFeatures(nodeFeatures);
 
       // Build features HTML with node ID
@@ -415,42 +394,36 @@ export class DetailsArea {
   /**
    * Toggle pin state.
    */
-  private togglePin(currentElements: Array<{ element: SVGTextElement; node: CharNode }>): void {
+  private togglePin(currentElements: Array<{ element: SVGTextElement; node: CharNode; versionTag: string }>): void {
     this._isPinned = !this._isPinned;
 
     if (this._isPinned) {
-      // Store current elements
       this._pinnedElements = currentElements;
       this._logger.info("DetailsArea", "Pinned hovered elements");
     } else {
-      // Clear pinned elements
       this._pinnedElements = [];
       this._logger.info("DetailsArea", "Unpinned hovered elements");
     }
 
-    // Re-render with updated pin state
     this.renderHoveredElements(currentElements);
   }
 
   /**
    * Pin a specific element (triggered by click).
    */
-  public pinElement(element: SVGTextElement, node: CharNode): void {
-    const elements = [{ element, node }];
+  public pinElement(element: SVGTextElement, node: CharNode, versionTag: string): void {
+    const elements = [{ element, node, versionTag }];
 
     if (this._isPinned) {
-      // If already pinned, unpin
       this._isPinned = false;
       this._pinnedElements = [];
       this._logger.info("DetailsArea", "Unpinned via click");
     } else {
-      // Pin this element
       this._isPinned = true;
       this._pinnedElements = elements;
       this._logger.info("DetailsArea", "Pinned via click");
     }
 
-    // Render the element
     this.renderHoveredElements(elements);
   }
 

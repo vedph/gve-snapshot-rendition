@@ -103,45 +103,23 @@ export interface CharNode {
   label: string;
   data: string;
   sourceTag?: string;
-  features?: Feature[];
+  /** Features keyed by version tag (e.g. "v1" → feature list). */
+  features?: Record<string, Feature[]>;
 }
 
 /**
  * Execution step of a char-based chain operation.
  */
 export interface ChainOperationContextStep {
-  /**
-   * The operation that was executed.
-   */
+  /** The operation that was executed. */
   operation: CharChainOperation;
-  /**
-   * The input version tag.
-   */
+  /** The input version tag. */
   inputTag: string;
-  /**
-   * The output version tag.
-   */
+  /** The output version tag. */
   outputTag: string;
-  /**
-   * The string synthetically representing the resulting text
-   * version.
-   */
+  /** The string synthetically representing the resulting text version. */
   result?: string;
-  /**
-   * The features emitted up to the executed operation.
-   * These are the features of the text as a whole, and
-   * those belonging to specific nodes, each keyed under
-   * a string built with `v` + output version tag + `_`
-   * + node ID (e.g. `v1_2` for node with ID 2 at version 1).
-   */
-  featureSet: {
-    features: OperationFeature[];
-    nodeFeatures: Record<string, OperationFeature[]>;
-  };
-  /**
-   * The reference node IDs of the operation which was
-   * executed.
-   */
+  /** The reference node IDs of the operation which was executed. */
   refNodeIds: number[];
 }
 
@@ -149,32 +127,27 @@ export interface ChainOperationContextStep {
  * Result of execution of a char-based chain.
  */
 export interface CharChainResult {
-  /**
-   * The base text, as an array of character nodes or string.
-   * This is not returned by the API, but can be supplied
-   * by the caller.
-   */
-  text?: CharNode[] | string;
-  /**
-   * The execution steps of the chain.
-   */
+  /** The execution steps of the chain. */
   steps: ChainOperationContextStep[];
-  /**
-   * The chain dump, which is the text representation of the chain.
-   */
-  chainDump: string;
-  /**
-   * The list of all unique tags in the chain.
-   */
+  /** The chain dump, which is the text representation of the chain. */
+  chainDump: string | null;
+  /** The list of all unique tags in the chain, including v0. */
   chainTags: string[];
   /**
-   * The sets of nodes in their order, for each version tag.
-   * These nodes are collected by following the path defined
-   * by the set of links of each version tag; so each of the
-   * sets contains only the nodes used at that step to build
-   * the text version, with their features up to that stage.
+   * All character nodes in the chain (base text and added nodes).
+   * Node features are keyed by version tag.
    */
-  taggedNodes: { [key: string]: CharNode[] };
+  nodes: CharNode[];
+  /**
+   * IDs of nodes forming each version's text, keyed by version tag.
+   * Includes v0 (base text).
+   */
+  versionNodeIds: Record<string, number[]>;
+  /**
+   * Global features accumulated up to each version, keyed by version tag.
+   * Includes v0 (empty list).
+   */
+  globalFeatures: Record<string, OperationFeature[]>;
 }
 
 /**
