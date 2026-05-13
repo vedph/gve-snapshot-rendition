@@ -5,7 +5,7 @@ import { AnimationEngine } from "../animation/animation-engine";
 import { BoundsCache, BoundingRect } from "./bounds-cache";
 import { SpreadingEngine } from "./spreading-engine";
 import { TextLayout, CharPosition } from "./text-layout";
-import { FeatureResolver, RenditionConfig } from "./feature-resolver";
+import { RenditionConfig } from "./feature-resolver";
 import { isLineBreak, isSpace, getNodeSpan } from "../utils/node-utils";
 import {
   createTextElement,
@@ -25,7 +25,6 @@ export class TextRenderer {
   private _boundsCache: BoundsCache;
   private _spreadingEngine: SpreadingEngine;
   private _textLayout: TextLayout;
-  private _featureResolver: FeatureResolver;
 
   /**
    * Reference to the root SVG element for text width measurements.
@@ -48,7 +47,6 @@ export class TextRenderer {
     this._boundsCache = boundsCache;
     this._spreadingEngine = spreadingEngine;
     this._textLayout = new TextLayout(settings, logger);
-    this._featureResolver = new FeatureResolver(logger);
   }
 
   /**

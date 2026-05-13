@@ -23,7 +23,7 @@ Operations also inject metadata in their output, in form of **features** (name=v
 - core shared models are in `models.ts`.
 
 - **top-level components**:
-  - `gve-snapshot-rendition.ts`: snapshot renderer based on SVG. Most of its logic is encapsulated in its own set of classes, following a systematic separation of concerns.
+  - `gve-snapshot-rendition.ts`: snapshot renderer based on SVG. Most of its logic is encapsulated in its own set of classes.
   - `gve-hint-designer.ts`: an editor to design hints for the renderer.
 - **references**:
   - the backend API code which generates responses displayed by this renderer is under `\Projects\Gve\Gve`.
