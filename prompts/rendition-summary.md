@@ -130,6 +130,21 @@ So, `10`=offset by 10, but `0.5th` = offset by half of the reference text height
 
 ### Hints
 
+The hint is an SVG fragment linked to a specific operation. This rendering always happens before adding the text possibly introduced by that operation, when there is any.
+
+- hints are defined in a dictionary in the component's settings.
+- hints are linked to operations via a special `r_hints` rendition feature, which contains the IDs of all the hints to use for that operation. For instance, `r_hints` = `alpha beta` means we want to apply 2 hints with ID `alpha` and `beta`, in this order.
+- hints properties are:
+  - `svg`: SVG code for hint's visuals, always having a root `g` element.
+  - `position`: relative position for the hint.
+  - `offsetX`: absolute (10) or proportional (`0.5th`=half text character average height, `0.5tw`=half text character average width).
+  - `offsetY`: absolute (10) or proportional (`0.5th`=half text character average height, `0.5tw`=half text character average width).
+  - `scaleX`: horizontal scale: `1` = match bounds width, `1.1` = 110% of bounds width.
+  - `scaleY`: vertical scale: `1` = match bounds height, `1.1` = 110% of bounds height.
+  - `rotation`: optional hint's rotation (`0`=none).
+  - `animation`: JS code for animating the hint's entrance via GSAP.
+  - `displacedRefSpan`: a span of base text with format `IDxN` where `ID`=node ID and `N`=count of chars to include, to be used as the RBR instead of the default RBR.
+
 TODO
 
 ### Rendition Features

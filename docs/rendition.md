@@ -359,7 +359,7 @@ As for hints **usage**:
 
 The hint has these **properties**:
 
-- `svg`: SVG code for hint's visuals, always having a root g element.
+- `svg`: SVG code for hint's visuals, always having a root `g` element.
 - `position`: relative position for the hint.
 - `offsetX`: absolute (10) or proportional (`0.5th` = half text character average height, `0.5tw` = half text character average width).
 - `offsetY`: absolute (10) or proportional (`0.5th` = half text character average height, `0.5tw` = half text character average width).
