@@ -152,8 +152,9 @@ The hint's `svg` property is a string representing the SVG content of a hint. Th
   - an _ordinal number_ suffix preceded by `-`: 1=first hint for that operation, 2=second hint for that operation, etc.
 - inside the root `g` element there is **any SVG code**. Apart from sizing and positioning it, and possibly overriding some of its properties (color, text decorations, etc.), the component will render it as it is.
 - it may contain a **handle** element with `id`=`handle`. This represents the "handle" used as the reference for positioning it. If there is no such handle element, then the component just uses the bounding rectangle for the whole SVG (i.e. its root `g` element). Often, in the hint SVG code the handle element has opacity=0 so it is not visible; but this is up to the SVG code. Anyway, the setting `showHintHandles` can force such hidden handles to be displayed setting their opacity to 1 for diagnostic purposes.
-- it may contain a **placeholder** element with `id`=`placeholder`. This is usually an SVG shape, like a rectangle including a `text` SVG element which represents the text to draw, or directly a `text` element. Whatever the placeholder element, in the end it either is a `text` element, or it contains a `text` element. This text element has this behavior:
-  - its _text value_ is resolved at runtime: in the hint SVG, it is the name of the variable containing the text. This is equal to the name of a feature to be provided by the same operation the hints belongs to. If a feature with this name is not found, the text value is the feature name.
+- it may contain **placeholders** wrapped in `{{...}}` (whiskers) with the name of the feature to get the value from. For instance, `<rect width="100" height="50" fill="{{r_color}}" />` has a placeholder `{{r_color}}` to replace with the value of a feature named `r_color` (or with nothing, when that feature is not found).
+- it may contain a text **placeholder element** with `id`=`placeholder`. This is an SVG element including as child or descendant element a `text` SVG element which represents the text to draw. This text element has this behavior:
+  - its _text value_ is resolved at runtime: in the hint SVG, the text element's value a variable with the name of the feature to get value from. For instance, `{{note}}` means that the text will be the value of a `note` feature in the same operation. If a feature with this name is not found, the text displayed is the feature name.
   - its _size_:
     - when the hint's placeholder element has a `class` attribute equal to `fit`, the text's size is calculated so that its content fits the container element with the `placeholder` ID.
     - else, the text value and the settings for drawing it determine the resulting size of `text`. This implies that all the SVG elements containing this `text` element, including the root `g` element, must scale to fit it inside them. This is the inverse case with reference to the default one: here the container must fit the text.
@@ -187,7 +188,7 @@ Rendition features are used to override default rendering settings. All renderin
 - `r_hints`: link the operation to any number of hints. The value is a space-delimited list of hint IDs, in rendition order.
 - `r_hint-vars`: this has no effect on text; it's used to define a set of variables to be consumed by hints placeholders. Each variable has name=value, and is separated with space. For instance, `color=red bold=1` to pass variables `color`=`red` and `bold`=`1` to the hints being rendered for the operation being processed.
 
-The following text rendition features are applicable ONLY to **added text**:
+The following features are applicable ONLY to **added text**:
 
 - `r_t-position`: position of added text relative to the RBR.
 - `r_t-offset-x`: X offset for the added text, relative to the computed `r_t-position`.
@@ -195,6 +196,19 @@ The following text rendition features are applicable ONLY to **added text**:
 - `r_t-solid`: a boolean value (`1` or `0`), telling whether the added text behaves as "solid" (thus triggering spreading logic) or not (which is the default).
 - `r_t-displaced-span`: a span of base text with format `IDxN` where `ID`=node ID and `N`=count of chars to include, to be used as the RBR instead of the default RBR. This works exactly like a displaced hint, but is applied to added text.
 - `r_t-value`: a display-only override for the text value of the operation (which is an operation introducing new text, and thus having this text in its `value` property -- i.e. an add or replace operation). This overrides the operation's `value` property which contains the added text so that something different can be displayed.
+
+The following features are applicable ONLY to **hints**:
+
+- `r_h-position`: override hint's `position` property.
+- `r_h-offset-x`: override hint's `offsetX` property.
+- `r_h-offset-y`: override hint's `offsetY` property.
+- `r_h-scale-x`: override hint's `scaleX` property.
+- `r_h-scale-y`: override hint's `scaleY` property.
+- `r_h-rotation`: override hint's `rotation` property.
+- `r_h-solid`: override hint's `solid` property.
+- `r_h-displaced-span`: override hint's `desplacedRefSpan` property (for displaced hints).
+
+By default, hint features apply to ALL hints in the operation (those listed by `r_hints` feature), unless the property value starts with `@` followed by a space-delimited list of hint IDs, ended by `:`; in this case, it applies ONLY to those hints matching the list. So, `r_h-position`=`e` applies to ALL hints overriding their `position` property to `e`; while `@alpha beta:e` applies ONLY to hints with IDs `alpha` and `beta`, overriding their `position` property to `e`.
 
 > All these features can be combined, so characters are displayed only after evaluating all of them, and their size and text layout changes accordingly to fit all the characters with their size, which may depend on one or more of these features. Also, in backend all rendition features have their lifespan limited to the version generated by their operation. This avoids accumulating them in the output context, ensuring that they are valid only for the immediate output of the operation containing them.
 
