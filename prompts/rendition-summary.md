@@ -180,8 +180,6 @@ For placeholder elements, further size adjustments can be made according to the 
 - in `fit` mode, the transformations described by these properties will affect dynamically rendered text, as text fits into its placeholder container.
 - in the default (non-`fit`) mode, the transformations described by these properties will not affect dynamically rendered text, which has its own preset size depending on its text rendition settings.
 
-TODO
-
 ### Rendition Features
 
 Rendition features are used to override default rendering settings. All rendering features have their name starting with `r_`.
