@@ -145,6 +145,21 @@ The hint is an SVG fragment linked to a specific operation. This rendering alway
   - `animation`: JS code for animating the hint's entrance via GSAP.
   - `displacedRefSpan`: a span of base text with format `IDxN` where `ID`=node ID and `N`=count of chars to include, to be used as the RBR instead of the default RBR.
 
+The hint's `svg` property is a string representing the SVG content of a hint. The SVG content has these characteristics:
+
+- its **root element** is always a `g` element. This allows to manipulate the whole hint as a single entity (e.g. for transforming or animating it). When adding the hint, the component adds a unique identifier to it, by setting the root `g` element's `id` attribute to a value like `hint-X` where `X` is built from:
+  - the _operation's ID_.
+  - an _ordinal number_ suffix preceded by `-`: 1=first hint for that operation, 2=second hint for that operation, etc.
+- inside the root `g` element there is **any SVG code**. Apart from sizing and positioning it, and possibly overriding some of its properties (color, text decorations, etc.), the component will render it as it is.
+- it may contain a **handle** element with `id`=`handle`. This represents the "handle" used as the reference for positioning it. If there is no such handle element, then the component just uses the bounding rectangle for the whole SVG (i.e. its root `g` element). Often, in the hint SVG code the handle element has opacity=0 so it is not visible; but this is up to the SVG code. Anyway, the setting `showHintHandles` can force such hidden handles to be displayed setting their opacity to 1 for diagnostic purposes.
+- it may contain a **placeholder** element with `id`=`placeholder`. This is usually an SVG shape, like a rectangle including a `text` SVG element which represents the text to draw, or directly a `text` element. Whatever the placeholder element, in the end it either is a `text` element, or it contains a `text` element. This text element has this behavior:
+  - its _text value_ is resolved at runtime: in the hint SVG, it is just the name of the variable containing the text. This is equal to the name of a feature which is supposed to be provided by the same operation the hints belongs to. If a feature with this name is not found, the text value will just be the feature name.
+  - its _size_:
+    - when the hint's placeholder element has a `class` attribute equal to `fit`, the text's size is calculated so that its content fits the container element with the `placeholder` ID. For instance, the SVG code of the hint might represent a callout for insertion, where the balloon is a rectangle with id=`placeholder`, and the line ends into the handle point. This way, the text being added will appear inside the balloon. So, here the text must fit into the container.
+    - else, the text value and the settings for drawing it determine the resulting size of `text`. This implies that all the SVG elements containing this `text` element, including the root `g` element, must scale to fit it inside them. This is the inverse case with reference to the default one: here the container must fit the text.
+
+> In the documentation, we refer to hints whose SVG include a placeholder element as _placeholder hints_. There can be only either 0 or 1 placeholder hints per operation.
+
 TODO
 
 ### Rendition Features
