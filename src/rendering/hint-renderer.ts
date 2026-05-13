@@ -5,7 +5,6 @@ import { RelativePosition } from "../core/gve-snapshot-rendition";
 import { Logger } from "../core/logger";
 import { AnimationEngine } from "../animation/animation-engine";
 import { BoundsCache, BoundingRect } from "./bounds-cache";
-import { SpreadingEngine } from "./spreading-engine";
 import {
   parseSVGContent,
   getSafeBBox,
@@ -26,20 +25,17 @@ export class HintRenderer {
   private _logger: Logger;
   private _animationEngine: AnimationEngine;
   private _boundsCache: BoundsCache;
-  private _spreadingEngine: SpreadingEngine;
 
   constructor(
     settings: GveRenditionSettings,
     logger: Logger,
     animationEngine: AnimationEngine,
-    boundsCache: BoundsCache,
-    spreadingEngine: SpreadingEngine
+    boundsCache: BoundsCache
   ) {
     this._settings = settings;
     this._logger = logger;
     this._animationEngine = animationEngine;
     this._boundsCache = boundsCache;
-    this._spreadingEngine = spreadingEngine;
   }
 
   /**
@@ -181,12 +177,7 @@ export class HintRenderer {
           scalingInfo
         );
 
-        // 10. Handle spreading if solid
-        if (effectiveHint.solid) {
-          await this.handleSpreading(currentHintGroup, rootSvg, versionTag);
-        }
-
-        // 11. Check if prolog panning is needed (element visibility check)
+        // 10. Check if prolog panning is needed (element visibility check)
         // This must happen AFTER positioning and spreading, but BEFORE making visible
         if (panZoomInstance && viewportWidth && viewportHeight && this._settings.prologDuration > 0) {
           // IMPORTANT: Use getTransformedBBox() instead of getSafeBBox() here!
@@ -646,75 +637,6 @@ export class HintRenderer {
   }
 
   /**
-   * Handle spreading for solid hints.
-   * @param versionTag - Version tag for tracking spreading history
-   */
-  private async handleSpreading(
-    hintGroup: SVGGElement,
-    rootSvg: SVGElement,
-    versionTag: string
-  ): Promise<void> {
-    const hintBounds = getSafeBBox(hintGroup);
-    const hintId = hintGroup.getAttribute("id")!;
-
-    const spreading = this._spreadingEngine.calculateSpreading(hintBounds, [
-      hintId,
-    ]);
-
-    if (spreading.hasShifts) {
-      this._logger.debug(
-        "HintRenderer",
-        `Spreading required for hint ${hintId}`,
-        {
-          horizontalShifts: spreading.horizontalShifts.size,
-          verticalShifts: spreading.verticalShifts.size,
-        }
-      );
-
-      // Combine horizontal and vertical shifts
-      const combinedShifts = new Map<string, { x: number; y: number }>();
-      const allIds = new Set([
-        ...spreading.horizontalShifts.keys(),
-        ...spreading.verticalShifts.keys(),
-      ]);
-
-      for (const id of allIds) {
-        combinedShifts.set(id, {
-          x: spreading.horizontalShifts.get(id) || 0,
-          y: spreading.verticalShifts.get(id) || 0,
-        });
-      }
-
-      // Animate spreading
-      await this._animationEngine.animateSpreading(
-        combinedShifts,
-        this._settings.spreadTime,
-        rootSvg
-      );
-
-      // Update cached bounds for shifted elements
-      for (const id of allIds) {
-        const element = rootSvg.querySelector(`#${id}`);
-        if (element) {
-          this._boundsCache.updateFromElement(element as SVGElement);
-        }
-      }
-
-      // Track spreading metadata for backward navigation
-      // Extract version index from versionTag (e.g., "v2" → 2)
-      const versionMatch = versionTag.match(/v(\d+)/);
-      if (versionMatch) {
-        const versionIndex = parseInt(versionMatch[1]);
-        this._spreadingEngine.trackSpreading(
-          versionIndex,
-          spreading.horizontalShifts,
-          spreading.verticalShifts
-        );
-      }
-    }
-  }
-
-  /**
    * Apply r_h-* overrides to hint properties.
    * Overrides can target specific hints or all hints ("*").
    *
@@ -793,14 +715,6 @@ export class HintRenderer {
       this._logger.debug(
         "HintRenderer",
         `Override rotation for ${hintId}: ${override.rotation}`
-      );
-    }
-
-    if (override.solid !== undefined) {
-      effectiveHint.solid = override.solid;
-      this._logger.debug(
-        "HintRenderer",
-        `Override solid for ${hintId}: ${override.solid}`
       );
     }
 

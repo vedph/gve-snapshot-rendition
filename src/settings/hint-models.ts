@@ -56,12 +56,6 @@ export interface OperationHint {
   rotation: number;
 
   /**
-   * Whether this hint is "solid" and requires spreading.
-   * Default: false (most hints are overlays that don't need spreading)
-   */
-  solid?: boolean;
-
-  /**
    * JS code for animating the hint's entrance via GSAP.
    * If it starts with "#", it references an animation from settings.animations.
    * The code receives parameters: (gsap, hintEl, rootEl)

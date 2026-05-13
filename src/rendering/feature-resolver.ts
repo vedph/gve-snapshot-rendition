@@ -18,7 +18,6 @@ export interface HintOverrides {
   scaleX?: string;
   scaleY?: string;
   rotation?: string;
-  solid?: boolean;
   displacedSpan?: { nodeId: number; count: number };
 }
 
@@ -43,7 +42,6 @@ export interface RenditionConfig {
   textPosition?: string;    // r_t-position
   textOffsetX: number | string;      // r_t-offset-x (can be string like "0.5th" for relative offsets)
   textOffsetY: number | string;      // r_t-offset-y (can be string like "0.5th" for relative offsets)
-  textSolid?: boolean;      // r_t-solid
   textDisplacedSpan?: { nodeId: number; count: number }; // r_t-displaced-span
   textValue?: string;       // r_t-value (display-only override for operation value)
 
@@ -210,10 +208,6 @@ export class FeatureResolver {
           config.textOffsetY = typeof value === "number" ? value : value;
           break;
 
-        case "r_t-solid":
-          config.textSolid = value === "1" || value === "true";
-          break;
-
         case "r_t-displaced-span":
           config.textDisplacedSpan = parseDisplacedSpan(value);
           if (!config.textDisplacedSpan) {
@@ -354,9 +348,6 @@ export class FeatureResolver {
           break;
         case "rotation":
           override.rotation = actualValue;
-          break;
-        case "solid":
-          override.solid = actualValue === "1" || actualValue === "true";
           break;
         case "displaced-span":
           override.displacedSpan = parseDisplacedSpan(actualValue);

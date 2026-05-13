@@ -7,7 +7,6 @@ import { GveRenditionSettings, DEFAULT_SETTINGS } from "../settings/settings";
 import { Logger } from "./logger";
 import { AnimationEngine } from "../animation/animation-engine";
 import { BoundsCache } from "../rendering/bounds-cache";
-import { SpreadingEngine } from "../rendering/spreading-engine";
 import { TextRenderer } from "../rendering/text-renderer";
 import { HintRenderer } from "../rendering/hint-renderer";
 import { FeatureResolver, RenditionConfig } from "../rendering/feature-resolver";
@@ -63,7 +62,6 @@ export class GveSnapshotRendition extends HTMLElement {
   private _logger: Logger;
   private _animationEngine?: AnimationEngine;
   private _boundsCache: BoundsCache;
-  private _spreadingEngine: SpreadingEngine;
   private _textRenderer?: TextRenderer;
   private _hintRenderer?: HintRenderer;
   private _featureResolver: FeatureResolver;
@@ -116,12 +114,7 @@ export class GveSnapshotRendition extends HTMLElement {
     // Create logger
     this._logger = new Logger("GVE-Rendition", this._settings.debug);
 
-    // Create bounds cache and spreading engine
     this._boundsCache = new BoundsCache(this._logger);
-    this._spreadingEngine = new SpreadingEngine(
-      this._boundsCache,
-      this._logger
-    );
 
     // Create feature resolver
     this._featureResolver = new FeatureResolver(this._logger);
@@ -260,14 +253,12 @@ export class GveSnapshotRendition extends HTMLElement {
         this._logger,
         this._animationEngine,
         this._boundsCache,
-        this._spreadingEngine
       );
       this._hintRenderer = new HintRenderer(
         this._settings,
         this._logger,
         this._animationEngine,
         this._boundsCache,
-        this._spreadingEngine
       );
       this._logger.info("GSAP initialized");
       this.renderContent();
@@ -1257,55 +1248,7 @@ export class GveSnapshotRendition extends HTMLElement {
       `Removing ${elements.length} elements from v${versionIndex}`
     );
 
-    // Step 1: Reverse spreading animation if spreadTime > 0
-    // This must happen BEFORE removing elements and BEFORE fadeout
-    if (
-      this._settings.spreadTime > 0 &&
-      this._spreadingEngine &&
-      this._animationEngine
-    ) {
-      const spreadingMetadata =
-        this._spreadingEngine.getSpreadingForVersion(versionIndex);
-
-      if (spreadingMetadata.size > 0) {
-        this._logger.debug(
-          "Navigation",
-          `Reversing spreading for ${spreadingMetadata.size} elements from v${versionIndex}`
-        );
-
-        // Build combined shifts (negative of original shifts to reverse)
-        const reverseShifts = new Map<string, { x: number; y: number }>();
-
-        for (const [elementId, metadata] of spreadingMetadata.entries()) {
-          reverseShifts.set(elementId, {
-            x: -metadata.horizontalShift, // Negative to reverse
-            y: -metadata.verticalShift, // Negative to reverse
-          });
-        }
-
-        // Animate spreading reversal
-        await this._animationEngine.animateSpreading(
-          reverseShifts,
-          this._settings.spreadTime,
-          container // Use container for animation context
-        );
-
-        // Update cached bounds for shifted elements
-        if (this._boundsCache) {
-          for (const elementId of reverseShifts.keys()) {
-            const element = container.querySelector(`#${elementId}`);
-            if (element) {
-              this._boundsCache.updateFromElement(element as SVGElement);
-            }
-          }
-        }
-
-        // Clear spreading history for this version
-        this._spreadingEngine.clearSpreadingForVersion(versionIndex);
-      }
-    }
-
-    // Step 2: If backwardFadeOutTime > 0, animate fadeout
+    // Step 1: If backwardFadeOutTime > 0, animate fadeout
     if (this._settings.backwardFadeOutTime > 0) {
       const fadeOutPromises: Promise<void>[] = [];
 
@@ -1320,7 +1263,7 @@ export class GveSnapshotRendition extends HTMLElement {
       await Promise.all(fadeOutPromises);
     }
 
-    // Step 3: Remove elements from DOM
+    // Step 2: Remove elements from DOM
     elements.forEach((el) => el.remove());
   }
 

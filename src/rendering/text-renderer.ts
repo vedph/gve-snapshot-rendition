@@ -3,7 +3,6 @@ import { GveRenditionSettings } from "../settings/settings";
 import { Logger } from "../core/logger";
 import { AnimationEngine } from "../animation/animation-engine";
 import { BoundsCache, BoundingRect } from "./bounds-cache";
-import { SpreadingEngine } from "./spreading-engine";
 import { TextLayout, CharPosition } from "./text-layout";
 import { RenditionConfig } from "./feature-resolver";
 import { isLineBreak, isSpace, getNodeSpan } from "../utils/node-utils";
@@ -23,7 +22,6 @@ export class TextRenderer {
   private _logger: Logger;
   private _animationEngine: AnimationEngine;
   private _boundsCache: BoundsCache;
-  private _spreadingEngine: SpreadingEngine;
   private _textLayout: TextLayout;
 
   /**
@@ -39,13 +37,11 @@ export class TextRenderer {
     logger: Logger,
     animationEngine: AnimationEngine,
     boundsCache: BoundsCache,
-    spreadingEngine: SpreadingEngine,
   ) {
     this._settings = settings;
     this._logger = logger;
     this._animationEngine = animationEngine;
     this._boundsCache = boundsCache;
-    this._spreadingEngine = spreadingEngine;
     this._textLayout = new TextLayout(settings, logger);
   }
 
@@ -318,63 +314,11 @@ export class TextRenderer {
       baseY,
     );
 
-    // 4. Calculate bounding rectangle for the text (needed for spreading and prolog)
+    // 4. Calculate bounding rectangle for the text (needed for prolog)
     const textBounds = this.calculateTextBounds(nodes, positions);
 
-    // 5. Apply spreading if r_t-solid=1
-    // Check config.textSolid to determine if spreading should be applied
-    if (config.textSolid) {
-      if (textBounds) {
-        this._logger.debug(
-          "TextRenderer",
-          `Applying spreading for solid additional text`,
-          textBounds,
-        );
-
-        const spreading = this._spreadingEngine.calculateSpreading(textBounds, [
-          `text-group-${versionTag}`,
-        ]);
-
-        if (spreading.hasShifts) {
-          // Combine horizontal and vertical shifts
-          const combinedShifts = new Map<string, { x: number; y: number }>();
-          const allIds = new Set([
-            ...spreading.horizontalShifts.keys(),
-            ...spreading.verticalShifts.keys(),
-          ]);
-
-          for (const id of allIds) {
-            combinedShifts.set(id, {
-              x: spreading.horizontalShifts.get(id) || 0,
-              y: spreading.verticalShifts.get(id) || 0,
-            });
-          }
-
-          // Animate spreading
-          await this._animationEngine.animateSpreading(
-            combinedShifts,
-            this._settings.spreadTime,
-            rootSvg,
-          );
-
-          // Update cached bounds for shifted elements
-          for (const id of allIds) {
-            const element = rootSvg.querySelector(`#${id}`);
-            if (element) {
-              this._boundsCache.updateFromElement(element as SVGElement);
-            }
-          }
-        }
-      }
-    } else {
-      this._logger.debug(
-        "TextRenderer",
-        `Skipping spreading - additional text is not solid (r_t-solid not set)`,
-      );
-    }
-
-    // 6. Check if prolog panning is needed (element visibility check)
-    // This must happen AFTER positioning and spreading, but BEFORE rendering characters
+    // 5. Check if prolog panning is needed (element visibility check)
+    // This must happen AFTER positioning, but BEFORE rendering characters
     if (
       panZoomInstance &&
       viewportWidth &&
@@ -404,7 +348,7 @@ export class TextRenderer {
       }
     }
 
-    // 7. Get animation function if specified
+    // 6. Get animation function if specified
     const animationFn = this._settings.charAnimationId
       ? this._animationEngine
           .getFactory()
@@ -415,7 +359,7 @@ export class TextRenderer {
           )
       : undefined;
 
-    // 8. Render each character with features
+    // 7. Render each character with features
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
       const pos = positions[i];

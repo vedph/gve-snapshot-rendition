@@ -63,7 +63,6 @@ export class GveHintDesigner extends HTMLElement {
   private _scaleXInput?: HTMLInputElement;
   private _scaleYInput?: HTMLInputElement;
   private _rotationInput?: HTMLInputElement;
-  private _solidCheckbox?: HTMLInputElement;
   private _displacedRefSpanInput?: HTMLInputElement;
   private _variablesTable?: HTMLTableElement;
   private _playButton?: HTMLButtonElement;
@@ -590,11 +589,6 @@ export class GveHintDesigner extends HTMLElement {
     // Rotation
     this._rotationInput = this.createInput("number", "0");
     form.appendChild(this.createFormRow("Rotation:", this._rotationInput));
-
-    // Solid
-    this._solidCheckbox = document.createElement("input");
-    this._solidCheckbox.type = "checkbox";
-    form.appendChild(this.createFormRow("Solid:", this._solidCheckbox));
 
     // Displaced Ref Span
     this._displacedRefSpanInput = this.createInput("text", "");
@@ -1223,7 +1217,6 @@ export class GveHintDesigner extends HTMLElement {
       this._scaleYInput.value = hint.scaleY?.toString() || "1";
     if (this._rotationInput)
       this._rotationInput.value = hint.rotation?.toString() || "0";
-    if (this._solidCheckbox) this._solidCheckbox.checked = hint.solid || false;
     if (this._displacedRefSpanInput)
       this._displacedRefSpanInput.value = hint.displacedRefSpan || "";
     if (this._svgTextarea) {
@@ -1282,7 +1275,6 @@ export class GveHintDesigner extends HTMLElement {
     if (this._scaleXInput) this._scaleXInput.value = "1";
     if (this._scaleYInput) this._scaleYInput.value = "1";
     if (this._rotationInput) this._rotationInput.value = "0";
-    if (this._solidCheckbox) this._solidCheckbox.checked = false;
     if (this._displacedRefSpanInput) this._displacedRefSpanInput.value = "";
     if (this._svgTextarea) this._svgTextarea.value = "";
     if (this._jsTextarea) this._jsTextarea.value = "";
@@ -1364,7 +1356,6 @@ export class GveHintDesigner extends HTMLElement {
       scaleX: 1,
       scaleY: 1,
       rotation: 0,
-      solid: false,
       animation: "",
     };
 
@@ -1415,7 +1406,6 @@ export class GveHintDesigner extends HTMLElement {
       scaleX: parseFloat(this._scaleXInput?.value || "1"),
       scaleY: parseFloat(this._scaleYInput?.value || "1"),
       rotation: parseFloat(this._rotationInput?.value || "0"),
-      solid: this._solidCheckbox?.checked || false,
       displacedRefSpan: this._displacedRefSpanInput?.value || undefined,
     };
 

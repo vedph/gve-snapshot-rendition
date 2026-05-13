@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-        solid: false,
+
         animation: "#wipe-right",
       },
       "diagonal-stroke-up": {
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-        solid: false,
+
         animation: "#wipe-right",
       },
       "cross-stroke": {
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-        solid: false,
+
         animation: "#wipe-right",
       },
       "horizontal-stroke": {
@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-        solid: false,
+
         animation: "#wipe-right",
       },
       "vertical-stroke": {
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-        solid: false,
+
         animation: "#wipe-down",
       },
       "line-bottom": {
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-        solid: false,
+
         animation: "#wipe-right",
       },
       "line-top": {
@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-        solid: false,
+
         animation: "#wipe-right",
       },
       "line-left": {
@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-        solid: false,
+
         animation: "#wipe-right",
       },
       "line-right": {
@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-        solid: false,
+
         animation: "#wipe-right",
       },
       hamburger: {
@@ -148,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-        solid: false,
+
         animation: "#wipe-right",
       },
       hotdog: {
@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-        solid: false,
+
         animation: "#wipe-right",
       },
       box: {
@@ -176,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1.1,
         scaleY: 1.1,
         rotation: 0,
-        solid: false,
+
         animation: "#fade-in",
       },
       note: {
@@ -189,7 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-        solid: false,
+
         animation: "#fade-in",
       },
       "half-psi": {
@@ -209,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1.5,
         rotation: 0,
-        solid: false,
+
         animation: "#wipe-right",
       },
       "i-dot": {
@@ -226,7 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-        solid: false,
+
         animation: "#fade-in",
       },
       umlaut: {
@@ -248,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-        solid: false,
+
         animation: "#fade-in",
       },
       snake: {
@@ -264,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1.2,
         scaleY: 2,
         rotation: 0,
-        solid: false,
+
         animation: "#wipe-right",
       },
       "snake-e": {
@@ -280,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1.2,
         scaleY: 2,
         rotation: 0,
-        solid: false,
+
         animation: "#wipe-right",
       },
       "snake-callout": {
@@ -302,7 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1.2,
         scaleY: 2,
         rotation: 0,
-        solid: false,
+
         animation: "#wipe-right",
       },
     },
