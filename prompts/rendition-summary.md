@@ -46,9 +46,7 @@ All added elements are rendered with reference to base text elements.
 - for _added text_: `r_rotate` feature (no scale here because size is set by `r_font-size`).
 - for _hints_: hint's properties `scaleX`, `scaleY`, `rotation`, which can be overridden by the `r_h-scale-x`, `r_h-scale-y`, `r_h-rotation` features.
 
-(2) **positioning**: all added elements are positioned relative to 1 or more base text elements, in 2 stages: the position is computed, and then optionally shifted by horizontal/vertical offsets when specified.
-
-Added elements are placed with reference to the bounding rectangle of the reference text (=**RBR**; the bounding rectangle of the element positioned with reference to the RBR is named "EBR").
+(2) **positioning**: all added elements are positioned with reference to the bounding rectangle of the reference text (=**RBR**; the bounding rectangle of the element positioned with reference to the RBR is named "EBR").
 
 RBR is _the rectangle including all the bounding rectangles of all the subsequent nodes displayed for the text "selected" by an operation_. So, if a segment to be deleted is "def", its bounding rectangle is the rectangle including all the rectangles for "d", "e", "f".
 
@@ -111,13 +109,23 @@ The corresponding ASCII-picture diagram is:
 +---+-----------+---+
 ```
 
+(3) **offsetting**: once the initial position has been computed, it can be offset on X and Y by a specified amount:
 
+- for _added text_, the offset is set by `r_t-offset-x` and `r_t-offset-y` features.
+- for _hints_, the offset is set by hint's properties `offsetX` and `offsetY`, which can be overridden by `r_h-offset-x` and `r_h-offset-y` features.
+
+Offsets use either a simple number, e.g. `10`, or a suffixed number, using these suffixes for metrics derived from the reference text bounds:
+
+- `th` = reference text bounds height.
+- `tw` = reference text bounds width.
+
+So, `10`=offset by 10, but `0.5th` = offset by half of the reference text height.
+
+(4) **prolog**: immediately before rendering added elements, a special animation ("prolog") can be triggered to adjust the existing elements panning. This happens when the element which is going to be added, once its size and position have been fully computed, would fall outside the currently visible portion of the text rendition area. In this case, before adding the element, an animation gracefully pans the existing elements so that there is just enough room to display the element which is going to be added. The duration of this transition animation is defined in the `prologDuration` setting.
 
 ## Animations
 
-Animations are based on GSAP.
-
-As all the elements which enter the text rendition never leave it, all settings-based animations represent _entrance_ animations, and they are provided via JS code fragments in settings.
+As all the elements which enter the text rendition never leave it, all settings-based animations represent _entrance_ animations, and they are provided via JS code fragments in settings, using GSAP.
 
 >Besides settings-based animations, other animations exist, managed by code only, like transitions in spreading or text hilites.
 
