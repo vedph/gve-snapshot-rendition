@@ -20,7 +20,12 @@ Rendered SVG elements are:
 - **added elements**: added text and hints, both added by operations.
 - **text hilites** (temporary): a visualization artifact triggered by user action to hilite some visuals; they depend on existing SVG elements for their size and position, and they do not interact in any other way with them.
 
-All character (`CharNode`'s) have a unique numeric ID, progressively assigned by backend. Rendered elements often get attributes (in `id` and `class` to help the renderer manipulate and find them).
+All character (`CharNode`'s) have a unique numeric ID, progressively assigned by backend. Rendered elements get these attributes:
+
+- `id`=`n_` + character node ID, e.g. `n_1`.
+- `class`: space-delimited classes:
+  - `node`, meaning this `text` element represents a character node (other SVG `text` elements might be added from hints).
+  - `vN`, where `N`=number of the version output by the operation which added the `text` element. For instance, if the operation being processed tags its output as `v3`, then the `text` elements for all the characters added by this operation will get a `v3` class.
 
 Rendition settings affect text in order of increasing specificity:
 
@@ -39,7 +44,7 @@ Text never wraps.
 
 ### Added Elements
 
-All added elements are rendered with reference to base text elements.
+All added elements (added text/hints) are rendered with reference to base text elements.
 
 (1) **transforms**: added elements can be transformed (scale and rotation) before being added. Important: this is only a preparation of the elements before computing their relative position. The drawing logic follows this sequence to be predictable and easy for hints designers; it is like drawing in a diagramming app: you pick a shape, freely resize and rotate it, and move it in the desired position.So transforms are totally opaque to the component's renderer. The renderer just receives an element to position and add, whether this element had some transformations applied to it or not. Source of transforms:
 
