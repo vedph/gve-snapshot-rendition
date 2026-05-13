@@ -1,8 +1,6 @@
-# Rendition
+# Rendition Logic
 
-## Purpose
-
-Render an interactive representation of the transformations of a text, as defined by edit operations. Changes and visuals by each operation accumulate on the visualization.
+The purpose of rendition is to provide an interactive representation of the transformations of a text, as defined by edit operations. Changes and visuals by each operation accumulate on the visualization, operation after operation. Users can navigate forward (adding more changes to the original text) or backward (undoing operations back to the initial base text).
 
 ## Elements
 
@@ -134,18 +132,36 @@ The hint is an SVG fragment linked to a specific operation. This rendering alway
 
 - hints are defined in a dictionary in the component's **settings**.
 - hints are **linked** to operations via a special `r_hints` rendition feature, which contains the IDs of all the hints to use for that operation. For instance, `r_hints` = `alpha beta` means we want to apply 2 hints with ID `alpha` and `beta`, in this order.
-- hints **properties** are:
-  - `svg`: SVG code for hint's visuals, always having a root `g` element.
-  - `position`: relative position for the hint.
-  - `offsetX`: absolute (10) or proportional (`0.5th`=half text character average height, `0.5tw`=half text character average width).
-  - `offsetY`: absolute (10) or proportional (`0.5th`=half text character average height, `0.5tw`=half text character average width).
-  - `scaleX`: horizontal scale: `1` = match bounds width, `1.1` = 110% of bounds width.
-  - `scaleY`: vertical scale: `1` = match bounds height, `1.1` = 110% of bounds height.
-  - `rotation`: optional hint's rotation (`0`=none).
-  - `animation`: JS code for animating the hint's entrance via GSAP.
-  - `displacedRefSpan`: a span of base text with format `IDxN` where `ID`=node ID and `N`=count of chars to include, to be used as the RBR instead of the default RBR.
+- the initial **size** of the hint is equal to the size of its reference bounding rectangle, but scale properties can scale it up or down, and rotation can rotate it.
+- the initial **position** of the hint is computed relative to a base text element like for any added text, but it also depends on the hint's computed size:
 
-The hint's `svg` property is a string representing the SVG content of a hint. The SVG content has these characteristics:
+1. the SVG `g` element of the hint gets created, sized by default as the RBR.
+2. if specified, scale and rotation are applied.
+3. if a hint margin is defined in settings (`hintMargin`), a margin is systematically added to the resulting hint size. For instance, if hints margin is set to 2, a hint has `scale`=1.1, and its reference bounding rectangle is 200x50, this means that the hint will be first scaled to 220x55, and then it will get a 2px margin on each side, whence a final size of 224x59.
+4. if it's a placeholder hint, the first `text` element descendant of the placeholder element gets its text dynamically set (from the specified operation's feature), and the hint's size is adjusted accordingly.
+5. the bounding rectangle for the resulting `g` element (or its handle, when present) is calculated and used to position it according to its properties or features.
+
+For instance, a diagonal stroke hint representing the deletion of 3 characters ABC can be drawn on top of them to cover them all, because its default position is `o` (EBR center=RBR center) and its default size as the same as the RBR.
+
+>Note that a hint can be displaced by using a feature to override the base text to use as a reference. The displacement is defined by `displacedRefSpan` property (in turn set by a `r_h-displaced-span` feature), having value pattern `IDxN`, where `ID`=node ID (the node must be a base text node) and `N`=count of chars to include starting from it, to be used as the RBR instead of the default one.
+
+#### Hint Properties
+
+Hints **properties** are:
+  
+- `svg`: SVG code for hint's visuals, always having a root `g` element.
+- `position`: relative position for the hint.
+- `offsetX`: absolute (10) or proportional (`0.5th`=half text character average height, `0.5tw`=half text character average width).
+- `offsetY`: absolute (10) or proportional (`0.5th`=half text character average height, `0.5tw`=half text character average width).
+- `scaleX`: horizontal scale: `1` = match bounds width, `1.1` = 110% of bounds width.
+- `scaleY`: vertical scale: `1` = match bounds height, `1.1` = 110% of bounds height.
+- `rotation`: optional hint's rotation (`0`=none).
+- `animation`: JS code for animating the hint's entrance via GSAP, or `#` + the ID of a preset animation (defined in settings).
+- `displacedRefSpan`: a span of base text with format `IDxN` where `ID`=node ID and `N`=count of chars to include, to be used as the RBR instead of the default RBR.
+
+Hint transformations (scale and rotation) affect its size, so they are applied _before_ calculating its position.
+
+The hint's **svg property** is a string representing the SVG content of a hint. The SVG content has these characteristics:
 
 - its **root element** is always a `g` element. This allows to manipulate the whole hint as a single entity (e.g. for transforming or animating it). When adding the hint, the component adds a unique identifier to it, by setting the root `g` element's `id` attribute to a value like `hint-X` where `X` is built from:
   - the _operation's ID_.
@@ -153,13 +169,16 @@ The hint's `svg` property is a string representing the SVG content of a hint. Th
 - inside the root `g` element there is **any SVG code**. Apart from sizing and positioning it, and possibly overriding some of its properties (color, text decorations, etc.), the component will render it as it is.
 - it may contain a **handle** element with `id`=`handle`. This represents the "handle" used as the reference for positioning it. If there is no such handle element, then the component just uses the bounding rectangle for the whole SVG (i.e. its root `g` element). Often, in the hint SVG code the handle element has opacity=0 so it is not visible; but this is up to the SVG code. Anyway, the setting `showHintHandles` can force such hidden handles to be displayed setting their opacity to 1 for diagnostic purposes.
 - it may contain **placeholders** wrapped in `{{...}}` (whiskers) with the name of the feature to get the value from. For instance, `<rect width="100" height="50" fill="{{r_color}}" />` has a placeholder `{{r_color}}` to replace with the value of a feature named `r_color` (or with nothing, when that feature is not found).
-- it may contain a text **placeholder element** with `id`=`placeholder`. This is an SVG element including as child or descendant element a `text` SVG element which represents the text to draw. This text element has this behavior:
+- it may contain a text **placeholder element** with `id`=`placeholder`. Hints whose SVG include a placeholder element are named _placeholder hints_. There can be only either 0 or 1 placeholder hints per operation. The placeholder is an SVG element including as child or descendant element a `text` SVG element which represents the text to draw. This text element has this behavior:
   - its _text value_ is resolved at runtime: in the hint SVG, the text element's value a variable with the name of the feature to get value from. For instance, `{{note}}` means that the text will be the value of a `note` feature in the same operation. If a feature with this name is not found, the text displayed is the feature name.
   - its _size_:
     - when the hint's placeholder element has a `class` attribute equal to `fit`, the text's size is calculated so that its content fits the container element with the `placeholder` ID.
     - else, the text value and the settings for drawing it determine the resulting size of `text`. This implies that all the SVG elements containing this `text` element, including the root `g` element, must scale to fit it inside them. This is the inverse case with reference to the default one: here the container must fit the text.
 
-> In the documentation, hints whose SVG include a placeholder element are named _placeholder hints_. There can be only either 0 or 1 placeholder hints per operation.
+For placeholder elements, further size adjustments can be made according to the rendering mode chosen for that placeholder (`fit` or not); so, these will happen after these transformations, but before positioning the hint:
+
+- in `fit` mode, the transformations described by these properties will affect dynamically rendered text, as text fits into its placeholder container.
+- in the default (non-`fit`) mode, the transformations described by these properties will not affect dynamically rendered text, which has its own preset size depending on its text rendition settings.
 
 TODO
 
@@ -193,7 +212,6 @@ The following features are applicable ONLY to **added text**:
 - `r_t-position`: position of added text relative to the RBR.
 - `r_t-offset-x`: X offset for the added text, relative to the computed `r_t-position`.
 - `r_t-offset-y`: Y offset for the added text, relative to the computed `r_t-position`.
-- `r_t-solid`: a boolean value (`1` or `0`), telling whether the added text behaves as "solid" (thus triggering spreading logic) or not (which is the default).
 - `r_t-displaced-span`: a span of base text with format `IDxN` where `ID`=node ID and `N`=count of chars to include, to be used as the RBR instead of the default RBR. This works exactly like a displaced hint, but is applied to added text.
 - `r_t-value`: a display-only override for the text value of the operation (which is an operation introducing new text, and thus having this text in its `value` property -- i.e. an add or replace operation). This overrides the operation's `value` property which contains the added text so that something different can be displayed.
 
@@ -205,7 +223,6 @@ The following features are applicable ONLY to **hints**:
 - `r_h-scale-x`: override hint's `scaleX` property.
 - `r_h-scale-y`: override hint's `scaleY` property.
 - `r_h-rotation`: override hint's `rotation` property.
-- `r_h-solid`: override hint's `solid` property.
 - `r_h-displaced-span`: override hint's `desplacedRefSpan` property (for displaced hints).
 
 By default, hint features apply to ALL hints in the operation (those listed by `r_hints` feature), unless the property value starts with `@` followed by a space-delimited list of hint IDs, ended by `:`; in this case, it applies ONLY to those hints matching the list. So, `r_h-position`=`e` applies to ALL hints overriding their `position` property to `e`; while `@alpha beta:e` applies ONLY to hints with IDs `alpha` and `beta`, overriding their `position` property to `e`.
