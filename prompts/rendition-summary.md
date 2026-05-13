@@ -132,9 +132,9 @@ So, `10`=offset by 10, but `0.5th` = offset by half of the reference text height
 
 The hint is an SVG fragment linked to a specific operation. This rendering always happens before adding the text possibly introduced by that operation, when there is any.
 
-- hints are defined in a dictionary in the component's settings.
-- hints are linked to operations via a special `r_hints` rendition feature, which contains the IDs of all the hints to use for that operation. For instance, `r_hints` = `alpha beta` means we want to apply 2 hints with ID `alpha` and `beta`, in this order.
-- hints properties are:
+- hints are defined in a dictionary in the component's **settings**.
+- hints are **linked** to operations via a special `r_hints` rendition feature, which contains the IDs of all the hints to use for that operation. For instance, `r_hints` = `alpha beta` means we want to apply 2 hints with ID `alpha` and `beta`, in this order.
+- hints **properties** are:
   - `svg`: SVG code for hint's visuals, always having a root `g` element.
   - `position`: relative position for the hint.
   - `offsetX`: absolute (10) or proportional (`0.5th`=half text character average height, `0.5tw`=half text character average width).
@@ -158,7 +158,7 @@ The hint's `svg` property is a string representing the SVG content of a hint. Th
     - when the hint's placeholder element has a `class` attribute equal to `fit`, the text's size is calculated so that its content fits the container element with the `placeholder` ID.
     - else, the text value and the settings for drawing it determine the resulting size of `text`. This implies that all the SVG elements containing this `text` element, including the root `g` element, must scale to fit it inside them. This is the inverse case with reference to the default one: here the container must fit the text.
 
-> In the documentation, we refer to hints whose SVG include a placeholder element as _placeholder hints_. There can be only either 0 or 1 placeholder hints per operation.
+> In the documentation, hints whose SVG include a placeholder element are named _placeholder hints_. There can be only either 0 or 1 placeholder hints per operation.
 
 TODO
 
