@@ -2,7 +2,7 @@
 
 The purpose of rendition is to provide an interactive representation of the transformations of a text, as defined by edit operations. Changes and visuals by each operation accumulate on the visualization, operation after operation. Users can navigate forward (adding more changes to the original text) or backward (undoing operations back to the initial base text).
 
-## Elements
+## SVG Elements
 
 Rendition is based on SVG. The container supports zooming and panning for the whole text rendition area.
 
@@ -126,9 +126,9 @@ So, `10`=offset by 10, but `0.5th` = offset by half of the reference text height
 
 (4) **prolog**: immediately before rendering added elements, a special animation ("prolog") can be triggered to adjust the existing elements panning. This happens when the element which is going to be added, once its size and position have been fully computed, would fall outside the currently visible portion of the text rendition area. In this case, before adding the element, an animation gracefully pans the existing elements so that there is just enough room to display the element which is going to be added. The duration of this transition animation is defined in the `prologDuration` setting.
 
-### Hints
+#### Hints
 
-The hint is an SVG fragment linked to a specific operation. This rendering always happens before adding the text possibly introduced by that operation, when there is any.
+Added elements include added text and hints. The hint is an SVG fragment linked to a specific operation. This rendering always happens before adding the text possibly introduced by that operation, when there is any.
 
 - hints are defined in a dictionary in the component's **settings**.
 - hints are **linked** to operations via a special `r_hints` rendition feature, which contains the IDs of all the hints to use for that operation. For instance, `r_hints` = `alpha beta` means we want to apply 2 hints with ID `alpha` and `beta`, in this order.
@@ -144,8 +144,6 @@ The hint is an SVG fragment linked to a specific operation. This rendering alway
 For instance, a diagonal stroke hint representing the deletion of 3 characters ABC can be drawn on top of them to cover them all, because its default position is `o` (EBR center=RBR center) and its default size as the same as the RBR.
 
 >Note that a hint can be displaced by using a feature to override the base text to use as a reference. The displacement is defined by `displacedRefSpan` property (in turn set by a `r_h-displaced-span` feature), having value pattern `IDxN`, where `ID`=node ID (the node must be a base text node) and `N`=count of chars to include starting from it, to be used as the RBR instead of the default one.
-
-#### Hint Properties
 
 Hints **properties** are:
   
