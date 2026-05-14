@@ -177,9 +177,7 @@ The hint's **svg property** is a string representing the SVG content of a hint. 
 - it may contain **placeholders** wrapped in `{{...}}` (whiskers) with the name of the feature to get the value from. For instance, `<rect width="100" height="50" fill="{{r_color}}" />` has a placeholder `{{r_color}}` to replace with the value of a feature named `r_color` (or with nothing, when that feature is not found).
 - it may contain a **text placeholder element** with `id`=`placeholder` and an optional `class="fit"` (when text must be rendered to fit its container element). Hints whose SVG include a placeholder element are named _placeholder hints_. There can be only either 0 or 1 placeholder hints per operation. The placeholder is an SVG element including as child or descendant element a `text` SVG element which represents the text to draw. This text element has this behavior:
   - its _text value_ is either a literal, or resolved at runtime when within whiskers (like any placeholder). In the latter case, the text element's value is the name of the feature to get the text value from. For instance, `{{note}}` means that the text will be the value of a `note` feature in the same operation. If a feature with this name is not found, the text displayed is the feature name.
-  - its _size_: TODO move
-    - when the hint's placeholder element has a `class` attribute equal to `fit`, the text's size is calculated so that its content fits the container element with the `placeholder` ID.
-    - else, the text value and the settings for drawing it determine the resulting size of `text`. This implies that all the SVG elements containing this `text` element, including the root `g` element, must scale to fit it inside them. This is the inverse case with reference to the default one: here the container must fit the text.
+  - its _size_: by default it's equal to the RBR size, variously modified by hint's properties and features overriding them, except for the special case of text placeholder hints (see below).
 
 ### Hints Features
 
