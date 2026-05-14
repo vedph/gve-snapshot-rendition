@@ -1,6 +1,6 @@
 # Rendition
 
-The purpose of rendition is to provide an interactive representation of the transformations of a text, as defined by edit operations. Changes and visuals by each operation accumulate on the visualization, operation after operation. Users can navigate forward (adding more changes to the original text) or backward (undoing operations back to the initial base text).
+The purpose of rendition is to provide an interactive representation of the transformations of a text, as defined by edit operations. Changes and visuals by each operation accumulate on the visualization, operation after operation. Users can navigate forward (adding more changes to the original text) or backward (undoing operations back towards the initial base text).
 
 ## SVG Elements
 
@@ -73,15 +73,15 @@ All added elements (added text and hints) are variously sized and positioned rel
 
 Two main factors are used for computing size and position:
 
-- **RBR** (Reference text Bounding Rectangle): the rectangle including all the bounding rectangles of all the subsequent nodes displayed for the text "selected" by an operation. So, if a segment to be deleted is "DE", its bounding rectangle is the rectangle including all the rectangles for "D" and "E". If reference segments happen to be _split_ in multiple lines then there will be _multiple RBR's_, one for each split portion of the text. In this case:
+- **RBR** (_Reference text Bounding Rectangle_): the rectangle including all the bounding rectangles of all the subsequent nodes displayed for the text "selected" by an operation. So, if a segment to be deleted is "DE", its bounding rectangle is the rectangle including all the rectangles for "D" and "E". If reference segments happen to be _split_ in multiple lines then there will be _multiple RBR's_, one for each split portion of the text. In this case:
   - the _additional text_ just refers to the first RBR.
   - the _hint_ is repeated for each RBR, except the hint having a placeholder element.
 
 >The logic of this repetition for hints (and not for additional text or for placeholder hints) is that in most cases hints represent decorations on top of their reference text, e.g. a strikethrough on top of the text being deleted; so, if this text happens to be split between two lines, we still need to apply strikethrough to all the reference text. The exception for the placeholder element is due to the fact that the placeholder element is an element including dynamically defined content (e.g. text) which should not be repeated.
 
-- **EBR** (Element Bounding Rectangle): the bounding rectangle of the element being added. This can be:
-  - for added text: the bounding rectangle containing all the SVG text elements representing the added text. Text is added character by character, so when adding "AB", 2 SVG `text` elements will be added, and the rectangle containing both of them will be the EBR.
-  - for hints: the bounding rectangle containing the root SVG `g` element with all its descendants.
+- **EBR** (_Element Bounding Rectangle_): the bounding rectangle of the element being added. This can be:
+  - for _added text_: the bounding rectangle containing all the SVG text elements representing the added text. Text is added character by character, so when adding "AB", 2 SVG `text` elements will be added, and the rectangle containing both of them will be the EBR.
+  - for _hints_: the bounding rectangle containing the root SVG `g` element with all its descendants.
 
 In the end the renderer must compute EBR and then place it relative to the RBR; so it is a matter of placing two rectangles. Relative position values defined for the added element refer to a position of the EBR "outside" or "inside" the RBR:
 
@@ -135,7 +135,7 @@ The corresponding ASCII-picture diagram is:
 Added text is defined by operation's `value` for those operations which add new text (=add or replace operations):
 
 - its size depends on the text and its style, as defined by current settings and possibly overrides from operation features.
-- its position depends on the reference text, as defined by the operation coordinates (`at` and `run`).
+- its position depends on the RBR.
 
 ### Added Text Features
 
@@ -174,10 +174,10 @@ The hint's **svg property** is a string representing the SVG content of a hint. 
   - an _ordinal number_ suffix preceded by `-`: 1=first hint for that operation, 2=second hint for that operation, etc.
 - inside the root `g` element there is **any SVG code**. Apart from sizing and positioning it, and possibly overriding some of its properties (color, text decorations, etc.), the component will render it as it is.
 - it may contain a **handle** element with `id`=`handle`. This represents the "handle" used as the reference for _positioning_ it (not for sizing it! Handles affect positioning only). Often, in the hint SVG code the handle element has opacity=0 so it's not visible; but this is up to the SVG code. The `showHintHandles` setting can force hidden handles to be displayed (setting their opacity to 1) for diagnostic purposes.
-- it may contain **placeholders** wrapped in `{{...}}` (whiskers) with the name of the feature to get the value from. For instance, `<rect width="100" height="50" fill="{{r_color}}" />` has a placeholder `{{r_color}}` to replace with the value of a feature named `r_color` (or with nothing, when that feature is not found).
+- it may contain **placeholders** wrapped in `{{...}}` (whiskers) with the name of the feature to get the value from. For instance, `<rect width="100" height="50" fill="{{r_color}}" />` has a placeholder `{{r_color}}` to replace with the value of a feature named `r_color` (or with just the placeholder's name, when that feature is not found).
 - it may contain a **text placeholder element** with `id`=`placeholder` and an optional `class="fit"` (when text must be rendered to fit its container element). Hints whose SVG include a placeholder element are named _placeholder hints_. There can be only either 0 or 1 placeholder hints per operation. The placeholder is an SVG element including as child or descendant element a `text` SVG element which represents the text to draw. This text element has this behavior:
-  - its _text value_ is either a literal, or resolved at runtime when within whiskers (like any placeholder). In the latter case, the text element's value is the name of the feature to get the text value from. For instance, `{{note}}` means that the text will be the value of a `note` feature in the same operation. If a feature with this name is not found, the text displayed is the feature name.
-  - its _size_: by default it's equal to the RBR size, variously modified by hint's properties and features overriding them, except for the special case of text placeholder hints (see below).
+  - its _text value_ is either a literal, or resolved at runtime when within whiskers (like any placeholder). In the latter case, the text element's value is the name of the feature to get the text value from. For instance, `<text id="placeholder">{{note}}</text>` means that the text will be the value of a `note` feature in the same operation. If a feature with this name is not found, the text displayed is the feature name.
+  - its _size_ by default is equal to the RBR size, variously modified by hint's properties and features overriding them, except for the special case of text placeholder hints (see below).
 
 ### Hints Features
 
@@ -218,7 +218,7 @@ The rendition logic for added elements is:
       then the resulting text (drawn with current text settings, possibly
       overridden by rendition features) will be sized to fit into rect.
      -->
-    <text id="placeholder">{{note}}</text>
+    <text id="placeholder" class="fit">{{note}}</text>
   </rect>
 </g>
 ```
