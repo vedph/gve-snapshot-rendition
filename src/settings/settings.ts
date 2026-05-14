@@ -139,9 +139,6 @@ export interface GveRenditionSettings {
   /** Dictionary of hints, keyed by hint ID */
   hints: Record<string, OperationHint>;
 
-  /** Margin around each rendered hint in pixels */
-  hintMargin: number;
-
   /** Design-time width used when creating hints */
   hintDesignWidth: number;
 
@@ -271,7 +268,6 @@ export const DEFAULT_SETTINGS: GveRenditionSettings = {
 
   // Hints - empty by default, to be filled by consumer code
   hints: {},
-  hintMargin: 0,
   hintDesignWidth: 300,
   hintDesignHeight: 100,
   showHintHandles: false,

@@ -191,7 +191,13 @@ These rendition features are applicable only to hints:
 - `r_h-rotation`: override hint's `rotation` property.
 - `r_h-displaced-span`: override hint's `desplacedRefSpan` property (for displaced hints).
 
-By default, hint features apply to ALL hints in the operation (those listed by `r_hints` feature), unless the property value starts with `@` followed by a space-delimited list of hint IDs, ended by `:`; in this case, it applies ONLY to those hints matching the list. So, `r_h-position`=`e` applies to ALL hints overriding their `position` property to `e`; while `r_h-position`=`@alpha beta:e` applies ONLY to hints with IDs `alpha` and `beta`, overriding their `position` property to `e`.
+By default, hint features apply to ALL hints in the operation (those listed by `r_hints` feature), unless the property value starts with `@` followed by a space-delimited list of targets, ended by `:`; in this case, it applies ONLY to those hints matching the list. Targets can be:
+
+- **hint key strings**: applies to all hints with that key. E.g., `@alpha beta:e` applies to all hints with key `alpha` or `beta`.
+- **1-based ordinal numbers**: applies to the hint at that position in `r_hints`. E.g., `@1:e` applies only to the first hint, even if multiple hints share the same key.
+- **mixed**: `@1 beta:e` applies to the first hint (by position) and all hints with key `beta`.
+
+When multiple targets match the same hint, ordinal-based overrides take precedence over key-based overrides, which take precedence over the wildcard (no `@` prefix).
 
 ## Rendition Logic
 
@@ -231,8 +237,7 @@ The rendition logic for added elements is:
 (3) **positioning**: the EBR of added elements is positioned with reference to the RBR. As for the initial position:
 
 - for _added text_: set by `r_t-position` feature.
-- for _hints_: set by hint's property `position`, which can be overridden by the `r_h-position` feature. Note that hints SVG can contain a _handle_ element, which overrides the EBR for positioning only (not for sizing). Additionally:
-  - if a hint margin is defined in settings (`hintMargin`), a margin is systematically added to the resulting hint size. For instance, if hints margin is set to 2, a hint has `scale`=1.1, and its reference bounding rectangle is 200x50, this means that the hint will be first scaled to 220x55, and then it will get a 2px margin on each side, whence a final size of 224x59.
+- for _hints_: set by hint's property `position`, which can be overridden by the `r_h-position` feature. Note that hints SVG can contain a _handle_ element, which overrides the EBR for positioning only (not for sizing).
 
 (4) **offsetting**: once the initial position has been computed, it can be offset on X and Y by a specified amount:
 

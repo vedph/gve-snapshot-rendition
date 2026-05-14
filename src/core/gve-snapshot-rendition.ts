@@ -922,7 +922,7 @@ export class GveSnapshotRendition extends HTMLElement {
     operationId: string,
     versionTag: string,
     hintOverrides?: Map<
-      string,
+      string | number,
       import("../rendering/feature-resolver").HintOverrides
     >
   ): Promise<void> {

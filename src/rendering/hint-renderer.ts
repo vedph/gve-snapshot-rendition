@@ -66,7 +66,7 @@ export class HintRenderer {
     hintOrdinal: number,
     allBaseNodes: CharNode[],
     versionTag: string,
-    hintOverrides?: Map<string, HintOverrides>,
+    hintOverrides?: Map<string | number, HintOverrides>,
     panZoomInstance?: any,
     viewportWidth?: number,
     viewportHeight?: number
@@ -76,10 +76,11 @@ export class HintRenderer {
 
     try {
       // 1. Apply r_h-* overrides to hint properties
-      // Overrides can target this specific hint or all hints ("*")
+      // Overrides can target this specific hint (by key or ordinal) or all hints ("*")
       const effectiveHint = this.applyHintOverrides(
         hint,
         hintId,
+        hintOrdinal,
         hintOverrides,
         allBaseNodes
       );
@@ -392,17 +393,6 @@ export class HintRenderer {
       });
     }
 
-    // Apply hint margin
-    if (this._settings.hintMargin > 0) {
-      width += this._settings.hintMargin * 2;
-      height += this._settings.hintMargin * 2;
-
-      this._logger.debug(
-        "HintRenderer",
-        `Applied hint margin: ${this._settings.hintMargin}px`
-      );
-    }
-
     // Calculate scale factors based on current hint size
     const currentBBox = getSafeBBox(hintGroup);
     const scaleX = currentBBox.width > 0 ? width / currentBBox.width : 1;
@@ -638,18 +628,20 @@ export class HintRenderer {
 
   /**
    * Apply r_h-* overrides to hint properties.
-   * Overrides can target specific hints or all hints ("*").
+   * Priority (lowest to highest): wildcard ("*") < key-based < ordinal-based.
    *
    * @param hint - Original hint design
-   * @param hintId - ID of the hint being rendered
-   * @param hintOverrides - Map of overrides from r_h-* features
+   * @param hintId - ID (key) of the hint being rendered
+   * @param hintOrdinal - 1-based ordinal position of this hint within the operation
+   * @param hintOverrides - Map of overrides from r_h-* features (keyed by ID string or ordinal number)
    * @param allBaseNodes - All base nodes for displaced span resolution
    * @returns Modified hint with overrides applied
    */
   private applyHintOverrides(
     hint: OperationHint,
     hintId: string,
-    hintOverrides: Map<string, HintOverrides> | undefined,
+    hintOrdinal: number,
+    hintOverrides: Map<string | number, HintOverrides> | undefined,
     allBaseNodes: CharNode[]
   ): OperationHint {
     if (!hintOverrides || hintOverrides.size === 0) {
@@ -659,14 +651,16 @@ export class HintRenderer {
     // Clone hint to avoid modifying original
     const effectiveHint = { ...hint };
 
-    // Check for overrides targeting this specific hint or all hints
-    const specificOverride = hintOverrides.get(hintId);
+    // Look up overrides by wildcard, key, and ordinal; merge in priority order
     const wildcardOverride = hintOverrides.get("*");
+    const specificOverride = hintOverrides.get(hintId);
+    const ordinalOverride = hintOverrides.get(hintOrdinal);
 
-    // Apply wildcard overrides first, then specific overrides (so specific wins)
+    // Ordinal (most specific) wins over key-specific, which wins over wildcard
     const override = {
       ...wildcardOverride,
       ...specificOverride,
+      ...ordinalOverride,
     };
 
     // Apply each override property

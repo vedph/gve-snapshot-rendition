@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- 2026-05-14:
+  - ⚠️ removed obsolete hint margins.
+  - 🆕 added target hint selection by ordinal next to that by key.
+  - planned new design for text placeholder hints (yet to be implemented).
+
 ## [2.0.0]
 
 - 2026-05-13:

@@ -48,7 +48,8 @@ export interface RenditionConfig {
   hints?: string[]; // Array of hint IDs from r_hints
 
   // r_h-* hint overrides (applies to hints in operation)
-  hintOverrides?: Map<string, HintOverrides>; // key=hint ID, value=overrides
+  // key is a hint ID string, a 1-based ordinal number, or "*" for all hints
+  hintOverrides?: Map<string | number, HintOverrides>;
 
   hintVars?: Map<string, string>;
 }
@@ -105,7 +106,7 @@ export class FeatureResolver {
     config.hintVars = new Map<string, string>();
 
     // Initialize hintOverrides map for r_h-* features
-    config.hintOverrides = new Map<string, HintOverrides>();
+    config.hintOverrides = new Map<string | number, HintOverrides>();
 
     // Extract ALL features from reference nodes for placeholder resolution.
     // This includes features like "note", "group", etc. that don't have r_ prefix.
@@ -284,7 +285,9 @@ export class FeatureResolver {
 
   /**
    * Parse r_h-* hint override features.
-   * Format: "value" applies to all hints, or "@hintId1 hintId2:value" applies to specific hints.
+   * Format: "value" applies to all hints, or "@target1 target2:value" applies to specific hints.
+   * Targets can be hint ID strings or 1-based ordinal integers (e.g., "@1 beta:e" targets
+   * the first hint by position and all hints with key "beta"). Numbers and keys can be mixed.
    *
    * @param featureName - The feature name (e.g., "r_h-position")
    * @param value - The feature value
@@ -299,15 +302,20 @@ export class FeatureResolver {
     const propertyName = featureName.substring(4); // Remove "r_h-"
 
     // Parse value to check if it targets specific hints
-    let targetHints: string[] | null = null; // null = all hints
+    // null = all hints; otherwise an array of string keys and/or numeric ordinals
+    let targetHints: (string | number)[] | null = null;
     let actualValue = value;
 
     if (value.startsWith("@")) {
-      // Format: "@hintId1 hintId2:value"
+      // Format: "@target1 target2:value" where targets are hint IDs or 1-based ordinals
       const colonIndex = value.indexOf(":");
       if (colonIndex > 0) {
         const hintIdsStr = value.substring(1, colonIndex); // Remove "@" and get up to ":"
-        targetHints = hintIdsStr.trim().split(/\s+/);
+        targetHints = hintIdsStr.trim().split(/\s+/).map((token) => {
+          const n = parseInt(token, 10);
+          // Use numeric key for pure integer tokens (ordinal-based targeting)
+          return !isNaN(n) && String(n) === token ? n : token;
+        });
         actualValue = value.substring(colonIndex + 1);
       } else {
         this._logger.warn(
@@ -317,16 +325,16 @@ export class FeatureResolver {
       }
     }
 
-    // If no hints defined yet in config, we'll still store the override
-    // It will be applied when hints are processed
-    const hints = targetHints || (config.hints ? config.hints : ["*"]);
+    // If no hints defined yet in config, we'll still store the override.
+    // It will be applied when hints are processed.
+    const hints: (string | number)[] = targetHints ?? (config.hints ?? ["*"]);
 
-    for (const hintId of hints) {
-      // Get or create override object for this hint
-      let override = config.hintOverrides!.get(hintId);
+    for (const hintKey of hints) {
+      // Get or create override object for this hint key / ordinal
+      let override = config.hintOverrides!.get(hintKey);
       if (!override) {
         override = {};
-        config.hintOverrides!.set(hintId, override);
+        config.hintOverrides!.set(hintKey, override);
       }
 
       // Set the property value
@@ -364,7 +372,7 @@ export class FeatureResolver {
 
       this._logger.debug(
         "FeatureResolver",
-        `Added hint override for ${hintId}: ${propertyName}=${actualValue}`
+        `Added hint override for ${hintKey}: ${propertyName}=${actualValue}`
       );
     }
   }
