@@ -297,12 +297,36 @@ export class TextRenderer {
     const offsetX = parseOffset(config.textOffsetX || 0, rbr.height, rbr.width);
     const offsetY = parseOffset(config.textOffsetY || 0, rbr.height, rbr.width);
 
-    const baseX = targetPos.x + offsetX;
+    // Pre-calculate text width to correctly align the EBR with the RBR target point.
+    // calculateTargetPosition returns the RBR alignment point, but the text renderer
+    // lays characters left-to-right from baseX, so we must shift left so the intended
+    // edge or center of the EBR lands on that point.
+    //   n/s/c/o: horizontal centers of EBR and RBR must coincide → shift left by half width
+    //   w/nw/sw: EBR right edge at RBR target X → shift left by full width
+    const textWidth = this.calculateTotalTextWidth(nodes);
+    let alignedX = targetPos.x;
+    switch (position) {
+      case "n":
+      case "s":
+      case "c":
+      case "o":
+        alignedX -= textWidth / 2;
+        break;
+      case "w":
+      case "nw":
+      case "sw":
+        alignedX -= textWidth;
+        break;
+    }
+
+    const baseX = alignedX + offsetX;
     const baseY = targetPos.y + offsetY;
 
     this._logger.debug("TextRenderer", `Text position calculated`, {
       position,
       targetPos,
+      textWidth,
+      alignedX,
       offsets: { x: offsetX, y: offsetY },
       base: { x: baseX, y: baseY },
     });
@@ -524,6 +548,43 @@ export class TextRenderer {
       default:
         return { x: centerX, y: centerY };
     }
+  }
+
+  /**
+   * Calculate total rendered width of additional text nodes.
+   * Mirrors the spacing logic in calculateAdditionalTextPositions so the result
+   * is the exact horizontal span from the first character's left edge to the last
+   * character's right edge.
+   */
+  private calculateTotalTextWidth(nodes: CharNode[]): number {
+    let totalWidth = 0;
+    let count = 0;
+
+    for (const node of nodes) {
+      if (isLineBreak(node)) continue;
+      if (isSpace(node)) {
+        totalWidth += this._settings.fontSize * 0.33 + this._settings.charSpacing;
+        count++;
+        continue;
+      }
+      const charWidth = getTextWidth(
+        node.data,
+        this._settings.fontFamily,
+        this._settings.fontSize,
+        this._settings.bold,
+        this._settings.italic,
+        this._measurementRoot,
+      );
+      totalWidth += charWidth + this._settings.charSpacing;
+      count++;
+    }
+
+    // charSpacing is added after every character; remove the trailing one
+    if (count > 0) {
+      totalWidth -= this._settings.charSpacing;
+    }
+
+    return Math.max(0, totalWidth);
   }
 
   /**
