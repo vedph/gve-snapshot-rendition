@@ -85,7 +85,7 @@
       "svg": "<g><text x=\"0\" y=\"0\" font-family=\"Arial\" font-size=\"14\" fill=\"{{r_fore-color}}\" id=\"placeholder\">{{note}}</text></g>",
       "position": "n",
       "offsetX": 0,
-      "offsetY": 14,
+      "offsetY": 4,
       "scaleX": 1,
       "scaleY": 1,
       "rotation": 0,

@@ -97,9 +97,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
         animation: "#wipe-right",
       },
+      "line-bottom-dotted": {
+        svg: `<g>
+  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" stroke-linecap="round" stroke-dasharray="0 16"/>
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+
+        animation: "#wipe-right",
+      },
       "line-top": {
         svg: `<g>
   <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="2" />
+</g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+
+        animation: "#wipe-right",
+      },
+      "line-top-dotted": {
+        svg: `<g>
+  <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="2" stroke-linecap="round" stroke-dasharray="0 16"/>
 </g>`,
         position: "o",
         offsetX: 0,

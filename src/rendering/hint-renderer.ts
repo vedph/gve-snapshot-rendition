@@ -123,6 +123,12 @@ export class HintRenderer {
 
       // 5. Check if this is a placeholder hint
       const hasPlaceholder = hintGroup.querySelector("#placeholder") !== null;
+      // Default-mode placeholder: a placeholder element WITHOUT class="fit".
+      // Per documentation, in default mode the text keeps its natural size and the
+      // container (if any) scales to fit it — meaning no RBR-based scaling is applied.
+      // Fit-mode placeholders still scale the hint to the RBR normally.
+      const isDefaultPlaceholder = hasPlaceholder &&
+        !hintGroup.querySelector("#placeholder")?.classList.contains("fit");
 
       // 6. Render hint for each RBR (unless it's a placeholder hint and already rendered once)
       let placeholderRendered = false;
@@ -157,6 +163,14 @@ export class HintRenderer {
           effectiveHint,
           rbr
         );
+
+        // For default-mode placeholder hints the text drives the size, not the RBR.
+        // Override any RBR-derived scale so the hint keeps its natural rendered size.
+        // The EBR (measured from the natural-size hint) is then used to center it.
+        if (isDefaultPlaceholder) {
+          scalingInfo.scaleX = 1;
+          scalingInfo.scaleY = 1;
+        }
 
         // 9. Apply scale and rotation transforms to prepare the hint
         await this.applyHintSizeTransforms(

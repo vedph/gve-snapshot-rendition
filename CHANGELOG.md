@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - ⚠️ removed obsolete hint margins.
   - 🆕 added target hint selection by ordinal next to that by key.
   - planned new design for text placeholder hints (yet to be implemented).
+  - fixed issues with horizontal centering of added text/hints.
+  - adjusted hint offset for `note-interlinear-above`.
 
 ## [2.0.0]
 
