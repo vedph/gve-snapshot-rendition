@@ -10,7 +10,7 @@ This too, is another line
 :operations
 35: [r_char-offsets="35:x=100 70:x=100"]
 1x3- [r_hints=diagonal-stroke r_fore-color=red]
-4=T [r_t-position=n r_fore-color=red r_font-size=14]
+4=T [r_t-position=s r_fore-color=red r_font-size=14]
 14x2- [r_hints=diagonal-stroke r_fore-color=red]
 19+]s [r_t-position=ne r_fore-color=red r_font-size=14]
 64x4: @swap-complex-long [note=1 r_hints=note-interlinear-above r_fore-color=red]
@@ -18,12 +18,12 @@ This too, is another line
 52x7: @swap-complex-long [note=3 r_hints=note-interlinear-above r_fore-color=red]
 52x7<>64x4 [r_fore-color=red *version^=alpha]
 40- @add-stuff [r_hints=diagonal-stroke r_fore-color=green]
-39+]" AND SOME STUFF." @add-stuff [r_t-position=e r_t-offset-y=0.4th r_fore-color=green]
+39+]" AND SOME STUFF." @add-stuff [r_t-position=e r_fore-color=green]
 107x6: @stuff-hints [r_hints=box r_fore-color=green]
 107x6=HINTS.@stuff-hints [r_t-position=n r_fore-color=green r_position=n r_t-displaced-span=21x7 r_t-offset-y=-30 r_hints=box]
 113x6: @stuff-hints [r_hints=box r_fore-color=green]
 75x5- @mov-too
-94+]" TOO."@mov-too [r_t-position=e r_t-offset-x=20 r_t-offset-y=0.4th r_fore-color=green *version^=beta]
+94+]" TOO."@mov-too [r_t-position=e r_t-offset-x=20 r_fore-color=green *version^=beta]
 1: [note=12 r_t-fore-color=blue r_fore-color=blue r_hints=note-underline r_h-scale-x=2 r_h-rotation=-45]
 
 :dsc

@@ -7,6 +7,7 @@ import { TextLayout, CharPosition } from "./text-layout";
 import { RenditionConfig } from "./feature-resolver";
 import { isLineBreak, isSpace, getNodeSpan } from "../utils/node-utils";
 import {
+  createSVGElement,
   createTextElement,
   applyTextStyle,
   getSafeBBox,
@@ -289,66 +290,90 @@ export class TextRenderer {
 
     this._logger.debug("TextRenderer", `Using RBR for positioning`, rbr);
 
-    // 2. Calculate text position based on r_t-position + offsets
-    const position = config.textPosition || "o"; // Default to origin if not specified
-    const targetPos = this.calculateTargetPosition(position, rbr);
-
-    // Parse offsets using RBR bounds (offsets can be like "0.5th" = half of RBR height)
+    // 2. Calculate position and offsets
+    const position = config.textPosition || "o";
     const offsetX = parseOffset(config.textOffsetX || 0, rbr.height, rbr.width);
     const offsetY = parseOffset(config.textOffsetY || 0, rbr.height, rbr.width);
 
-    // Pre-calculate text width to correctly align the EBR with the RBR target point.
-    // calculateTargetPosition returns the RBR alignment point, but the text renderer
-    // lays characters left-to-right from baseX, so we must shift left so the intended
-    // edge or center of the EBR lands on that point.
-    //   n/s/c/o: horizontal centers of EBR and RBR must coincide → shift left by half width
-    //   w/nw/sw: EBR right edge at RBR target X → shift left by full width
-    const textWidth = this.calculateTotalTextWidth(nodes);
-    let alignedX = targetPos.x;
-    switch (position) {
-      case "n":
-      case "s":
-      case "c":
-      case "o":
-        alignedX -= textWidth / 2;
-        break;
-      case "w":
-      case "nw":
-      case "sw":
-        alignedX -= textWidth;
-        break;
+    // 3. Render characters at preliminary positions (baseline y=0) into a hidden
+    //    temporary group so we can measure the actual visual EBR via getBBox().
+    //    This mirrors the hint renderer's approach: render → measure → reposition.
+    //    Using config font metrics here ensures correct character widths.
+    const initialPositions = this.calculateAdditionalTextPositions(nodes, 0, 0, config);
+
+    const tempGroup = createSVGElement("g");
+    tempGroup.setAttribute("visibility", "hidden");
+    rootSvg.appendChild(tempGroup);
+
+    const measuredElements: Array<{ el: SVGTextElement; node: CharNode; initX: number; initY: number }> = [];
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+      const pos = initialPositions[i];
+      if (isLineBreak(node) || isSpace(node)) continue;
+
+      const textEl = createTextElement(node.data, {
+        id: `n_${node.id}`,
+        class: `node version-${versionTag}`,
+        x: pos.x,
+        y: pos.y,
+      });
+      applyTextStyle(textEl, {
+        fontFamily: config.fontFamily,
+        fontSize: config.fontSize,
+        foreColor: config.foreColor,
+        backColor: config.backColor,
+        italic: config.italic,
+        bold: config.bold,
+      });
+      tempGroup.appendChild(textEl);
+      measuredElements.push({ el: textEl, node, initX: pos.x, initY: pos.y });
     }
 
-    const baseX = alignedX + offsetX;
-    const baseY = targetPos.y + offsetY;
+    // 4. Measure actual visual EBR from the temp group
+    const ebrBbox = getSafeBBox(tempGroup);
+    const ebr: BoundingRect = {
+      x: ebrBbox.x,
+      y: ebrBbox.y,
+      width: ebrBbox.width,
+      height: ebrBbox.height,
+      right: ebrBbox.x + ebrBbox.width,
+      bottom: ebrBbox.y + ebrBbox.height,
+    };
+
+    // 5. Compute translation: align EBR with RBR using the same logic as hints
+    const rbrAlignPoint = this.calculateRBRAlignmentPoint(position, rbr);
+    const ebrAlignPoint = this.calculateEBRAlignmentPoint(position, ebr);
+    const dx = rbrAlignPoint.x - ebrAlignPoint.x + offsetX;
+    const dy = rbrAlignPoint.y - ebrAlignPoint.y + offsetY;
+
+    tempGroup.remove();
 
     this._logger.debug("TextRenderer", `Text position calculated`, {
       position,
-      targetPos,
-      textWidth,
-      alignedX,
+      rbr,
+      ebr,
+      rbrAlignPoint,
+      ebrAlignPoint,
       offsets: { x: offsetX, y: offsetY },
-      base: { x: baseX, y: baseY },
+      translation: { dx, dy },
     });
 
-    // 3. Calculate positions for each character
-    const positions = this.calculateAdditionalTextPositions(
-      nodes,
-      baseX,
-      baseY,
-    );
+    // 6. Compute final textBounds for prolog check
+    const textBounds: BoundingRect = {
+      x: ebr.x + dx,
+      y: ebr.y + dy,
+      width: ebr.width,
+      height: ebr.height,
+      right: ebr.right + dx,
+      bottom: ebr.bottom + dy,
+    };
 
-    // 4. Calculate bounding rectangle for the text (needed for prolog)
-    const textBounds = this.calculateTextBounds(nodes, positions);
-
-    // 5. Check if prolog panning is needed (element visibility check)
-    // This must happen AFTER positioning, but BEFORE rendering characters
+    // 7. Check if prolog panning is needed
     if (
       panZoomInstance &&
       viewportWidth &&
       viewportHeight &&
-      this._settings.prologDuration > 0 &&
-      textBounds
+      this._settings.prologDuration > 0
     ) {
       const isVisible = this._animationEngine.isElementVisible(
         textBounds,
@@ -372,7 +397,7 @@ export class TextRenderer {
       }
     }
 
-    // 6. Get animation function if specified
+    // 8. Get animation function if specified
     const animationFn = this._settings.charAnimationId
       ? this._animationEngine
           .getFactory()
@@ -383,24 +408,20 @@ export class TextRenderer {
           )
       : undefined;
 
-    // 7. Render each character with features
-    for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i];
-      const pos = positions[i];
+    // 9. Move each element to its final position and add to the SVG
+    for (const { el, node, initX, initY } of measuredElements) {
+      el.setAttribute("x", String(initX + dx));
+      el.setAttribute("y", String(initY + dy));
 
-      // Skip rendering for line breaks and spaces
-      if (isLineBreak(node) || isSpace(node)) {
-        continue;
+      rootSvg.appendChild(el);
+
+      const bbox = getSafeBBox(el);
+      this._boundsCache.set(`n_${node.id}`, bbox);
+
+      if (animationFn) {
+        el.style.opacity = "0";
+        await this._animationEngine.animate(el, animationFn, rootSvg);
       }
-
-      await this.renderCharacter(
-        node,
-        pos,
-        rootSvg,
-        versionTag,
-        animationFn,
-        config,
-      );
     }
 
     this._logger.timeEnd(`renderAdditionalText-${versionTag}`);
@@ -409,62 +430,104 @@ export class TextRenderer {
   /**
    * Calculate positions for additional text characters.
    * Additional text flows left to right from the base position.
+   * When config is provided its font metrics are used for character width
+   * measurement, matching what applyTextStyle will actually render.
    */
   private calculateAdditionalTextPositions(
     nodes: CharNode[],
     baseX: number,
     baseY: number,
+    config?: RenditionConfig,
   ): CharPosition[] {
     const positions: CharPosition[] = [];
     let currentX = baseX;
     const currentY = baseY;
 
+    const fontSize = config?.fontSize ?? this._settings.fontSize;
+    const fontFamily = config?.fontFamily ?? this._settings.fontFamily;
+    const bold = config?.bold ?? this._settings.bold;
+    const italic = config?.italic ?? this._settings.italic;
+
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
 
       if (isLineBreak(node)) {
-        // Line breaks in additional text just get stored but don't render
-        positions.push({
-          x: currentX,
-          y: currentY,
-          nodeId: node.id,
-          lineNumber: 0,
-        });
+        positions.push({ x: currentX, y: currentY, nodeId: node.id, lineNumber: 0 });
       } else if (isSpace(node)) {
-        // Space: advance by space width
-        const spaceWidth = this._settings.fontSize * 0.33;
-        positions.push({
-          x: currentX,
-          y: currentY,
-          nodeId: node.id,
-          lineNumber: 0,
-        });
+        const spaceWidth = fontSize * 0.33;
+        positions.push({ x: currentX, y: currentY, nodeId: node.id, lineNumber: 0 });
         currentX += spaceWidth + this._settings.charSpacing;
       } else {
-        // Regular character
-        positions.push({
-          x: currentX,
-          y: currentY,
-          nodeId: node.id,
-          lineNumber: 0,
-        });
-
-        // Calculate character width for next position
-        // Use measurement root for consistent font metrics with actual rendering
+        positions.push({ x: currentX, y: currentY, nodeId: node.id, lineNumber: 0 });
         const charWidth = getTextWidth(
           node.data,
-          this._settings.fontFamily,
-          this._settings.fontSize,
-          this._settings.bold,
-          this._settings.italic,
+          fontFamily,
+          fontSize,
+          bold,
+          italic,
           this._measurementRoot,
         );
-
         currentX += charWidth + this._settings.charSpacing;
       }
     }
 
     return positions;
+  }
+
+  /**
+   * Calculate the RBR anchor point for a given position type.
+   * This is the point on the RBR where the corresponding EBR point will land.
+   */
+  private calculateRBRAlignmentPoint(
+    position: string,
+    rbr: BoundingRect,
+  ): { x: number; y: number } {
+    const centerX = rbr.x + rbr.width / 2;
+    const centerY = rbr.y + rbr.height / 2;
+    switch (position) {
+      case "n":   return { x: centerX,   y: rbr.y      };
+      case "ne":  return { x: rbr.right, y: rbr.y      };
+      case "e":   return { x: rbr.right, y: centerY    };
+      case "se":  return { x: rbr.right, y: rbr.bottom };
+      case "s":   return { x: centerX,   y: rbr.bottom };
+      case "sw":  return { x: rbr.x,     y: rbr.bottom };
+      case "w":   return { x: rbr.x,     y: centerY    };
+      case "nw":  return { x: rbr.x,     y: rbr.y      };
+      case "inw": return { x: rbr.x,     y: rbr.y      };
+      case "ine": return { x: rbr.right, y: rbr.y      };
+      case "isw": return { x: rbr.x,     y: rbr.bottom };
+      case "ise": return { x: rbr.right, y: rbr.bottom };
+      case "o":
+      default:    return { x: centerX,   y: centerY    };
+    }
+  }
+
+  /**
+   * Calculate the EBR anchor point for a given position type.
+   * This is the point on the EBR that should coincide with the RBR anchor point.
+   */
+  private calculateEBRAlignmentPoint(
+    position: string,
+    ebr: BoundingRect,
+  ): { x: number; y: number } {
+    const centerX = ebr.x + ebr.width / 2;
+    const centerY = ebr.y + ebr.height / 2;
+    switch (position) {
+      case "n":   return { x: centerX,   y: ebr.bottom };
+      case "ne":  return { x: ebr.x,     y: ebr.bottom };
+      case "e":   return { x: ebr.x,     y: centerY    };
+      case "se":  return { x: ebr.x,     y: ebr.y      };
+      case "s":   return { x: centerX,   y: ebr.y      };
+      case "sw":  return { x: ebr.right, y: ebr.y      };
+      case "w":   return { x: ebr.right, y: centerY    };
+      case "nw":  return { x: ebr.right, y: ebr.bottom };
+      case "inw": return { x: ebr.x,     y: ebr.y      };
+      case "ine": return { x: ebr.right, y: ebr.y      };
+      case "isw": return { x: ebr.x,     y: ebr.bottom };
+      case "ise": return { x: ebr.right, y: ebr.bottom };
+      case "o":
+      default:    return { x: centerX,   y: centerY    };
+    }
   }
 
   /**
@@ -515,119 +578,6 @@ export class TextRenderer {
     }
 
     return rbrs;
-  }
-
-  /**
-   * Calculate target position on the RBR based on position type.
-   */
-  private calculateTargetPosition(
-    position: string,
-    rbr: BoundingRect,
-  ): { x: number; y: number } {
-    const centerX = rbr.x + rbr.width / 2;
-    const centerY = rbr.y + rbr.height / 2;
-
-    switch (position) {
-      case "n": // North (top center)
-        return { x: centerX, y: rbr.y };
-      case "ne": // Northeast (top right)
-        return { x: rbr.right, y: rbr.y };
-      case "e": // East (middle right)
-        return { x: rbr.right, y: centerY };
-      case "se": // Southeast (bottom right)
-        return { x: rbr.right, y: rbr.bottom };
-      case "s": // South (bottom center)
-        return { x: centerX, y: rbr.bottom };
-      case "sw": // Southwest (bottom left)
-        return { x: rbr.x, y: rbr.bottom };
-      case "w": // West (middle left)
-        return { x: rbr.x, y: centerY };
-      case "nw": // Northwest (top left)
-        return { x: rbr.x, y: rbr.y };
-      case "o": // Origin (center)
-      default:
-        return { x: centerX, y: centerY };
-    }
-  }
-
-  /**
-   * Calculate total rendered width of additional text nodes.
-   * Mirrors the spacing logic in calculateAdditionalTextPositions so the result
-   * is the exact horizontal span from the first character's left edge to the last
-   * character's right edge.
-   */
-  private calculateTotalTextWidth(nodes: CharNode[]): number {
-    let totalWidth = 0;
-    let count = 0;
-
-    for (const node of nodes) {
-      if (isLineBreak(node)) continue;
-      if (isSpace(node)) {
-        totalWidth += this._settings.fontSize * 0.33 + this._settings.charSpacing;
-        count++;
-        continue;
-      }
-      const charWidth = getTextWidth(
-        node.data,
-        this._settings.fontFamily,
-        this._settings.fontSize,
-        this._settings.bold,
-        this._settings.italic,
-        this._measurementRoot,
-      );
-      totalWidth += charWidth + this._settings.charSpacing;
-      count++;
-    }
-
-    // charSpacing is added after every character; remove the trailing one
-    if (count > 0) {
-      totalWidth -= this._settings.charSpacing;
-    }
-
-    return Math.max(0, totalWidth);
-  }
-
-  /**
-   * Calculate bounding rectangle for a set of positioned characters.
-   */
-  private calculateTextBounds(
-    nodes: CharNode[],
-    positions: CharPosition[],
-  ): BoundingRect | null {
-    if (nodes.length === 0) return null;
-
-    // We need to estimate bounds before rendering
-    // Use approximate character dimensions based on settings
-    const charWidth = this._settings.fontSize * 0.6; // Approximate
-    const charHeight = this._settings.fontSize;
-
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-
-    for (let i = 0; i < nodes.length; i++) {
-      const pos = positions[i];
-      const node = nodes[i];
-
-      if (isLineBreak(node) || isSpace(node)) continue;
-
-      minX = Math.min(minX, pos.x);
-      minY = Math.min(minY, pos.y - charHeight);
-      maxX = Math.max(maxX, pos.x + charWidth);
-      maxY = Math.max(maxY, pos.y);
-    }
-
-    if (!isFinite(minX)) return null;
-
-    return {
-      x: minX,
-      y: minY,
-      width: maxX - minX,
-      height: maxY - minY,
-      right: maxX,
-      bottom: maxY,
-    };
   }
 
   /**

@@ -71,7 +71,7 @@
       },
       {
         "operation": {
-          "dsl": "4×1=\"T\" [r_t-position=n r_fore-color=red r_font-size=14]",
+          "dsl": "4×1=\"T\" [r_t-position=s r_fore-color=red r_font-size=14]",
           "toAsIndex": false,
           "to": 0,
           "toRun": 0,
@@ -90,7 +90,7 @@
               "isShortLived": false,
               "setPolicy": 0,
               "name": "r_t-position",
-              "value": "n"
+              "value": "s"
             },
             {
               "isNegated": false,
@@ -421,7 +421,7 @@
       },
       {
         "operation": {
-          "dsl": "39×0+]\" AND SOME STUFF.\"@add-stuff [r_t-position=e r_t-offset-y=0.4th r_fore-color=green]",
+          "dsl": "39×0+]\" AND SOME STUFF.\"@add-stuff [r_t-position=e r_fore-color=green]",
           "toAsIndex": false,
           "to": 0,
           "toRun": 0,
@@ -641,7 +641,7 @@
       },
       {
         "operation": {
-          "dsl": "94×0+]\" TOO.\"@mov-too [r_t-position=e r_t-offset-x=20 r_t-offset-y=0.4th r_fore-color=green *version^=beta]",
+          "dsl": "94×0+]\" TOO.\"@mov-too [r_t-position=e r_t-offset-x=20 r_fore-color=green *version^=beta]",
           "toAsIndex": false,
           "to": 0,
           "toRun": 0,
