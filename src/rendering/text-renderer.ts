@@ -240,7 +240,7 @@ export class TextRenderer {
 
     // Apply r_t-value override if specified
     // This overrides the operation's value (the text being added) for display only
-    if (config.textValue) {
+    if (config.textValue !== null && config.textValue !== undefined) {
       this._logger.debug(
         "TextRenderer",
         `Applying r_t-value override: "${config.textValue}" (original text had ${nodes.length} characters)`,

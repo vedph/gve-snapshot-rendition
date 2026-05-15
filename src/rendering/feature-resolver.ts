@@ -43,7 +43,7 @@ export interface RenditionConfig {
   textOffsetX: number | string;      // r_t-offset-x (can be string like "0.5th" for relative offsets)
   textOffsetY: number | string;      // r_t-offset-y (can be string like "0.5th" for relative offsets)
   textDisplacedSpan?: { nodeId: number; count: number }; // r_t-displaced-span
-  textValue?: string;       // r_t-value (display-only override for operation value)
+  textValue?: string;       // r_t-value (display-only override for operation value - including empty string)
 
   hints?: string[]; // Array of hint IDs from r_hints
 

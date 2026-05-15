@@ -145,7 +145,7 @@ These rendition features are applicable only to added text:
 - `r_t-offset-x`: X offset for the added text, relative to the computed `r_t-position`.
 - `r_t-offset-y`: Y offset for the added text, relative to the computed `r_t-position`.
 - `r_t-displaced-span`: a span of base text with format `IDxN` where `ID`=node ID and `N`=count of chars to include, to be used as the RBR instead of the default RBR. This works exactly like a displaced hint, but is applied to added text.
-- `r_t-value`: a display-only override for the text value of the operation (which is an operation introducing new text, and thus having this text in its `value` property -- i.e. an add or replace operation). This overrides the operation's `value` property which contains the added text so that something different can be displayed.
+- `r_t-value`: a display-only override for the text value of the operation (which is an operation introducing new text, and thus having this text in its `value` property -- i.e. an add or replace operation). This overrides the operation's `value` property which contains the added text so that something different can be displayed. Note that this value can be an empty string.
 
 ## Hints
 
