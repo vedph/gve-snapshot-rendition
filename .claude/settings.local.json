@@ -14,7 +14,9 @@
       "Bash(npm run build:*)",
       "Bash(grep:*)",
       "Bash(pnpm install:*)",
-      "Bash(pnpm remove:*)"
+      "Bash(pnpm remove:*)",
+      "Bash(node -e \"const d = require\\('./data/default.data.json'\\); console.log\\('steps:', d.result.steps.length, 'nodes:', d.nodes.length\\)\")",
+      "Bash(node -e \"const d = require\\('./data/default.data.json'\\); console.log\\(JSON.stringify\\(Object.keys\\(d\\)\\).substring\\(0, 200\\)\\)\")"
     ],
     "deny": [],
     "ask": []

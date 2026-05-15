@@ -4,6 +4,7 @@ This file format is based on [Keep a Changelog](https://keepachangelog.com/en/1.
 
 - 2026-05-15:
   - properly deal with empty `r_t-value`.
+  - fixes to added text position.
 
 ## [2.0.1]
 
