@@ -10,7 +10,7 @@ Rendered entities are:
 
 - **base text** (text from version `v0`). The start input text, rendered all at once at start, character by character from left to right, and line by line from top to bottom (text never wraps). Base text appears all at once unless `charAnimationId` setting is set to an animation ID to use for rendering it one character at a time.
 - **added text** is rendered character by character and line by line, but its position and size are calculated according to its reference base text, text rendition properties, and operation features.
-- **hints**: defined by operation features. A hint is a SVG `g` element with any content and optional placeholders.
+- **hints**: defined by operation features. A hint is an SVG `g` element with any content and optional placeholders.
 
 Rendered SVG elements are:
 
