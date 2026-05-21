@@ -326,9 +326,16 @@ export class GveHintDesigner extends HTMLElement {
     );
     clearDataBtn.classList.add("btn-danger");
 
+    const exportInkscapeBtn = this.createButton(
+      "export-inkscape",
+      "external-link",
+      "Export hint to InkScape SVG"
+    );
+
     dataGroup.appendChild(saveDataBtn);
     dataGroup.appendChild(loadDataBtn);
     dataGroup.appendChild(clearDataBtn);
+    dataGroup.appendChild(exportInkscapeBtn);
     toolbar.appendChild(dataGroup);
 
     return toolbar;
@@ -966,6 +973,7 @@ export class GveHintDesigner extends HTMLElement {
     this.addClickListener("save-data", () => this.saveData());
     this.addClickListener("load-data", () => this.loadData());
     this.addClickListener("clear-data", () => this.clearData());
+    this.addClickListener("export-inkscape", () => this.exportToInkscape());
 
     // Timeline player
     this.addClickListener("play", () => this.playAnimation());
@@ -2420,6 +2428,86 @@ export class GveHintDesigner extends HTMLElement {
     this.clearHintForm();
     this.showMessage("All data cleared", "success");
     this._logger.info("Data cleared");
+  }
+
+  /**
+   * Export the current hint as an InkScape-compatible SVG file.
+   */
+  private exportToInkscape(): void {
+    if (!this._hintId) {
+      this.showMessage("No hint selected!", "error");
+      return;
+    }
+
+    const hint = this._data.hints[this._hintId];
+    if (!hint?.svg) {
+      this.showMessage("No SVG to export!", "error");
+      return;
+    }
+
+    const w = this._settings.hintDesignWidth;
+    const h = this._settings.hintDesignHeight;
+    const hw = w / 2;
+    const hh = h / 2;
+
+    const resolvedSvg = this.resolveVariables(hint.svg);
+    const unresolvedMatches = resolvedSvg.match(/\{\{[^}]+\}\}/g);
+
+    const svgContent =
+      `<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n` +
+      `<svg\n` +
+      `   width="${w}"\n` +
+      `   height="${h}"\n` +
+      `   viewBox="0 0 ${w} ${h}"\n` +
+      `   version="1.1"\n` +
+      `   id="svg1"\n` +
+      `   sodipodi:docname="${this._hintId}.svg"\n` +
+      `   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"\n` +
+      `   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"\n` +
+      `   xmlns="http://www.w3.org/2000/svg"\n` +
+      `   xmlns:svg="http://www.w3.org/2000/svg">\n` +
+      `  <sodipodi:namedview\n` +
+      `     id="namedview1"\n` +
+      `     pagecolor="#ffffff"\n` +
+      `     bordercolor="#000000"\n` +
+      `     borderopacity="0.25"\n` +
+      `     inkscape:showpageshadow="2"\n` +
+      `     inkscape:pageopacity="0.0"\n` +
+      `     inkscape:pagecheckerboard="false"\n` +
+      `     inkscape:deskcolor="#d1d1d1"\n` +
+      `     inkscape:document-units="px"\n` +
+      `     inkscape:zoom="3"\n` +
+      `     inkscape:cx="${hw}"\n` +
+      `     inkscape:cy="${hh}"\n` +
+      `     inkscape:window-maximized="0"\n` +
+      `     inkscape:current-layer="g1"\n` +
+      `     showgrid="false" />\n` +
+      `  <defs id="defs1" />\n` +
+      `  <g\n` +
+      `     inkscape:label="Layer 1"\n` +
+      `     inkscape:groupmode="layer"\n` +
+      `     id="layer1" />\n` +
+      `     ${resolvedSvg}\n` +
+      `</svg>`;
+
+    const blob = new Blob([svgContent], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${this._hintId}.svg`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    if (unresolvedMatches) {
+      const names = [...new Set(unresolvedMatches)].join(", ");
+      this.showMessage(
+        `Exported "${this._hintId}.svg" — warning: unresolved variables: ${names}`,
+        "info"
+      );
+    } else {
+      this.showMessage(`Exported "${this._hintId}.svg" for InkScape`, "success");
+    }
+    this._logger.info("Exported hint to InkScape", this._hintId);
   }
 
   /**

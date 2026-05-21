@@ -252,7 +252,6 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-
         animation: "#fade-in",
       },
       umlaut: {
@@ -274,8 +273,17 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1,
         rotation: 0,
-
         animation: "#fade-in",
+      },
+      "dotless-exclamation": {
+        svg: `<g><rect style="fill:{{r_fore-color}};stroke-width:5;stroke-linecap:round" width="14.5" height="74" x="142" y="2" /></g>`,
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        animation: "#wipe-down",
       },
       snake: {
         svg: `<g>
@@ -290,6 +298,21 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1.2,
         scaleY: 2,
         rotation: 0,
+        animation: "#wipe-right",
+      },
+      "snake-w": {
+        svg: `<g>
+  <path
+     style="fill:none;stroke:{{r_fore-color}};stroke-width:5"
+     d="M 298.46529,3.0148358 257.25332,14.039149 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 l -25.56877,14.045081 v 0"
+     />
+</g>`,
+        position: "w",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 2,
+        rotation: 0,
 
         animation: "#wipe-right",
       },
@@ -297,13 +320,13 @@ document.addEventListener("DOMContentLoaded", () => {
         svg: `<g>
   <path
      style="fill:none;stroke:{{r_fore-color}};stroke-width:5"
-     d="M 197.68715,3.0148358 156.47518,14.039149 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 l -25.56877,14.045081 v 0"
+     d="M 91.465289,2.7174008 50.253319,13.741714 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 L 1.2036293,97.231687 v 0"
      />
 </g>`,
         position: "e",
         offsetX: 0,
         offsetY: 0,
-        scaleX: 1.2,
+        scaleX: 1,
         scaleY: 2,
         rotation: 0,
 
