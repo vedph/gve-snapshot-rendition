@@ -103,6 +103,7 @@ export class GveSnapshotRendition extends HTMLElement {
   private _currentVersionIndex: number = 0;
   private _autoForwardEnabled: boolean = false;
   private _autoForwardTimerId: number | null = null;
+  private _renderScheduled: boolean = false;
 
   constructor() {
     super();
@@ -195,14 +196,19 @@ export class GveSnapshotRendition extends HTMLElement {
     this._logger.setEnabled(this._settings.debug || false);
     this._logger.info("Settings updated", this._settings);
 
-    // When settings change, update renderers
     if (this._textRenderer) {
       this._textRenderer.updateSettings(this._settings);
     }
     if (this._hintRenderer) {
       this._hintRenderer.updateSettings(this._settings);
     }
-    this.render();
+    // Build the UI shell on first call; after that just schedule a content
+    // re-render so rapid settings+data assignments coalesce into one render.
+    if (!this._container) {
+      this.render();
+    } else {
+      this.scheduleRenderContent();
+    }
   }
 
   /**
@@ -342,9 +348,12 @@ export class GveSnapshotRendition extends HTMLElement {
       }
     }
 
-    // Trigger content rendering if renderers are ready
+    // Schedule content rendering. Using scheduleRenderContent() rather than
+    // a direct call ensures that when settings and data are both set in the
+    // same synchronous turn (the common Angular pattern), only one render
+    // fires after both assignments have completed.
     if (this._textRenderer && this._rootSvg && this._baseNodes.length > 0) {
-      this.renderContent();
+      this.scheduleRenderContent();
     }
   }
 
@@ -352,11 +361,32 @@ export class GveSnapshotRendition extends HTMLElement {
    * Render the component UI.
    */
   private render(): void {
+    // Cancel any pending coalesced render — initializeGoldenLayout() will
+    // trigger renderContent() once the new DOM is actually ready.
+    this._renderScheduled = false;
+
     // Destroy existing GL instance before clearing the DOM
     if (this._goldenLayout) {
       this._goldenLayout.destroy();
       this._goldenLayout = undefined;
     }
+
+    // Destroy pan/zoom — its internal state is tied to the old SVG element.
+    // initializePanZoom() guards against double-init with a null-check,
+    // so it must be reset here or it will silently skip re-initialization.
+    if (this._panZoomInstance) {
+      this._panZoomInstance.destroy();
+      this._panZoomInstance = undefined;
+    }
+
+    // Kill in-flight GSAP animations on the old SVG tree.
+    if (this._animationEngine) {
+      this._animationEngine.killAll();
+    }
+
+    // Reset toolbar — processData() only creates it when this is null,
+    // so leaving a stale reference would prevent toolbar rebuild.
+    this._toolbar = undefined;
 
     this._shadow.innerHTML = "";
 
@@ -620,6 +650,22 @@ export class GveSnapshotRendition extends HTMLElement {
     } catch (error) {
       this._logger.error("GL", "Failed to reset layout", error);
     }
+  }
+
+  /**
+   * Coalesce concurrent render requests into a single call.
+   * Multiple same-turn invocations (e.g. settings setter + data setter both
+   * firing in the same Angular expression) collapse into one microtask render,
+   * always running after all synchronous assignments have completed so the
+   * latest data is used.
+   */
+  private scheduleRenderContent(): void {
+    if (this._renderScheduled) return;
+    this._renderScheduled = true;
+    Promise.resolve().then(() => {
+      this._renderScheduled = false;
+      this.renderContent();
+    });
   }
 
   /**

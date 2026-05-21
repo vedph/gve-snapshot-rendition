@@ -22,7 +22,7 @@ export function stringToNodes(text: string): CharNode[] {
       data: char,
       label: char === "\n" ? "↵" : char === " " ? "␣" : char, // Use visual labels for non-printable chars
       sourceTag: "v0", // Base text always has source tag v0
-      features: [],
+      features: {},
     });
   }
 
