@@ -171,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
         svg: `<g>
   <line x1="0" y1="0" x2="0" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
 </g>`,
-        position: "o",
+        position: "e",
         offsetX: 0,
         offsetY: 0,
         scaleX: 1,
@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
         svg: `<g>
   <line x1="300" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
 </g>`,
-        position: "o",
+        position: "w",
         offsetX: 0,
         offsetY: 0,
         scaleX: 1,
