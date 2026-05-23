@@ -335,6 +335,16 @@ document.addEventListener("DOMContentLoaded", () => {
         rotation: 0,
         animation: "#wipe-right",
       },
+      "note-interlinear-above": {
+        svg: '<g><text x="0" y="0" font-size="14" fill="{{r_fore-color}}" id="placeholder">{{note}}</text></g>',
+        position: "n",
+        offsetX: 0,
+        offsetY: 4,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        animation: "#wipe-right",
+      },
     },
     animations: {
       "fade-in": `// Fade in using GSAP
