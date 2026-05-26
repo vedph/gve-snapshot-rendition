@@ -8,7 +8,7 @@
         }
       ],
       "sources": [],
-      "id": "ffefe1a0f0",
+      "id": "ff13fcdea6",
       "type": 7,
       "at": 1,
       "run": 1
@@ -42,10 +42,296 @@
         }
       ],
       "sources": [],
-      "id": "569ef33517",
+      "id": "ae8458e5af",
       "at": 109,
       "run": 5,
       "value": "Nie"
+    },
+    {
+      "groupId": "1",
+      "features": [
+        {
+          "name": "r_t-position",
+          "value": "n"
+        },
+        {
+          "name": "log",
+          "value": "Replace \u0027n\u0027 with \u0027t\u0027"
+        },
+        {
+          "name": "r_font-size",
+          "value": "16"
+        },
+        {
+          "name": "r_fore-color",
+          "value": "black"
+        }
+      ],
+      "sources": [],
+      "id": "8be81cd139",
+      "at": 123,
+      "run": 1,
+      "value": "t"
+    },
+    {
+      "groupId": "1",
+      "features": [
+        {
+          "name": "r_t-position",
+          "value": "n"
+        },
+        {
+          "name": "log",
+          "value": "Replace \u0027wohl nicht\u0027 with \u0027die Menge\u0027"
+        },
+        {
+          "name": "r_font-size",
+          "value": "16"
+        },
+        {
+          "name": "r_fore-color",
+          "value": "black"
+        }
+      ],
+      "sources": [],
+      "id": "e6e41abbad",
+      "at": 125,
+      "run": 10,
+      "value": "die Menge"
+    },
+    {
+      "groupId": "1",
+      "features": [
+        {
+          "name": "r_t-position",
+          "value": "n"
+        },
+        {
+          "name": "log",
+          "value": "replace \u0027viele\u0027 with \u0027Menge\u0027"
+        },
+        {
+          "isGlobal": true,
+          "isShortLived": true,
+          "setPolicy": 1,
+          "name": "version",
+          "value": "AS1"
+        },
+        {
+          "name": "r_font-size",
+          "value": "16"
+        },
+        {
+          "name": "r_fore-color",
+          "value": "black"
+        }
+      ],
+      "sources": [],
+      "id": "336ac8e91e",
+      "at": 181,
+      "run": 5,
+      "value": "Menge"
+    },
+    {
+      "features": [
+        {
+          "name": "r_t-position",
+          "value": "n"
+        },
+        {
+          "name": "log",
+          "value": "replace \u0027kann\u0027 with \u0027wird\u0027"
+        },
+        {
+          "name": "r_font-size",
+          "value": "16"
+        },
+        {
+          "name": "r_fore-color",
+          "value": "black"
+        }
+      ],
+      "sources": [],
+      "id": "8b4676632b",
+      "at": 32,
+      "run": 4,
+      "value": "wird"
+    },
+    {
+      "features": [
+        {
+          "name": "r_t-position",
+          "value": "n"
+        },
+        {
+          "name": "log",
+          "value": "Replace \u0027wie\u0027 with \u0027auch\u0027"
+        },
+        {
+          "name": "r_hints",
+          "value": "horizontal-stroke"
+        },
+        {
+          "name": "r_font-size",
+          "value": "16"
+        },
+        {
+          "name": "r_fore-color",
+          "value": "black"
+        }
+      ],
+      "sources": [],
+      "id": "cae300ad7d",
+      "at": 89,
+      "run": 3,
+      "value": "auch"
+    },
+    {
+      "features": [
+        {
+          "name": "r_t-position",
+          "value": "n"
+        },
+        {
+          "name": "log",
+          "value": "replace \u0027es\u0027 with \u0027wir\u0027"
+        },
+        {
+          "name": "r_hints",
+          "value": "horizontal-stroke"
+        },
+        {
+          "name": "r_font-size",
+          "value": "16"
+        },
+        {
+          "name": "r_fore-color",
+          "value": "black"
+        }
+      ],
+      "sources": [],
+      "id": "769a8868ed",
+      "at": 98,
+      "run": 2,
+      "value": "wir"
+    },
+    {
+      "groupId": "2",
+      "features": [
+        {
+          "name": "r_t-position",
+          "value": "n"
+        },
+        {
+          "name": "log",
+          "value": "replace \u0027verstehet\u0027 with \u0027gelingt es\u0027"
+        },
+        {
+          "name": "r_font-size",
+          "value": "16"
+        },
+        {
+          "name": "r_fore-color",
+          "value": "black"
+        }
+      ],
+      "sources": [],
+      "id": "5e46aa16a1",
+      "at": 115,
+      "run": 9,
+      "value": "gelingt es"
+    },
+    {
+      "groupId": "2",
+      "features": [
+        {
+          "name": "r_t-position",
+          "value": "o"
+        },
+        {
+          "name": "log",
+          "value": "replace \u0027ie\u0027 with \u0027er\u0027"
+        },
+        {
+          "name": "r_font-size",
+          "value": "16"
+        },
+        {
+          "name": "r_fore-color",
+          "value": "black"
+        }
+      ],
+      "sources": [],
+      "id": "e3ecb3a998",
+      "at": 229,
+      "run": 2,
+      "value": "er"
+    },
+    {
+      "features": [
+        {
+          "name": "r_t-position",
+          "value": "n"
+        },
+        {
+          "name": "log",
+          "value": "replace \u0027ich weis\u017F es\u0027 with \u00272.wir wi\u017F\u017Fens\u0027"
+        },
+        {
+          "name": "r_hints",
+          "value": "horizontal-stroke"
+        },
+        {
+          "name": "r_font-size",
+          "value": "16"
+        },
+        {
+          "name": "r_fore-color",
+          "value": "black"
+        }
+      ],
+      "sources": [],
+      "id": "a638e6b728",
+      "at": 155,
+      "run": 12,
+      "value": "2.wir wi\u017F\u017Fens"
+    },
+    {
+      "features": [
+        {
+          "name": "r_t-position",
+          "value": "se"
+        },
+        {
+          "name": "log",
+          "value": "replace \u0027fur uns viele ... wer ists ?\u0027 with \u0027Wers verstehet ... zu wollen ?\u0027"
+        },
+        {
+          "name": "r_t-offset-y",
+          "value": "2th"
+        },
+        {
+          "name": "r_t-offset-x",
+          "value": "-1.5tw"
+        },
+        {
+          "name": "r_hints",
+          "value": "horizontal-stroke"
+        },
+        {
+          "name": "r_font-size",
+          "value": "16"
+        },
+        {
+          "name": "r_fore-color",
+          "value": "black"
+        }
+      ],
+      "sources": [],
+      "id": "3cd4b933c9",
+      "at": 173,
+      "run": 50,
+      "value": "Wers verstehet fur uns viele zu wollen ?"
     }
   ],
   "text": [

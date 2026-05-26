@@ -35,7 +35,7 @@
       "animation": "#wipe-right"
     },
     "horizontal-stroke": {
-      "svg": "<g>\n  <line x1=\"0\" y1=\"50\" x2=\"300\" y2=\"50\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" />\n</g>",
+      "svg": "<g>\n  <rect x=\"0\" y=\"0\" width=\"300\" height=\"100\" fill=\"none\" stroke=\"none\"/>\n  <line x1=\"0\" y1=\"50\" x2=\"300\" y2=\"50\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" />\n</g>",
       "position": "o",
       "offsetX": 0,
       "offsetY": 0,
@@ -45,7 +45,7 @@
       "animation": "#wipe-right"
     },
     "vertical-stroke": {
-      "svg": "<g>\n  <line x1=\"150\" y1=\"0\" x2=\"150\" y2=\"100\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" />\n</g>",
+      "svg": "<g>\n  <rect x=\"0\" y=\"0\" width=\"300\" height=\"100\" fill=\"none\" stroke=\"none\"/>\n  <line x1=\"150\" y1=\"0\" x2=\"150\" y2=\"100\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" />\n</g>",
       "position": "o",
       "offsetX": 0,
       "offsetY": 0,
@@ -85,7 +85,7 @@
       "animation": "#wipe-right"
     },
     "line-bottom": {
-      "svg": "<g>\n  <line x1=\"0\" y1=\"100\" x2=\"300\" y2=\"100\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" />\n</g>",
+      "svg": "<g>\n  <rect x=\"0\" y=\"0\" width=\"300\" height=\"100\" fill=\"none\" stroke=\"none\"/>\n  <line x1=\"0\" y1=\"100\" x2=\"300\" y2=\"100\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" />\n</g>",
       "position": "o",
       "offsetX": 0,
       "offsetY": 0,
@@ -95,7 +95,7 @@
       "animation": "#wipe-right"
     },
     "line-bottom-dotted": {
-      "svg": "<g>\n  <line x1=\"0\" y1=\"100\" x2=\"300\" y2=\"100\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-dasharray=\"0 16\"/>\n</g>",
+      "svg": "<g>\n  <rect x=\"0\" y=\"0\" width=\"300\" height=\"100\" fill=\"none\" stroke=\"none\"/>\n  <line x1=\"0\" y1=\"100\" x2=\"300\" y2=\"100\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-dasharray=\"0 16\"/>\n</g>",
       "position": "o",
       "offsetX": 0,
       "offsetY": 0,
@@ -105,7 +105,7 @@
       "animation": "#wipe-right"
     },
     "line-top": {
-      "svg": "<g>\n  <line x1=\"0\" y1=\"0\" x2=\"300\" y2=\"0\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" />\n</g>",
+      "svg": "<g>\n  <rect x=\"0\" y=\"0\" width=\"300\" height=\"100\" fill=\"none\" stroke=\"none\"/>\n  <line x1=\"0\" y1=\"0\" x2=\"300\" y2=\"0\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" />\n</g>",
       "position": "o",
       "offsetX": 0,
       "offsetY": 0,
@@ -115,7 +115,7 @@
       "animation": "#wipe-right"
     },
     "line-top-dotted": {
-      "svg": "<g>\n  <line x1=\"0\" y1=\"0\" x2=\"300\" y2=\"0\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-dasharray=\"0 16\"/>\n</g>",
+      "svg": "<g>\n  <rect x=\"0\" y=\"0\" width=\"300\" height=\"100\" fill=\"none\" stroke=\"none\"/>\n  <line x1=\"0\" y1=\"0\" x2=\"300\" y2=\"0\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-dasharray=\"0 16\"/>\n</g>",
       "position": "o",
       "offsetX": 0,
       "offsetY": 0,
@@ -125,7 +125,7 @@
       "animation": "#wipe-right"
     },
     "line-left": {
-      "svg": "<g>\n  <line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"100\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" />\n</g>",
+      "svg": "<g>\n  <rect x=\"0\" y=\"0\" width=\"300\" height=\"100\" fill=\"none\" stroke=\"none\"/>\n  <line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"100\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" />\n</g>",
       "position": "e",
       "offsetX": 0,
       "offsetY": 0,
@@ -135,7 +135,7 @@
       "animation": "#wipe-down"
     },
     "line-right": {
-      "svg": "<g>\n  <line x1=\"300\" y1=\"0\" x2=\"300\" y2=\"100\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" />\n</g>",
+      "svg": "<g>\n  <rect x=\"0\" y=\"0\" width=\"300\" height=\"100\" fill=\"none\" stroke=\"none\"/>\n  <line x1=\"300\" y1=\"0\" x2=\"300\" y2=\"100\" stroke=\"{{r_fore-color}}\" stroke-width=\"2\" />\n</g>",
       "position": "w",
       "offsetX": 0,
       "offsetY": 0,

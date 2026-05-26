@@ -199,6 +199,29 @@ By default, hint features apply to ALL hints in the operation (those listed by `
 
 When multiple targets match the same hint, ordinal-based overrides take precedence over key-based overrides, which take precedence over the wildcard (no `@` prefix).
 
+### Designing Hints
+
+Every hint is drawn on a virtual **design canvas** whose size is fixed (set in settings, default=300×100). The renderer scales the hint's `<g>` root element so that this canvas maps exactly onto the reference text bounds (the RBR), then centers it according to the `position` property and shifts it by any `offset`. The scale factors are computed by dividing the RBR dimensions by the `<g>` element's own bounding box (`getBBox()`).
+
+Note that `getBBox()` reports the tight geometric box around the _actual drawn content_, not the 300×100 canvas. If the visible elements do not touch both edges of the canvas in a given axis, the bounding box in that axis is smaller than the intended 300×100, and the computed may be not what you expect. The worst case is a single horizontal line, which has `height=0`: the renderer cannot compute `scaleY`, falls back to 1, and the line ends up at the vertical center of the text regardless of where it sits in the design canvas. For example a line drawn at `y=100` (bottom of the canvas) renders as a strikethrough instead of an underline.
+
+So when you want the SVG canvas coordinates to be meaningful, always add a **sentinel rectangle** as the first child of the root `<g>`:
+
+```xml
+<g>
+  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>
+  <!-- your actual design content here -->
+</g>
+```
+
+This guarantees `getBBox()` always returns `{x:0, y:0, width:300, height:100}`, so both scale factors are computed correctly and the hint appears exactly where the canvas positions it.
+
+Instead, omit the sentinel when the content is meant to self-fit the RBR; in this case you will use position and offset as the sole controls for placement.
+
+Hints whose visible content already spans the full canvas — two diagonal lines from corner to corner, a border rectangle, three horizontal lines top/middle/bottom — do not need the sentinel.
+
+> Note: the sentinel rect has `fill="none" stroke="none"`, so it is completely invisible and does not interact with pointer events. Its sole purpose is to anchor the bounding box. Wipe animations that select `rect` elements via `querySelectorAll` will include it, but since it has no stroke, DrawSVGPlugin has nothing to animate on it and simply skips it.
+
 ## Rendition Logic
 
 The rendition logic for added elements is:
