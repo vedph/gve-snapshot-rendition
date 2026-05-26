@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     hints: {
       "diagonal-stroke-down": {
         svg: `<g>
-  <line x1="0" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="0" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
 </g>`,
         position: "o",
         offsetX: 0,
@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       "diagonal-stroke-up": {
         svg: `<g>
-  <line x1="0" y1="100" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="0" y1="100" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" />
 </g>`,
         position: "o",
         offsetX: 0,
@@ -44,8 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       "cross-stroke": {
         svg: `<g>
-  <line x1="0" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
-  <line x1="0" y1="100" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="0" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
+  <line x1="0" y1="100" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" />
 </g>`,
         position: "o",
         offsetX: 0,
@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       "horizontal-stroke": {
         svg: `<g>
-  <line x1="0" y1="50" x2="300" y2="50" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="0" y1="50" x2="300" y2="50" stroke="{{r_fore-color}}" stroke-width="5" />
 </g>`,
         position: "o",
         offsetX: 0,
@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       "vertical-stroke": {
         svg: `<g>
-  <line x1="150" y1="0" x2="150" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="150" y1="0" x2="150" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
 </g>`,
         position: "o",
         offsetX: 0,
@@ -81,9 +81,9 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       hamburger: {
         svg: `<g>
-  <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="2" />
-  <line x1="0" y1="50" x2="300" y2="50" stroke="{{r_fore-color}}" stroke-width="2" />
-  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" />
+  <line x1="0" y1="50" x2="300" y2="50" stroke="{{r_fore-color}}" stroke-width="5" />
+  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
 </g>`,
         position: "o",
         offsetX: 0,
@@ -95,9 +95,9 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       hotdog: {
         svg: `<g>
-  <line x1="50" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="2" />
-  <line x1="0" y1="50" x2="250" y2="50" stroke="{{r_fore-color}}" stroke-width="2" />
-  <line x1="50" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="50" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" />
+  <line x1="0" y1="50" x2="250" y2="50" stroke="{{r_fore-color}}" stroke-width="5" />
+  <line x1="50" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
 </g>`,
         position: "o",
         offsetX: 0,
@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       box: {
         svg: `<g>
-  <rect x="0" y="0" width="300" height="100" fill="none" stroke="{{r_fore-color}}" stroke-width="2" />
+  <rect x="0" y="0" width="300" height="100" fill="none" stroke="{{r_fore-color}}" stroke-width="5" />
 </g>`,
         position: "o",
         offsetX: 0,
@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       "line-bottom": {
         svg: `<g>
-  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
 </g>`,
         position: "o",
         offsetX: 0,
@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       "line-bottom-dotted": {
         svg: `<g>
-  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" stroke-linecap="round" stroke-dasharray="0 16"/>
+  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 16"/>
 </g>`,
         position: "o",
         offsetX: 0,
@@ -145,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       "line-top": {
         svg: `<g>
-  <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" />
 </g>`,
         position: "o",
         offsetX: 0,
@@ -157,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       "line-top-dotted": {
         svg: `<g>
-  <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="2" stroke-linecap="round" stroke-dasharray="0 16"/>
+  <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 16"/>
 </g>`,
         position: "o",
         offsetX: 0,
@@ -169,9 +169,9 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       "line-left": {
         svg: `<g>
-  <line x1="0" y1="0" x2="0" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="0" y1="0" x2="0" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
 </g>`,
-        position: "e",
+        position: "o",
         offsetX: 0,
         offsetY: 0,
         scaleX: 1,
@@ -181,9 +181,9 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       "line-right": {
         svg: `<g>
-  <line x1="300" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="2" />
+  <line x1="300" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
 </g>`,
-        position: "w",
+        position: "o",
         offsetX: 0,
         offsetY: 0,
         scaleX: 1,
@@ -279,7 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
      d="M 91.465289,2.7174008 50.253319,13.741714 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 L 1.2036293,97.231687 v 0"
      />
 </g>`,
-        position: "e",
+        position: "o",
         offsetX: 0,
         offsetY: 0,
         scaleX: 1,
@@ -294,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
      d="M 298.46529,3.0148358 257.25332,14.039149 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 l -25.56877,14.045081 v 0"
      />
 </g>`,
-        position: "w",
+        position: "o",
         offsetX: 0,
         offsetY: 0,
         scaleX: 1,

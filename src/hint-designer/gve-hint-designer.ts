@@ -1013,6 +1013,22 @@ export class GveHintDesigner extends HTMLElement {
     this.addClickListener("toggle-svg-wrap", () => this.toggleSvgWordWrap());
     this.addClickListener("toggle-js-wrap", () => this.toggleJsWordWrap());
 
+    // Form field highlighting (non-default values)
+    [
+      this._positionSelect,
+      this._offsetXInput,
+      this._offsetYInput,
+      this._scaleXInput,
+      this._scaleYInput,
+      this._rotationInput,
+      this._displacedRefSpanInput,
+    ].forEach((el) => {
+      if (el) {
+        el.addEventListener("input", () => this.updateFormFieldHighlights());
+        el.addEventListener("change", () => this.updateFormFieldHighlights());
+      }
+    });
+
     // Syntax highlighting on textareas
     if (this._svgTextarea) {
       this._svgTextarea.addEventListener("input", () => this.highlightSvg());
@@ -1269,6 +1285,7 @@ export class GveHintDesigner extends HTMLElement {
 
     // Auto-refresh SVG display when hint is loaded
     this.refreshSvgDisplay();
+    this.updateFormFieldHighlights();
 
     this._logger.debug("Component", "Loaded hint for editing", hintId);
   }
@@ -1287,6 +1304,7 @@ export class GveHintDesigner extends HTMLElement {
     if (this._svgTextarea) this._svgTextarea.value = "";
     if (this._jsTextarea) this._jsTextarea.value = "";
     if (this._embeddedJsCheckbox) this._embeddedJsCheckbox.checked = false;
+    this.updateFormFieldHighlights();
   }
 
   /**
@@ -2738,6 +2756,55 @@ export class GveHintDesigner extends HTMLElement {
   }
 
   /**
+   * Update the highlighted state of all Hint Properties form rows.
+   * Rows whose value differs from the default get the form-row--modified class.
+   */
+  private updateFormFieldHighlights(): void {
+    this.setFormRowModified(
+      this._positionSelect,
+      this._positionSelect?.value !== "o"
+    );
+    this.setFormRowModified(
+      this._offsetXInput,
+      this.isOffsetModified(this._offsetXInput?.value)
+    );
+    this.setFormRowModified(
+      this._offsetYInput,
+      this.isOffsetModified(this._offsetYInput?.value)
+    );
+    this.setFormRowModified(
+      this._scaleXInput,
+      parseFloat(this._scaleXInput?.value ?? "1") !== 1
+    );
+    this.setFormRowModified(
+      this._scaleYInput,
+      parseFloat(this._scaleYInput?.value ?? "1") !== 1
+    );
+    this.setFormRowModified(
+      this._rotationInput,
+      parseFloat(this._rotationInput?.value ?? "0") !== 0
+    );
+    this.setFormRowModified(
+      this._displacedRefSpanInput,
+      (this._displacedRefSpanInput?.value ?? "").trim() !== ""
+    );
+  }
+
+  private isOffsetModified(value: string | undefined): boolean {
+    if (!value) return false;
+    const parsed = this.parseOffset(value);
+    return typeof parsed === "string" || parsed !== 0;
+  }
+
+  private setFormRowModified(
+    input: HTMLElement | undefined,
+    modified: boolean
+  ): void {
+    if (!input?.parentElement) return;
+    input.parentElement.classList.toggle("form-row--modified", modified);
+  }
+
+  /**
    * Show a message in the message panel.
    */
   private showMessage(
@@ -3196,6 +3263,17 @@ export class GveHintDesigner extends HTMLElement {
       .form-row input[type="checkbox"] {
         flex: 0;
         min-width: auto;
+      }
+
+      .form-row--modified label {
+        color: var(--hint-designer-primary, #1565c0);
+        font-weight: 700;
+      }
+
+      .form-row--modified input,
+      .form-row--modified select {
+        border-color: var(--hint-designer-primary-border, #2196f3);
+        background-color: #e3f2fd;
       }
 
       .textarea-header {
