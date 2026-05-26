@@ -1,0 +1,31 @@
+:title
+AIUCD 2026 Sample
+
+:base
+Was hat Joseph gewollt und was kann
+Leopold wollen
+Menschen sind sie wie wir , Menschen
+wir sind es wie sie
+Viele verstehen wohl nicht fur sich
+zu wollen ich weisſ es
+Doch fur uns viele versteht recht
+zu wollen . wer ists ?
+
+:operations
+1×1: [r_char-offsets="37:x=10tw 52:x=2tw 89:x=10tw 145:x=10tw 168:x=2tw 202:x=10tw"]
+109×5="Nie"@1 [r_t-position=n r_t-offset-x=-0.2tw log="Replace 'Viele' with 'Nie'" r_hints=line-bottom r_font-size=16 r_fore-color=black]
+
+THESE WERE OMITTED BY NOW:
+123×1="t"@1 [r_t-position=n log="Replace 'n' with 't'" r_font-size=16]
+125×10="die Menge"@1 [r_t-position=n log="Replace 'wohl nicht' with 'die Menge'" r_font-size=16]
+181×5="Menge"@1 [r_t-position=n log="replace 'viele' with 'Menge'" *version^:=AS1 r_font-size=16]
+32×4="wird" [r_t-position=n log="replace 'kann' with 'wird'" r_font-size=16]
+89×3="auch" [r_t-position=n log="Replace 'wie' with 'auch'" r_hints=horizontal-stroke r_font-size=16]
+98×2="wir" [r_t-position=n log="replace 'es' with 'wir'" r_hints=horizontal-stroke r_font-size=16]
+115×9="gelingt es"@2 [r_t-position=n log="replace 'verstehet' with 'gelingt es'" r_font-size=16]
+229×2="er"@2 [r_t-position=o log="replace 'ie' with 'er'" r_font-size=16]
+155×12="2.wir wiſſens" [r_t-position=n log="replace 'ich weisſ es' with '2.wir wiſſens'" r_hints=horizontal-stroke r_font-size=16]
+173×50="Wers verstehet fur uns viele zu wollen ?" [r_t-position=se log="replace 'fur uns viele ... wer ists ?' with 'Wers verstehet ... zu wollen ?'" r_t-offset-y=2th r_t-offset-x=-1.5tw r_hints=horizontal-stroke r_font-size=16]
+
+:dsc
+Real-world example for AIUCD 2026.
