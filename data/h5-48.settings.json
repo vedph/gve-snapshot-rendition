@@ -254,5 +254,5 @@
     "wipe-up": "// Wipe from bottom to top using GSAP DrawSVGPlugin\nreturn new Promise(resolve => {\n  // Set initial state\n  targetEl.style.opacity = '1';\n\n  // Find all drawable elements (line, path, polyline, polygon, circle, rect, ellipse)\n  const drawables = targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse');\n\n  gsap.fromTo(drawables,\n    { drawSVG: '100%' },\n    {\n      drawSVG: '0%',\n      duration: 0.8,\n      ease: 'power2.out',\n      stagger: 0.1,\n      onComplete: resolve\n    }\n  );\n});",
     "wipe-down": "// Wipe from top to bottom using GSAP DrawSVGPlugin\nreturn new Promise(resolve => {\n  // Set initial state\n  targetEl.style.opacity = '1';\n\n  // Find all drawable elements (line, path, polyline, polygon, circle, rect, ellipse)\n  const drawables = targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse');\n\n  gsap.fromTo(drawables,\n    { drawSVG: '0%' },\n    {\n      drawSVG: '100%',\n      duration: 0.8,\n      ease: 'power2.out',\n      stagger: 0.1,\n      onComplete: resolve\n    }\n  );\n});"
   },
-  "charAnimationId": null
+  "charAnimationId": "text-fade-in"
 }
