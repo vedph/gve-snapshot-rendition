@@ -4496,7 +4496,7 @@
         }
       ],
       "sources": [],
-      "id": "5ff87b5f2d",
+      "id": "804c53a1f8",
       "type": 7,
       "inputTag": null,
       "outputTag": null,
@@ -4562,7 +4562,7 @@
         }
       ],
       "sources": [],
-      "id": "59845efa1d",
+      "id": "085ae19c8c",
       "type": 7,
       "inputTag": null,
       "outputTag": null,
@@ -4628,7 +4628,7 @@
         }
       ],
       "sources": [],
-      "id": "6883fbd45b",
+      "id": "e8e89e9939",
       "type": 7,
       "inputTag": null,
       "outputTag": null,
@@ -4678,7 +4678,7 @@
         }
       ],
       "sources": [],
-      "id": "e753e42f23",
+      "id": "a8a82deaa9",
       "type": 7,
       "inputTag": null,
       "outputTag": null,
@@ -4736,7 +4736,7 @@
         }
       ],
       "sources": [],
-      "id": "4beffa2125",
+      "id": "b592a5debf",
       "type": 1,
       "inputTag": null,
       "outputTag": null,
@@ -4786,7 +4786,7 @@
         }
       ],
       "sources": [],
-      "id": "418ae125be",
+      "id": "5bda4aa69c",
       "type": 1,
       "inputTag": null,
       "outputTag": null,
@@ -4844,7 +4844,7 @@
         }
       ],
       "sources": [],
-      "id": "b74ed98ed6",
+      "id": "b39974b128",
       "type": 1,
       "inputTag": null,
       "outputTag": null,
@@ -4878,7 +4878,7 @@
         }
       ],
       "sources": [],
-      "id": "c4d5a44db0",
+      "id": "8917acc1a3",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -4900,7 +4900,7 @@
           "isShortLived": false,
           "setPolicy": 0,
           "name": "r_t-value",
-          "value": ""
+          "value": null
         },
         {
           "isNegated": false,
@@ -4917,10 +4917,18 @@
           "setPolicy": 0,
           "name": "r_fore-color",
           "value": "lightblue"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_t-value",
+          "value": ""
         }
       ],
       "sources": [],
-      "id": "4e1d95c12b",
+      "id": "9aa2927870",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -4994,7 +5002,7 @@
         }
       ],
       "sources": [],
-      "id": "bc61db03d3",
+      "id": "abc1c4d741",
       "type": 7,
       "inputTag": null,
       "outputTag": null,
@@ -5036,7 +5044,7 @@
         }
       ],
       "sources": [],
-      "id": "2ba309982c",
+      "id": "8e00dd9dd4",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -5070,7 +5078,7 @@
         }
       ],
       "sources": [],
-      "id": "7920fb0188",
+      "id": "bdabf5e778",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -5120,7 +5128,7 @@
         }
       ],
       "sources": [],
-      "id": "285a878139",
+      "id": "822bba210a",
       "type": 3,
       "inputTag": null,
       "outputTag": null,
@@ -5194,7 +5202,7 @@
         }
       ],
       "sources": [],
-      "id": "25dc7df3ec",
+      "id": "c63fe788c5",
       "type": 3,
       "inputTag": null,
       "outputTag": null,
@@ -5228,7 +5236,7 @@
         }
       ],
       "sources": [],
-      "id": "3941759c02",
+      "id": "239d4e6253",
       "type": 1,
       "inputTag": null,
       "outputTag": null,
@@ -5262,7 +5270,7 @@
         }
       ],
       "sources": [],
-      "id": "d06a45967f",
+      "id": "03ae5810fc",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -5336,7 +5344,7 @@
         }
       ],
       "sources": [],
-      "id": "c1844f9389",
+      "id": "827a1197ce",
       "type": 3,
       "inputTag": null,
       "outputTag": null,
@@ -5410,7 +5418,7 @@
         }
       ],
       "sources": [],
-      "id": "c8544ea052",
+      "id": "e79dd5531c",
       "type": 3,
       "inputTag": null,
       "outputTag": null,
@@ -5476,7 +5484,7 @@
         }
       ],
       "sources": [],
-      "id": "f5667178ee",
+      "id": "89d2f62bc8",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -5530,31 +5538,7 @@
           "isShortLived": false,
           "setPolicy": 0,
           "name": "r_t-offset-y",
-          "value": "+40tw"
-        },
-        {
-          "isNegated": false,
-          "isGlobal": false,
-          "isShortLived": false,
-          "setPolicy": 0,
-          "name": "r_h-offset-y",
-          "value": "+30tw"
-        },
-        {
-          "isNegated": false,
-          "isGlobal": false,
-          "isShortLived": false,
-          "setPolicy": 0,
-          "name": "r_h-position",
-          "value": "se"
-        },
-        {
-          "isNegated": false,
-          "isGlobal": false,
-          "isShortLived": false,
-          "setPolicy": 0,
-          "name": "r_h-offset-x",
-          "value": "+3tw"
+          "value": "+50tw"
         },
         {
           "isNegated": false,
@@ -5563,10 +5547,50 @@
           "setPolicy": 0,
           "name": "r_font-size",
           "value": "16"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_h-scale-x",
+          "value": "70tw"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_t-offset-x",
+          "value": "-4tw"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_h-position",
+          "value": "s"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_h-offset-x",
+          "value": "+140tw"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_h-offset-y",
+          "value": "+30tw"
         }
       ],
-      "sources": [],
-      "id": "7509362313",
+      "sources": null,
+      "id": "9cdecb4d7b",
       "type": 3,
       "inputTag": null,
       "outputTag": null,
@@ -5611,14 +5635,6 @@
           "isGlobal": false,
           "isShortLived": false,
           "setPolicy": 0,
-          "name": "r_h-scale-y",
-          "value": "+6tw"
-        },
-        {
-          "isNegated": false,
-          "isGlobal": false,
-          "isShortLived": false,
-          "setPolicy": 0,
           "name": "r_font-size",
           "value": "16"
         },
@@ -5629,10 +5645,18 @@
           "setPolicy": 0,
           "name": "r_t-position",
           "value": "n"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_t-offset-y",
+          "value": "+6tw"
         }
       ],
-      "sources": [],
-      "id": "71527e4ff9",
+      "sources": null,
+      "id": "f6317dbb4b",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -5677,14 +5701,6 @@
           "isGlobal": false,
           "isShortLived": false,
           "setPolicy": 0,
-          "name": "r_h-scale-y",
-          "value": "+6tw"
-        },
-        {
-          "isNegated": false,
-          "isGlobal": false,
-          "isShortLived": false,
-          "setPolicy": 0,
           "name": "r_font-size",
           "value": "16"
         },
@@ -5695,10 +5711,18 @@
           "setPolicy": 0,
           "name": "r_t-position",
           "value": "n"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_t-offset-y",
+          "value": "+6tw"
         }
       ],
-      "sources": [],
-      "id": "2371325543",
+      "sources": null,
+      "id": "c5069e9aaf",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -5743,14 +5767,6 @@
           "isGlobal": false,
           "isShortLived": false,
           "setPolicy": 0,
-          "name": "r_h-scale-y",
-          "value": "+6tw"
-        },
-        {
-          "isNegated": false,
-          "isGlobal": false,
-          "isShortLived": false,
-          "setPolicy": 0,
           "name": "r_font-size",
           "value": "16"
         },
@@ -5761,10 +5777,18 @@
           "setPolicy": 0,
           "name": "r_t-position",
           "value": "n"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_t-offset-y",
+          "value": "+6tw"
         }
       ],
-      "sources": [],
-      "id": "ccd750218a",
+      "sources": null,
+      "id": "2b050f4534",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -5838,7 +5862,7 @@
         }
       ],
       "sources": [],
-      "id": "2f1c670cb4",
+      "id": "3d10f3f41b",
       "type": 3,
       "inputTag": null,
       "outputTag": null,
@@ -5872,7 +5896,7 @@
         }
       ],
       "sources": [],
-      "id": "a5bab074b4",
+      "id": "ae32e18e2a",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -5914,7 +5938,7 @@
         }
       ],
       "sources": [],
-      "id": "a867f071b0",
+      "id": "d9f881f1d1",
       "type": 1,
       "inputTag": null,
       "outputTag": null,
@@ -5964,7 +5988,7 @@
         }
       ],
       "sources": [],
-      "id": "8cd5a5c924",
+      "id": "a3bd83343e",
       "type": 1,
       "inputTag": null,
       "outputTag": null,
@@ -6006,7 +6030,7 @@
         }
       ],
       "sources": [],
-      "id": "066ed8a262",
+      "id": "955bc8285e",
       "type": 1,
       "inputTag": null,
       "outputTag": null,
@@ -6072,7 +6096,7 @@
         }
       ],
       "sources": [],
-      "id": "02118d11fa",
+      "id": "49e2dc797f",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -6146,7 +6170,7 @@
         }
       ],
       "sources": [],
-      "id": "de3445c319",
+      "id": "24ace0b80d",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -6228,7 +6252,7 @@
         }
       ],
       "sources": [],
-      "id": "cc58764f07",
+      "id": "693027194f",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -6258,7 +6282,7 @@
           "isShortLived": false,
           "setPolicy": 0,
           "name": "r_t-value",
-          "value": ""
+          "value": null
         },
         {
           "isNegated": false,
@@ -6299,10 +6323,18 @@
           "setPolicy": 0,
           "name": "r_h-offset-x",
           "value": "+40tw"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_t-value",
+          "value": ""
         }
       ],
       "sources": [],
-      "id": "f454c64d4e",
+      "id": "f5a1faa294",
       "type": 3,
       "inputTag": null,
       "outputTag": null,
@@ -6344,7 +6376,7 @@
         }
       ],
       "sources": [],
-      "id": "2edb0c1528",
+      "id": "19e5e05a86",
       "type": 3,
       "inputTag": null,
       "outputTag": null,
@@ -6382,7 +6414,7 @@
           "isShortLived": false,
           "setPolicy": 0,
           "name": "r_t-value",
-          "value": ""
+          "value": null
         },
         {
           "isNegated": false,
@@ -6413,12 +6445,12 @@
           "isGlobal": false,
           "isShortLived": false,
           "setPolicy": 0,
-          "name": "r_h-position",
-          "value": "s"
+          "name": "r_t-value",
+          "value": ""
         }
       ],
       "sources": [],
-      "id": "59798eea4e",
+      "id": "2172c2ff64",
       "type": 3,
       "inputTag": null,
       "outputTag": null,
@@ -6476,14 +6508,6 @@
         },
         {
           "isNegated": false,
-          "isGlobal": false,
-          "isShortLived": false,
-          "setPolicy": 0,
-          "name": "r_h-position",
-          "value": "s"
-        },
-        {
-          "isNegated": false,
           "isGlobal": true,
           "isShortLived": false,
           "setPolicy": 1,
@@ -6500,7 +6524,7 @@
         }
       ],
       "sources": [],
-      "id": "164e273d6d",
+      "id": "e4bff5238e",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -6538,7 +6562,7 @@
           "isShortLived": false,
           "setPolicy": 0,
           "name": "r_t-value",
-          "value": ""
+          "value": null
         },
         {
           "isNegated": false,
@@ -6569,12 +6593,12 @@
           "isGlobal": false,
           "isShortLived": false,
           "setPolicy": 0,
-          "name": "r_h-position",
-          "value": "@2:s"
+          "name": "r_t-value",
+          "value": ""
         }
       ],
       "sources": [],
-      "id": "16f59b42bf",
+      "id": "3a21013064",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -6613,10 +6637,18 @@
           "setPolicy": 0,
           "name": "reason",
           "value": "revert"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": true,
+          "isShortLived": true,
+          "setPolicy": 0,
+          "name": "version",
+          "value": "AS4"
         }
       ],
-      "sources": [],
-      "id": "64b3e21f6e",
+      "sources": null,
+      "id": "3e5531a086",
       "type": 0,
       "inputTag": null,
       "outputTag": null,
@@ -6627,6 +6659,162 @@
       "to": 0,
       "toRun": 0,
       "value": "s"
+    },
+    {
+      "rank": 0,
+      "groupId": null,
+      "features": [
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_hints",
+          "value": "note-above"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_fore-color",
+          "value": "pink"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_h-position",
+          "value": "nw"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "note",
+          "value": "75"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": true,
+          "isShortLived": false,
+          "setPolicy": 1,
+          "name": "log",
+          "value": "annotate epigram number '75'"
+        }
+      ],
+      "sources": null,
+      "id": "4fd6042e68",
+      "type": 7,
+      "inputTag": null,
+      "outputTag": null,
+      "atAsIndex": false,
+      "at": 1,
+      "run": 1,
+      "toAsIndex": false,
+      "to": 0,
+      "toRun": 0,
+      "value": null
+    },
+    {
+      "rank": 0,
+      "groupId": null,
+      "features": [
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_hints",
+          "value": "note-above"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_fore-color",
+          "value": "pink"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_h-position",
+          "value": "w"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "note",
+          "value": "✓"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": true,
+          "isShortLived": false,
+          "setPolicy": 1,
+          "name": "log",
+          "value": "annotate checkmark"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_h-offset-x",
+          "value": "-1.8tw"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_h-offset-y",
+          "value": "-0.4tw"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_h-scale-y",
+          "value": "6tw"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": false,
+          "isShortLived": false,
+          "setPolicy": 0,
+          "name": "r_h-scale-x",
+          "value": "6tw"
+        },
+        {
+          "isNegated": false,
+          "isGlobal": true,
+          "isShortLived": true,
+          "setPolicy": 0,
+          "name": "version",
+          "value": "AS5"
+        }
+      ],
+      "sources": null,
+      "id": "9df2627638",
+      "type": 7,
+      "inputTag": null,
+      "outputTag": null,
+      "atAsIndex": false,
+      "at": 2,
+      "run": 1,
+      "toAsIndex": false,
+      "to": 0,
+      "toRun": 0,
+      "value": null
     }
   ]
 }
