@@ -2,28 +2,65 @@
 AIUCD 2026 Sample
 
 :base
-Was hat Joseph gewollt und was kann
-Leopold wollen
-Menschen sind sie wie wir , Menschen
-wir sind es wie sie
-Viele verstehen wohl nicht fur sich
-zu wollen ich weisſ es
-Doch fur uns viele versteht recht
-zu wollen . wer ists ?
+So verwirrt uns mit seltnen willkührlich verweb ⸗
+ten Gestalten
+hollisch und dunckel Breughel den schwankenden
+Blik .
+So zerruttet Durer mit Apocalyptischem Wahnsinn
+Menschen und Schlangengestalt
+u
+So verwirret ein Dichter von Sphinxen , Scyllen
+Centauren
+Tönend die Neugier mit Macht in dem W ver ⸗
+wunderten Oh .
+So beweget ein Traum den sorglichen wenn
+zer ergreifen
+Wandlen will
+Glaubt u. vorwärts zu gehn , alles veränderlich
+schwebt
+So verwirrst du uns auch und angstest uns
+wechslend die Glieder
+Doch erfreust du uns gleich wenn du
+die Solen betrittst .
 
 :operations
-1×1: [r_char-offsets="37:x=10tw 52:x=2tw 89:x=10tw 145:x=10tw 168:x=2tw 202:x=10tw"]
-109×5="Nie"@1 [r_t-position=n r_t-offset-x=-0.2tw *log:="Replace 'Viele' with 'Nie'" r_hints=line-bottom r_font-size=16 r_fore-color=black]
-123×1="t"@1 [r_t-position=n *log:="Replace 'n' with 't'" r_font-size=16 r_fore-color=black]
-125×10="die Menge"@1 [r_t-position=n *log:="Replace 'wohl nicht' with 'die Menge'" r_font-size=16 r_fore-color=black]
-181×5="Menge"@1 [r_t-position=n *log:="replace 'viele' with 'Menge'" *version^:=AS1 r_font-size=16 r_fore-color=black]
-32×4="wird" [r_t-position=n *log:="replace 'kann' with 'wird'" r_font-size=16 r_fore-color=black]
-89×3="auch" [r_t-position=n *log:="Replace 'wie' with 'auch'" r_hints=horizontal-stroke r_font-size=16 r_fore-color=black]
-98×2="wir" [r_t-position=n *log:="replace 'es' with 'wir'" r_hints=horizontal-stroke r_font-size=16 r_fore-color=black]
-115×9="gelingt es"@2 [r_t-position=n *log:="replace 'verstehet' with 'gelingt es'" r_font-size=16 r_fore-color=black]
-229×2="er"@2 [r_t-position=o *log:="replace 'ie' with 'er'" r_font-size=16 r_fore-color=black]
-155×12="2.wir wiſſens" [r_t-position=n *log:="replace 'ich weisſ es' with '2.wir wiſſens'" r_hints=horizontal-stroke r_font-size=16 r_fore-color=black]
-173×50="Wers verstehet fur uns viele zu wollen ?" [r_t-position=se *log:="replace 'fur uns viele ... wer ists ?' with 'Wers verstehet ... zu wollen ?'" r_t-offset-y=2th r_t-offset-x=-1.5tw r_hints=horizontal-stroke r_font-size=16 r_fore-color=black]
+1×1: [r_char-offsets="51:x=10tw 112:x=10tw 167:x=2tw 197:x=10tw 247:x=10tw 301:x=10tw 357:x=10tw 432:x=9tw 482:x=10tw 504:x=2tw 540:x=10tw"]
+406×4: [r_hints=note-interlinear-above note="und sich" r_fore-color=orange r_h-position=n *log:="annotate 'und sich' over 'gehn'" comment="Traces of previous layer in pencil, later overwritten in ink forming the base-layer"]
+413×5: [r_hints=note-interlinear-above note=alles r_fore-color=orange r_h-position=n comment="Traces of previous layer in pencil, later overwritten in ink forming the base-layer" *log:="annotate 'alles' over 'alles'"]
+432×7: [r_hints=note-interlinear-above note=schwebt r_fore-color=orange r_h-position=isw]
+197×1- [r_hints=horizontal-stroke r_fore-color=black *log:="delete 'u'" comment="Change direction in the base-layer while writing over the pencil layer under it." immediate=1]
+293×1- [r_hints=horizontal-stroke *log:="delete 'W'" immediate=1 r_fore-color=black]
+371×12- [r_hints=horizontal-stroke *log:=Delete *version^=AS1 r_fore-color=black immediate=1]
+65×1="H" [r_fore-color=lightblue *log:="replace 'h' with 'H' in 'höllisch'"]
+66×1="ö" [r_t-value= r_hints=umlaut r_fore-color=lightblue r_t-value=""]
+180×9: [*log:=replace r_t-position=n r_t-offset-y=+6tw r_fore-color=lightblue r_font-size=16 r_hints=note-interlinear-above note=Grillen]
+230×2="hi" [*log:="replace " hi" with "hi"" comment="pencil redrawing of the letter, to fill the gaps left by the ink" r_fore-color=lightblue]
+311×1="O" [*log:="replace 'O' with 'O' in 'Oh'" r_fore-color=lightblue]
+312×1+]"r" [*log:="add 'r' after 'Oh'" r_fore-color=lightblue r_t-position=e *version^=AS2]
+10×1+]"e" [r_hints=snake-left r_font-size=16 r_fore-color=brown r_t-position=n r_t-offset-y=+6tw *log:=add r_h-offset-x=+10tw]
+13×3- [r_hints=horizontal-stroke r_fore-color=brown]
+561×1="H" [r_fore-color=brown *log:=replace]
+84×1+]" gesinnt" [r_hints=snake-left r_font-size=16 r_t-position=nw r_t-offset-y=+6tw *log:=add r_h-offset-x=0.4tw r_fore-color=brown]
+130×1+]" auch" [r_hints=snake-left r_font-size=16 r_t-position=nw r_t-offset-y=+6tw *log:=add r_h-offset-x=0.4tw r_fore-color=brown]
+180×16="Grillen zugleich" [r_hints=horizontal-stroke r_t-position=n r_font-size=16 r_t-offset-y=+6tw *log:="replace 'Schlangengestalt' with 'Grillen zugleich'" r_fore-color=brown]
+597×1+]" unser gesundes Gehirn." [r_hints=snake-left r_fore-color=brown r_t-position=s *log:="add 'unser gesundes Gehirn.' after 'Grillen zugleich'" r_t-offset-y=+40tw r_h-offset-y=+30tw r_h-position=se r_h-offset-x=+3tw r_font-size=16]
+202×9="erreget" [r_hints=horizontal-stroke *log:="replace 'verwirret' with 'erreget'" r_fore-color=brown r_h-scale-y=+6tw r_font-size=16 r_t-position=n]
+239×7="Sirenen" [r_hints=horizontal-stroke *log:="replace 'Scyllen' with 'Sirenen'" r_fore-color=brown r_h-scale-y=+6tw r_font-size=16 r_t-position=n]
+257×6="Singend" [r_hints=horizontal-stroke *log:="replace 'Tönend' with 'Singend'" r_fore-color=brown r_h-scale-y=+6tw r_font-size=16 r_t-position=n]
+355×1+]" er" [r_hints=snake-left r_font-size=16 r_t-position=ne r_t-offset-y=+6tw *log:="add 'er' after 'wenn'" r_h-offset-x=+35tw r_fore-color=brown]
+358×1="u" [r_fore-color=brown *log:="replace 'e' with 'u' in 'zur'"]
+361×2- [r_hints=horizontal-stroke r_fore-color=brown *log:="delete 'er' in 'ergreifen'"]
+450×1- [r_hints=vertical-stroke r_fore-color=brown *log:=delete 's' in 'verwirrst']
+453×2- [r_hints=horizontal-stroke r_fore-color=brown *log:="delete 'du'"]
+460×21="Bettine wenn sie die Glieder" [r_hints=horizontal-stroke r_fore-color=brown r_t-position=n r_t-offset-y=+6tw r_font-size=16 *log:="replace 'auch und angstest uns' with 'Bettine wenn sie die Glieder'"]
+482×21="verwechselt" [*log:="replace 'wechslend die Glieder' with 'verwechselt'" r_hints=horizontal-stroke r_fore-color=brown r_t-position=n r_t-offset-y=+6tw r_font-size=16 r_t-offset-x=-0.3tw]
+518×2="sie" [r_hints="horizontal-stroke snake-right" r_t-position=n r_t-offset-y=+6tw *log:="replace 'du' with 'sie'" r_fore-color=brown *version^=AS3 r_h-offset-x=+1.5tw r_font-size=16]
+11×1+]" uns" [r_hints="vertical-stroke vertical-stroke" r_t-value= r_h-position=e r_fore-color=blue *log:="add 'uns' after 'verwirret'" reason=revert r_h-offset-x=+40tw r_t-value=""]
+449×1+]"s" [*log:="add 's' after 'r' in 'verwirrt'" r_fore-color=blue r_t-position=e]
+451×1+]" du" [r_hints=line-bottom-dotted r_fore-color=blue r_t-value= *log:="add 'du' after 'verwirrst'" reason=revert r_h-displaced-span=453x2 r_h-position=s r_t-value=""]
+659×3="du" [r_hints=line-bottom r_fore-color=blue r_font-size=16 r_t-position=n r_t-offset-y=+6tw r_h-position=s *log:="replace 'sie' with 'du'" reason=revert]
+685×3="du" [r_hints="horizontal-stroke line-bottom-dotted" r_fore-color=blue r_t-value= *log:="replace 'sie' with 'du'" reason=revert r_h-displaced-span=@2:518x2 r_h-position=@2:s r_t-value=""]
+557×1="s" [r_fore-color=blue *log:="replace 's' with 's' in 'betrittst'" reason=revert]
 
 :dsc
 Real-world example for AIUCD 2026.

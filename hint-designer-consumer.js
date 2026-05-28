@@ -274,6 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       "snake-left": {
         svg: `<g>
+  <rect x=\"0\" y=\"0\" width=\"300\" height=\"100\" fill=\"none\" stroke=\"none\"/>
   <path
      style="fill:none;stroke:{{r_fore-color}};stroke-width:5"
      d="M 91.465289,2.7174008 50.253319,13.741714 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 L 1.2036293,97.231687 v 0"
@@ -289,6 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       "snake-right": {
         svg: `<g>
+  <rect x=\"0\" y=\"0\" width=\"300\" height=\"100\" fill=\"none\" stroke=\"none\"/>
   <path
      style="fill:none;stroke:{{r_fore-color}};stroke-width:5"
      d="M 298.46529,3.0148358 257.25332,14.039149 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 l -25.56877,14.045081 v 0"
