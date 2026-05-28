@@ -57,9 +57,9 @@ die Solen betrittst .
 518×2="sie" [r_hints="horizontal-stroke snake-right" r_t-position=n r_t-offset-y=+6tw *log:="replace 'du' with 'sie'" r_fore-color=brown *version^=AS3 r_h-offset-x=+1.5tw r_font-size=16]
 11×1+]" uns" [r_hints="vertical-stroke vertical-stroke" r_t-value= r_h-position=e r_fore-color=blue *log:="add 'uns' after 'verwirret'" reason=revert r_h-offset-x=+40tw r_t-value=""]
 449×1+]"s" [*log:="add 's' after 'r' in 'verwirrt'" r_fore-color=blue r_t-position=e]
-451×1+]" du" [r_hints=line-bottom-dotted r_fore-color=blue r_t-value= *log:="add 'du' after 'verwirrst'" reason=revert r_h-displaced-span=453x2 r_h-position=s r_t-value=""]
-659×3="du" [r_hints=line-bottom r_fore-color=blue r_font-size=16 r_t-position=n r_t-offset-y=+6tw r_h-position=s *log:="replace 'sie' with 'du'" reason=revert]
-685×3="du" [r_hints="horizontal-stroke line-bottom-dotted" r_fore-color=blue r_t-value= *log:="replace 'sie' with 'du'" reason=revert r_h-displaced-span=@2:518x2 r_h-position=@2:s r_t-value=""]
+451×1+]" du" [r_hints=line-bottom-dotted r_fore-color=blue r_t-value= *log:="add 'du' after 'verwirrst'" reason=revert r_h-displaced-span=453x2 r_t-value=""]
+659×3="du" [r_hints=line-bottom r_fore-color=blue r_font-size=16 r_t-position=n r_t-offset-y=+6tw *log:="replace 'sie' with 'du'" reason=revert]
+685×3="du" [r_hints="horizontal-stroke line-bottom-dotted" r_fore-color=blue r_t-value= *log:="replace 'sie' with 'du'" reason=revert r_h-displaced-span=@2:518x2 r_t-value=""]
 557×1="s" [r_fore-color=blue *log:="replace 's' with 's' in 'betrittst'" reason=revert]
 
 :dsc

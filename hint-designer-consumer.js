@@ -98,6 +98,16 @@ document.addEventListener("DOMContentLoaded", () => {
         rotation: 0,
         animation: "#wipe-right",
       },
+      "filled-box": {
+        svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="{{r_fore-color}}" fill-opacity="0.3" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1.1,
+        scaleY: 1.1,
+        rotation: 0,
+        animation: "#wipe-right",
+      },
       "line-bottom": {
         svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>\n  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
         position: "o",

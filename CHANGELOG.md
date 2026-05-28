@@ -4,6 +4,7 @@ This file format is based on [Keep a Changelog](https://keepachangelog.com/en/1.
 
 - 2026-05-28:
   - added sentinel rectangle to snake right and snake left hints (designer hints, AIUCD and H5-48 settings).
+  - added filled box to hints.
 
 ## [2.0.4]
 
