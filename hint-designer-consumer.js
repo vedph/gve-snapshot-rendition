@@ -19,9 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
   designer.data = {
     hints: {
       "diagonal-stroke-down": {
-        svg: `<g>
-  <line x1="0" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
-</g>`,
+        svg: '<g>\n  <line x1="0" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -31,9 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       "diagonal-stroke-up": {
-        svg: `<g>
-  <line x1="0" y1="100" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" />
-</g>`,
+        svg: '<g>\n  <line x1="0" y1="100" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -43,10 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       "cross-stroke": {
-        svg: `<g>
-  <line x1="0" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
-  <line x1="0" y1="100" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" />
-</g>`,
+        svg: '<g>\n  <line x1="0" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />\n  <line x1="0" y1="100" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -56,9 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       "horizontal-stroke": {
-        svg: `<g>
-  <line x1="0" y1="50" x2="300" y2="50" stroke="{{r_fore-color}}" stroke-width="5" />
-</g>`,
+        svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>\n  <line x1="0" y1="50" x2="300" y2="50" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -68,9 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       "vertical-stroke": {
-        svg: `<g>
-  <line x1="150" y1="0" x2="150" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
-</g>`,
+        svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>\n  <line x1="150" y1="0" x2="150" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -80,11 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-down",
       },
       hamburger: {
-        svg: `<g>
-  <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" />
-  <line x1="0" y1="50" x2="300" y2="50" stroke="{{r_fore-color}}" stroke-width="5" />
-  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
-</g>`,
+        svg: '<g>\n  <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" />\n  <line x1="0" y1="50" x2="300" y2="50" stroke="{{r_fore-color}}" stroke-width="5" />\n  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -94,11 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       hotdog: {
-        svg: `<g>
-  <line x1="50" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" />
-  <line x1="0" y1="50" x2="250" y2="50" stroke="{{r_fore-color}}" stroke-width="5" />
-  <line x1="50" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
-</g>`,
+        svg: '<g>\n  <line x1="50" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" />\n  <line x1="0" y1="50" x2="250" y2="50" stroke="{{r_fore-color}}" stroke-width="5" />\n  <line x1="50" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -108,9 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       box: {
-        svg: `<g>
-  <rect x="0" y="0" width="300" height="100" fill="none" stroke="{{r_fore-color}}" stroke-width="5" />
-</g>`,
+        svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -120,9 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       "line-bottom": {
-        svg: `<g>
-  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
-</g>`,
+        svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>\n  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -132,9 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       "line-bottom-dotted": {
-        svg: `<g>
-  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 16"/>
-</g>`,
+        svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>\n  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 16"/>\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -144,9 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       "line-top": {
-        svg: `<g>
-  <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" />
-</g>`,
+        svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>\n  <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -156,9 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       "line-top-dotted": {
-        svg: `<g>
-  <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 16"/>
-</g>`,
+        svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>\n  <line x1="0" y1="0" x2="300" y2="0" stroke="{{r_fore-color}}" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 16"/>\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -168,9 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       "line-left": {
-        svg: `<g>
-  <line x1="0" y1="0" x2="0" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
-</g>`,
+        svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>\n  <line x1="0" y1="0" x2="0" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -180,9 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-down",
       },
       "line-right": {
-        svg: `<g>
-  <line x1="300" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />
-</g>`,
+        svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>\n  <line x1="300" y1="0" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -192,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-down",
       },
       "dotless-exclamation": {
-        svg: `<g><rect style="fill:{{r_fore-color}};stroke-width:5;stroke-linecap:round" width="14.5" height="74" x="142" y="2" /></g>`,
+        svg: '<g><rect style="fill:{{r_fore-color}};stroke-width:5;stroke-linecap:round" width="14.5" height="74" x="142" y="2" /></g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -202,13 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-down",
       },
       "i-dot": {
-        svg: `<g>
-  <circle
-     style="fill:{{r_fore-color}};fill-opacity:1;stroke:none;stroke-width:5;stroke-linecap:round;stroke-opacity:1"
-     cx="150"
-     cy="9"
-     r="9" />
-</g>`,
+        svg: '<g>\n  <circle\n     style="fill:{{r_fore-color}};fill-opacity:1;stroke:none;stroke-width:5;stroke-linecap:round;stroke-opacity:1"\n     cx="150"\n     cy="9"\n     r="9" />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: -16,
@@ -218,18 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#fade-in",
       },
       umlaut: {
-        svg: `<g>
-<circle
-  style="fill:{{r_fore-color}};fill-opacity:1;stroke:none;stroke-width:5;stroke-linecap:round;stroke-opacity:1"
-  cx="170"
-  cy="9"
-  r="9" />
-<circle
-  style="fill:{{r_fore-color}};fill-opacity:1;stroke:none;stroke-width:5;stroke-linecap:round;stroke-opacity:1"
-  cx="129"
-  cy="9"
-  r="9" />
-</g>`,
+        svg: '<g>\n<circle\n  style="fill:{{r_fore-color}};fill-opacity:1;stroke:none;stroke-width:5;stroke-linecap:round;stroke-opacity:1"\n  cx="170"\n  cy="9"\n  r="9" />\n<circle\n  style="fill:{{r_fore-color}};fill-opacity:1;stroke:none;stroke-width:5;stroke-linecap:round;stroke-opacity:1"\n  cx="129"\n  cy="9"\n  r="9" />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: -16,
@@ -239,16 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#fade-in",
       },
       "half-psi": {
-        svg: `<g>
-  <path
-     style="fill:none;fill-opacity:1;stroke:{{r_fore-color}};stroke-width:5.04942;stroke-opacity:1"
-     d="M 150,0 V 100"
-     />
-  <path
-     style="fill:none;fill-opacity:1;stroke:{{r_fore-color}};stroke-width:4.70823;stroke-linecap:round;stroke-opacity:1"
-     d="m 152.09414,34.999888 11.93025,-11.63501 a 30.931452,30.496454 0 0 0 5.68666,-7.604445 l 4.43347,-8.4004413 a 8.2686977,8.1524124 0 0 1 2.87164,-3.0995426 l 2.8897,-1.8269636 v 0"
-     />
-</g>`,
+        svg: '<g>\n  <path\n     style="fill:none;fill-opacity:1;stroke:{{r_fore-color}};stroke-width:5.04942;stroke-opacity:1"\n     d="M 150,0 V 100"\n     />\n  <path\n     style="fill:none;fill-opacity:1;stroke:{{r_fore-color}};stroke-width:4.70823;stroke-linecap:round;stroke-opacity:1"\n     d="m 152.09414,34.999888 11.93025,-11.63501 a 30.931452,30.496454 0 0 0 5.68666,-7.604445 l 4.43347,-8.4004413 a 8.2686977,8.1524124 0 0 1 2.87164,-3.0995426 l 2.8897,-1.8269636 v 0"\n     />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -258,12 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-down",
       },
       snake: {
-        svg: `<g>
-  <path
-     style="fill:none;stroke:{{r_fore-color}};stroke-width:5"
-     d="M 197.68715,3.0148358 156.47518,14.039149 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 l -25.56877,14.045081 v 0"
-     />
-</g>`,
+        svg: '<g>\n  <path\n     style="fill:none;stroke:{{r_fore-color}};stroke-width:5"\n     d="M 197.68715,3.0148358 156.47518,14.039149 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 l -25.56877,14.045081 v 0"\n     />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -273,13 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       "snake-left": {
-        svg: `<g>
-  <rect x=\"0\" y=\"0\" width=\"300\" height=\"100\" fill=\"none\" stroke=\"none\"/>
-  <path
-     style="fill:none;stroke:{{r_fore-color}};stroke-width:5"
-     d="M 91.465289,2.7174008 50.253319,13.741714 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 L 1.2036293,97.231687 v 0"
-     />
-</g>`,
+        svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>\n  <path\n     style="fill:none;stroke:{{r_fore-color}};stroke-width:5"\n     d="M 91.465289,2.7174008 50.253319,13.741714 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 L 1.2036293,97.231687 v 0"\n     />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -289,13 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       "snake-right": {
-        svg: `<g>
-  <rect x=\"0\" y=\"0\" width=\"300\" height=\"100\" fill=\"none\" stroke=\"none\"/>
-  <path
-     style="fill:none;stroke:{{r_fore-color}};stroke-width:5"
-     d="M 298.46529,3.0148358 257.25332,14.039149 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 l -25.56877,14.045081 v 0"
-     />
-</g>`,
+        svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>\n  <path\n     style="fill:none;stroke:{{r_fore-color}};stroke-width:5"\n     d="M 298.46529,3.0148358 257.25332,14.039149 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 l -25.56877,14.045081 v 0"\n     />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -305,18 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       "snake-callout": {
-        svg: `<g>
-  <path
-     style="fill:none;stroke:{{r_fore-color}};stroke-width:5"
-     d="m 197.78287,15.856525 -41.29892,9.551979 a 12.814808,10.986948 0 0 0 -9.35458,9.092047 L 140.32721,76.3708 a 14.576478,12.49734 0 0 1 -7.37373,9.207996 l -25.62272,12.169313 v 0"
-     id="path1" />
-  <text
-     xml:space="preserve"
-     fill="{{r_fore-color}}"
-     x="146"
-     y="12"
-     id="text1">{{note}}</text>
-</g>`,
+        svg: '<g>\n  <path\n     style="fill:none;stroke:{{r_fore-color}};stroke-width:5"\n     d="m 197.78287,15.856525 -41.29892,9.551979 a 12.814808,10.986948 0 0 0 -9.35458,9.092047 L 140.32721,76.3708 a 14.576478,12.49734 0 0 1 -7.37373,9.207996 l -25.62272,12.169313 v 0"\n     id="path1" />\n  <text\n     xml:space="preserve"\n     fill="{{r_fore-color}}"\n     x="146"\n     y="12"\n     id="text1">{{note}}</text>\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -326,9 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       "note-above": {
-        svg: `<g>
-  <text id="placeholder" x="150" y="50" text-anchor="middle" dominant-baseline="middle" fill="{{r_fore-color}}" font-size="24">{{note}}</text>
-</g>`,
+        svg: '<g>\n  <text id="placeholder" x="150" y="50" text-anchor="middle" dominant-baseline="middle" fill="{{r_fore-color}}" font-size="24">{{note}}</text>\n</g>',
         position: "n",
         offsetX: 0,
         offsetY: -10,
