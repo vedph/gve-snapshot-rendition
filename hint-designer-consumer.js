@@ -373,6 +373,7 @@ return new Promise(resolve => {
   designer.hintVariables = [
     { name: "r_fore-color", value: "red" },
     { name: "note", value: "Test Note" },
+    { name: "color", value: "red" },
   ];
 
   // Select the first hint
