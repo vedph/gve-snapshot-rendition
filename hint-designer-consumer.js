@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-right",
       },
       "filled-box": {
-        svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="{{r_fore-color}}" fill-opacity="0.3" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
+        svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="{{color}}" fill-opacity="0.3" stroke="{{color}}" stroke-width="5" />\n</g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
