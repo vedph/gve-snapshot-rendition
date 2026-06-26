@@ -296,7 +296,7 @@ export class GveSnapshotRendition extends HTMLElement {
       `Processed data: ${this._baseNodes.length} base nodes, ${this._data.steps.length} steps`
     );
 
-    // Initialize toolbar if not already done
+    // Initialize toolbar if not already done; update it when data changes
     if (!this._toolbar && this._data.steps) {
       const toolbarContainer = this._shadow.querySelector("#toolbar-container");
       if (toolbarContainer) {
@@ -346,6 +346,10 @@ export class GveSnapshotRendition extends HTMLElement {
           }
         });
       }
+    } else if (this._toolbar) {
+      // Toolbar already exists — update it with new data so step count
+      // and navigation state reflect the latest snapshot.
+      this._toolbar.updateData(this._data);
     }
 
     // Schedule content rendering. Using scheduleRenderContent() rather than
@@ -686,6 +690,15 @@ export class GveSnapshotRendition extends HTMLElement {
 
     this._logger.time("renderContent");
     this._logger.info("Rendering content");
+
+    // Destroy pan/zoom before clearing SVG: svg-pan-zoom injects a <g>
+    // viewport element inside the SVG. Clearing innerHTML removes it, leaving
+    // the pan/zoom instance pointing at a detached node. Destroying first
+    // lets initializePanZoom() create a fresh instance on the clean SVG.
+    if (this._panZoomInstance) {
+      this._panZoomInstance.destroy();
+      this._panZoomInstance = undefined;
+    }
 
     // Clear existing content
     this._rootSvg.innerHTML = "";

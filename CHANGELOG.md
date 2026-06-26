@@ -2,6 +2,10 @@
 
 This file format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- 2026-06-26: issues fixed for renderer:
+  - toolbar not updated on subsequent data changes.
+  - `processData()` only called `toolbar.updateData()` during initial creation. On re-renders the toolbar showed the old step count. Fix: added an `else if (this._toolbar)` branch that calls `updateData()` when the toolbar already exists.
+  - pan/zoom pointing at detached node after re-render. `renderContent()` clears `rootSvg`.`innerHTML`, which removes the viewport `<g>` that `svg-pan-zoom` injected, leaving its instance broken. Fix: destroy the pan/zoom instance before clearing the SVG so `initializePanZoom()` creates a fresh one on the clean SVG.
 - 2026-06-22: added sample H56-53.
 - 2026-05-28:
   - added sentinel rectangle to snake right and snake left hints (designer hints, AIUCD and H5-48 settings).
