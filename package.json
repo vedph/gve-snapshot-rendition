@@ -1,6 +1,6 @@
 {
   "name": "@myrmidon/gve-snapshot-rendition",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "homepage": "https://github.com/vedph/gve-snapshot-rendition",
   "repository": {
     "type": "git",
@@ -21,15 +21,16 @@
   "type": "module",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "rollup -c",
+    "clean": "node -e \"require('fs').rmSync('dist', {recursive:true, force:true})\"",
+    "build": "pnpm run clean && rollup -c",
     "watch": "rollup -c -w",
     "start": "concurrently \"rollup -c -w\" \"lite-server\"",
     "start:designer": "concurrently \"rollup -c -w\" \"lite-server -c bs-config.designer.json\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "test-ui": "vitest --ui",
-    "prepublishOnly": "npm run test && npm run build",
-    "prepack": "npm run build",
+    "prepublishOnly": "pnpm run test && pnpm run build",
+    "prepack": "pnpm run build",
     "publish:public": "npm publish --access=public"
   },
   "exports": {
