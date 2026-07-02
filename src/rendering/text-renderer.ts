@@ -276,9 +276,9 @@ export class TextRenderer {
         config.textDisplacedSpan.nodeId,
         config.textDisplacedSpan.count,
       );
-      rbrs = this.calculateRBRs(nodes);
+      rbrs = this.calculateRBRs(nodes, rootSvg);
     } else {
-      rbrs = this.calculateRBRs(referenceNodes);
+      rbrs = this.calculateRBRs(referenceNodes, rootSvg);
     }
 
     if (rbrs.length === 0) {
@@ -544,17 +544,26 @@ export class TextRenderer {
   /**
    * Calculate RBRs from reference nodes.
    * Nodes on different lines create separate RBRs.
+   *
+   * @param rootSvg - Root SVG element, used to read each character's laid-out
+   *   baseline `y` attribute for line-break detection (see below).
    */
-  private calculateRBRs(nodes: CharNode[]): BoundingRect[] {
+  private calculateRBRs(nodes: CharNode[], rootSvg?: SVGElement): BoundingRect[] {
     if (nodes.length === 0) return [];
 
     const rbrs: BoundingRect[] = [];
     const nodeElementIds = nodes.map((n) => `n_${n.id}`);
 
-    // Group nodes by line by checking their Y coordinates
+    // Group nodes by line by checking their Y coordinates.
+    // IMPORTANT: this compares the character's laid-out baseline Y (the `y`
+    // attribute TextLayout assigned when positioning it), NOT its cached
+    // getBBox().y. The tight ink bbox top varies per glyph shape (ascenders,
+    // descenders, x-height-only glyphs), easily by more than the 5px
+    // tolerance below, even on the very same line — using bbox.y here would
+    // spuriously split one line into multiple RBRs.
     const lineGroups: string[][] = [];
     let currentLineGroup: string[] = [];
-    let lastY: number | null = null;
+    let lastBaselineY: number | null = null;
 
     for (const elementId of nodeElementIds) {
       const bounds = this._boundsCache.get(elementId);
@@ -563,8 +572,12 @@ export class TextRenderer {
         continue;
       }
 
-      // If Y coordinate significantly different, start new line group
-      if (lastY !== null && Math.abs(bounds.y - lastY) > 5) {
+      const el = rootSvg?.querySelector(`#${elementId}`);
+      const attrY = el?.getAttribute("y");
+      const baselineY = attrY !== null && attrY !== undefined ? parseFloat(attrY) : bounds.y;
+
+      // If baseline Y coordinate significantly different, start new line group
+      if (lastBaselineY !== null && Math.abs(baselineY - lastBaselineY) > 5) {
         if (currentLineGroup.length > 0) {
           lineGroups.push([...currentLineGroup]);
           currentLineGroup = [];
@@ -572,7 +585,7 @@ export class TextRenderer {
       }
 
       currentLineGroup.push(elementId);
-      lastY = bounds.y;
+      lastBaselineY = baselineY;
     }
 
     // Add last group

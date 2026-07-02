@@ -111,10 +111,11 @@ export class HintRenderer {
         // Use displaced span instead of reference nodes
         rbrs = this.calculateDisplacedRBRs(
           effectiveHint.displacedRefSpan,
-          allBaseNodes
+          allBaseNodes,
+          rootSvg
         );
       } else {
-        rbrs = this.calculateRBRs(referenceNodes);
+        rbrs = this.calculateRBRs(referenceNodes, rootSvg);
       }
 
       if (rbrs.length === 0) {
@@ -282,8 +283,11 @@ export class HintRenderer {
   /**
    * Calculate Reference Bounding Rectangles (RBRs) from reference nodes.
    * Nodes on different lines create separate RBRs.
+   *
+   * @param rootSvg - Root SVG element, used to read each character's laid-out
+   *   baseline `y` attribute for line-break detection (see below).
    */
-  private calculateRBRs(nodes: CharNode[]): BoundingRect[] {
+  private calculateRBRs(nodes: CharNode[], rootSvg?: SVGElement): BoundingRect[] {
     if (nodes.length === 0) return [];
 
     const rbrs: BoundingRect[] = [];
@@ -293,10 +297,19 @@ export class HintRenderer {
       `Calculating RBRs for ${nodes.length} nodes`
     );
 
-    // Group nodes by line by checking their Y coordinates
+    // Group nodes by line by checking their Y coordinates.
+    // IMPORTANT: this compares the character's laid-out baseline Y (the `y`
+    // attribute TextLayout assigned when positioning it), NOT its cached
+    // getBBox().y. The tight ink bbox top varies per glyph shape (e.g. an
+    // ascender like "t" vs. a descender like "g" vs. an x-height-only glyph
+    // like "s"), easily by more than the 5px tolerance below, even though
+    // the characters sit on the very same line. Using bbox.y here would
+    // spuriously split a single line into multiple "line groups" — and thus
+    // multiple RBRs, causing hints to be rendered (and animated) more than
+    // once for what is really a single reference span.
     const lineGroups: string[][] = [];
     let currentLineGroup: string[] = [];
-    let lastY: number | null = null;
+    let lastBaselineY: number | null = null;
     const missingBounds: string[] = [];
     const skippedInvisible: string[] = [];
 
@@ -323,8 +336,15 @@ export class HintRenderer {
         continue;
       }
 
-      // If Y coordinate significantly different, start new line group
-      if (lastY !== null && Math.abs(bounds.y - lastY) > 5) {
+      // Prefer the laid-out baseline `y` attribute (deterministic, identical
+      // for every character on the same line); fall back to the cached ink
+      // bbox top only if the element can't be found (defensive).
+      const el = rootSvg?.querySelector(`#${elementId}`);
+      const attrY = el?.getAttribute("y");
+      const baselineY = attrY !== null && attrY !== undefined ? parseFloat(attrY) : bounds.y;
+
+      // If baseline Y coordinate significantly different, start new line group
+      if (lastBaselineY !== null && Math.abs(baselineY - lastBaselineY) > 5) {
         if (currentLineGroup.length > 0) {
           lineGroups.push([...currentLineGroup]);
           currentLineGroup = [];
@@ -332,7 +352,7 @@ export class HintRenderer {
       }
 
       currentLineGroup.push(elementId);
-      lastY = bounds.y;
+      lastBaselineY = baselineY;
     }
 
     // Add last group
@@ -377,7 +397,8 @@ export class HintRenderer {
    */
   private calculateDisplacedRBRs(
     displacedRefSpan: string,
-    allBaseNodes: CharNode[]
+    allBaseNodes: CharNode[],
+    rootSvg?: SVGElement
   ): BoundingRect[] {
     const parsed = parseDisplacedSpan(displacedRefSpan);
     if (!parsed) {
@@ -393,7 +414,7 @@ export class HintRenderer {
       return [];
     }
 
-    return this.calculateRBRs(nodes);
+    return this.calculateRBRs(nodes, rootSvg);
   }
 
   /**
