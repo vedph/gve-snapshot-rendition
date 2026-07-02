@@ -12,6 +12,7 @@ import {
   applyTextStyle,
   getSafeBBox,
   getTextWidth,
+  getAverageCharWidth,
 } from "./svg-utils";
 import { parseOffset } from "../utils/text-utils";
 
@@ -290,10 +291,20 @@ export class TextRenderer {
 
     this._logger.debug("TextRenderer", `Using RBR for positioning`, rbr);
 
-    // 2. Calculate position and offsets
+    // 2. Calculate position and offsets.
+    // "tw"/"th" resolve against the average character width/height in the
+    // current (possibly r_font-size/r_font-family-overridden) font, not the RBR.
     const position = config.textPosition || "o";
-    const offsetX = parseOffset(config.textOffsetX || 0, rbr.height, rbr.width);
-    const offsetY = parseOffset(config.textOffsetY || 0, rbr.height, rbr.width);
+    const avgCharWidth = getAverageCharWidth(
+      config.fontFamily,
+      config.fontSize,
+      config.bold,
+      config.italic,
+      rootSvg
+    );
+    const avgCharHeight = config.fontSize;
+    const offsetX = parseOffset(config.textOffsetX || 0, avgCharHeight, avgCharWidth);
+    const offsetY = parseOffset(config.textOffsetY || 0, avgCharHeight, avgCharWidth);
 
     // 3. Render characters at preliminary positions (baseline y=0) into a hidden
     //    temporary group so we can measure the actual visual EBR via getBBox().

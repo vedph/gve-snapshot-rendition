@@ -1,0 +1,11 @@
+:title
+test
+
+:base
+Hello strange world!
+
+:operations
+7×7: [r_hints="line-bottom-dotted snake-left" r_fore-color=red r_h-position=@2:e r_h-offset-x=@2:1tw]
+
+:dsc
+Test data.

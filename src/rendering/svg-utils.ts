@@ -441,6 +441,39 @@ export function getTextWidth(
 }
 
 /**
+ * Reference character used to compute the "average character width/height"
+ * that the "tw"/"th" offset units resolve against (see getAverageCharWidth).
+ * This is the same reference character used to size the space character.
+ */
+export const REFERENCE_CHAR = "m";
+
+/**
+ * Get the average character width for the given font settings, using
+ * REFERENCE_CHAR ("m") as the reference glyph. This is the basis for the
+ * "tw" (text width) unit used by r_char-offsets, r_t-offset-x/y, and
+ * r_h-offset-x/y — NOT the bounding box of a whole reference text span.
+ *
+ * @param measurementRoot - Optional SVG element to use as measurement context
+ *                          (see getTextWidth for why this matters).
+ */
+export function getAverageCharWidth(
+  fontFamily: string,
+  fontSize: number,
+  bold: boolean = false,
+  italic: boolean = false,
+  measurementRoot?: SVGElement
+): number {
+  return getTextWidth(
+    REFERENCE_CHAR,
+    fontFamily,
+    fontSize,
+    bold,
+    italic,
+    measurementRoot
+  );
+}
+
+/**
  * Move an element to the back (lowest z-index in SVG).
  */
 export function moveToBack(element: SVGElement): void {

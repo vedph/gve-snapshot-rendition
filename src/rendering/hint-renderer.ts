@@ -10,6 +10,7 @@ import {
   getSafeBBox,
   getTransformedBBox,
   applyTransform,
+  getAverageCharWidth,
 } from "./svg-utils";
 import { resolvePlaceholders, parseOffset } from "../utils/text-utils";
 import { parseDisplacedSpan } from "../utils/feature-utils";
@@ -121,6 +122,18 @@ export class HintRenderer {
         return;
       }
 
+      // Average character width/height in the default text settings, used to
+      // resolve "tw"/"th" units in offsetX/offsetY (r_h-offset-x/y). These are
+      // NOT the RBR (reference text bounds) — see docs "Hints" properties.
+      const avgCharWidth = getAverageCharWidth(
+        this._settings.fontFamily,
+        this._settings.fontSize,
+        this._settings.bold,
+        this._settings.italic,
+        rootSvg
+      );
+      const avgCharHeight = this._settings.fontSize;
+
       // 5. Check if this is a placeholder hint
       const hasPlaceholder = hintGroup.querySelector("#placeholder") !== null;
       // Default-mode placeholder: a placeholder element WITHOUT class="fit".
@@ -189,7 +202,9 @@ export class HintRenderer {
           effectiveHint,
           rbr,
           ebrBounds,
-          scalingInfo
+          scalingInfo,
+          avgCharWidth,
+          avgCharHeight
         );
 
         // 10. Check if prolog panning is needed (element visibility check)
@@ -452,7 +467,9 @@ export class HintRenderer {
     hint: OperationHint,
     rbr: BoundingRect,
     ebrBounds: BoundingRect,
-    scalingInfo: { scaleX: number; scaleY: number }
+    scalingInfo: { scaleX: number; scaleY: number },
+    avgCharWidth: number,
+    avgCharHeight: number
   ): Promise<void> {
     // Calculate the alignment point on the RBR
     const rbrAlignPoint = this.calculateRBRAlignmentPoint(hint.position, rbr);
@@ -460,9 +477,10 @@ export class HintRenderer {
     // Calculate the alignment point on the EBR (in local/untransformed coordinates)
     const ebrAlignPoint = this.calculateEBRAlignmentPoint(hint.position, ebrBounds);
 
-    // Parse offsets (they can be px or "th"/"tw")
-    const offsetX = parseOffset(hint.offsetX, rbr.height, rbr.width);
-    const offsetY = parseOffset(hint.offsetY, rbr.height, rbr.width);
+    // Parse offsets (they can be px or "th"/"tw", resolved against the average
+    // character height/width, not the RBR — see docs "Hints" properties).
+    const offsetX = parseOffset(hint.offsetX, avgCharHeight, avgCharWidth);
+    const offsetY = parseOffset(hint.offsetY, avgCharHeight, avgCharWidth);
 
     // Apply offsets to the RBR alignment point
     const finalRbrX = rbrAlignPoint.x + offsetX;
@@ -516,6 +534,7 @@ export class HintRenderer {
       ebrAlignPoint_LOCAL: ebrAlignPoint,
       scalingInfo,
       rotation: hint.rotation,
+      offsetInputs: { x: hint.offsetX, y: hint.offsetY, avgCharWidth, avgCharHeight },
       offsets: { x: offsetX, y: offsetY },
       finalRbrPoint: { x: finalRbrX, y: finalRbrY },
       transformString,

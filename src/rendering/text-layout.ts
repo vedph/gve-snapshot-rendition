@@ -2,7 +2,7 @@ import { CharNode } from "../models";
 import { GveRenditionSettings } from "../settings/settings";
 import { Logger } from "../core/logger";
 import { isLineBreak, isSpace } from "../utils/node-utils";
-import { getTextWidth } from "./svg-utils";
+import { getTextWidth, getAverageCharWidth } from "./svg-utils";
 import { parseOffset } from "../utils/text-utils";
 import { parseCharOffsets } from "../utils/feature-utils";
 import { RenditionConfig } from "./feature-resolver";
@@ -16,12 +16,6 @@ export interface CharPosition {
   nodeId: number;
   lineNumber: number;
 }
-
-/**
- * Reference character for calculating space width.
- * This can be changed if needed.
- */
-const REFERENCE_CHAR = "m";
 
 /**
  * Text layout calculator.
@@ -76,8 +70,7 @@ export class TextLayout {
    * Calculate the width of a space character based on reference character.
    */
   private calculateSpaceWidth(): number {
-    const refCharWidth = getTextWidth(
-      REFERENCE_CHAR,
+    const refCharWidth = getAverageCharWidth(
       this._settings.fontFamily,
       this._settings.fontSize,
       this._settings.bold,
@@ -107,8 +100,7 @@ export class TextLayout {
     // Compute the average character dimensions used to resolve "tw" and "th" units.
     // tw = average character width (width of the reference character 'm' in the current font)
     // th = average character height  (≈ font size, which is the em-square in CSS/SVG pixels)
-    const avgCharWidth = getTextWidth(
-      REFERENCE_CHAR,
+    const avgCharWidth = getAverageCharWidth(
       this._settings.fontFamily,
       this._settings.fontSize,
       this._settings.bold,

@@ -267,12 +267,12 @@ The rendition logic for added elements is:
 - for _added text_, the offset is set by `r_t-offset-x` and `r_t-offset-y` features.
 - for _hints_, the offset is set by hint's properties `offsetX` and `offsetY`, which can be overridden by `r_h-offset-x` and `r_h-offset-y` features.
 
-Offsets use either a simple number, e.g. `10`, or a suffixed number, using these suffixes for metrics derived from the reference text bounds:
+Offsets use either a simple number, e.g. `10`, or a suffixed number, using these suffixes for units:
 
-- `th` = reference text bounds height.
-- `tw` = reference text bounds width.
+- `th` = text character average height.
+- `tw` = text character average width.
 
-So, `10`=offset by 10, but `0.5th` = offset by half of the reference text height.
+So, `10`=offset by 10, but `0.5th` = offset by half of the character average text height.
 
 (5) **prolog**: immediately before rendering added elements, a special animation ("prolog") can be triggered to adjust the existing elements panning. This happens when the element which is going to be added, once its size and position have been fully computed, would fall outside the currently visible portion of the text rendition area. In this case, before adding the element, an animation gracefully pans the existing elements so that there is just enough room to display the element which is going to be added. The duration of this transition animation is defined in the `prologDuration` setting.
 

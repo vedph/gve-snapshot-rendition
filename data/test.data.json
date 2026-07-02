@@ -1,0 +1,468 @@
+{
+  "result": {
+    "steps": [
+      {
+        "operation": {
+          "dsl": "7×7: [r_hints=\"line-bottom-dotted snake-left\" r_fore-color=red r_h-position=@2:e r_h-offset-x=@2:1tw]",
+          "toAsIndex": false,
+          "to": 0,
+          "toRun": 0,
+          "atAsIndex": false,
+          "at": 7,
+          "run": 7,
+          "noTraceFeatures": false,
+          "type": 7,
+          "id": "d32dc401b9",
+          "rank": 0,
+          "features": [
+            {
+              "isNegated": false,
+              "isGlobal": false,
+              "isShortLived": false,
+              "setPolicy": 0,
+              "name": "r_hints",
+              "value": "line-bottom-dotted snake-left"
+            },
+            {
+              "isNegated": false,
+              "isGlobal": false,
+              "isShortLived": false,
+              "setPolicy": 0,
+              "name": "r_fore-color",
+              "value": "red"
+            },
+            {
+              "isNegated": false,
+              "isGlobal": false,
+              "isShortLived": false,
+              "setPolicy": 0,
+              "name": "r_h-position",
+              "value": "@2:e"
+            },
+            {
+              "isNegated": false,
+              "isGlobal": false,
+              "isShortLived": false,
+              "setPolicy": 0,
+              "name": "r_h-offset-x",
+              "value": "@2:1tw"
+            }
+          ],
+          "sources": []
+        },
+        "inputTag": "v0",
+        "outputTag": "v1",
+        "result": "Hello strange world!",
+        "refNodeIds": [7, 8, 9, 10, 11, 12, 13]
+      }
+    ],
+    "chainDump": "v0: Hello strange world!\r\nv1: Hello strange world!\r\n",
+    "chainTags": ["v0", "v1"],
+    "nodes": [
+      {
+        "id": 1,
+        "index": 0,
+        "label": "H",
+        "data": "H",
+        "sourceTag": "v0"
+      },
+      {
+        "id": 2,
+        "index": 0,
+        "label": "e",
+        "data": "e",
+        "sourceTag": "v0"
+      },
+      {
+        "id": 3,
+        "index": 0,
+        "label": "l",
+        "data": "l",
+        "sourceTag": "v0"
+      },
+      {
+        "id": 4,
+        "index": 0,
+        "label": "l",
+        "data": "l",
+        "sourceTag": "v0"
+      },
+      {
+        "id": 5,
+        "index": 0,
+        "label": "o",
+        "data": "o",
+        "sourceTag": "v0"
+      },
+      {
+        "id": 6,
+        "index": 0,
+        "label": "_",
+        "data": " ",
+        "sourceTag": "v0"
+      },
+      {
+        "id": 7,
+        "index": 0,
+        "label": "s",
+        "data": "s",
+        "sourceTag": "v0",
+        "features": {
+          "v0": [
+            {
+              "setPolicy": 0,
+              "name": "$seg-in",
+              "value": "d32dc401b9 v0:v1 1"
+            }
+          ],
+          "v1": [
+            {
+              "setPolicy": 0,
+              "name": "r_hints",
+              "value": "line-bottom-dotted snake-left"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_fore-color",
+              "value": "red"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_h-position",
+              "value": "@2:e"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_h-offset-x",
+              "value": "@2:1tw"
+            },
+            {
+              "setPolicy": 0,
+              "name": "$seg-out",
+              "value": "d32dc401b9 v0:v1 1"
+            }
+          ]
+        }
+      },
+      {
+        "id": 8,
+        "index": 0,
+        "label": "t",
+        "data": "t",
+        "sourceTag": "v0",
+        "features": {
+          "v0": [
+            {
+              "setPolicy": 0,
+              "name": "$seg-in",
+              "value": "d32dc401b9 v0:v1 2"
+            }
+          ],
+          "v1": [
+            {
+              "setPolicy": 0,
+              "name": "r_hints",
+              "value": "line-bottom-dotted snake-left"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_fore-color",
+              "value": "red"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_h-position",
+              "value": "@2:e"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_h-offset-x",
+              "value": "@2:1tw"
+            },
+            {
+              "setPolicy": 0,
+              "name": "$seg-out",
+              "value": "d32dc401b9 v0:v1 2"
+            }
+          ]
+        }
+      },
+      {
+        "id": 9,
+        "index": 0,
+        "label": "r",
+        "data": "r",
+        "sourceTag": "v0",
+        "features": {
+          "v0": [
+            {
+              "setPolicy": 0,
+              "name": "$seg-in",
+              "value": "d32dc401b9 v0:v1 3"
+            }
+          ],
+          "v1": [
+            {
+              "setPolicy": 0,
+              "name": "r_hints",
+              "value": "line-bottom-dotted snake-left"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_fore-color",
+              "value": "red"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_h-position",
+              "value": "@2:e"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_h-offset-x",
+              "value": "@2:1tw"
+            },
+            {
+              "setPolicy": 0,
+              "name": "$seg-out",
+              "value": "d32dc401b9 v0:v1 3"
+            }
+          ]
+        }
+      },
+      {
+        "id": 10,
+        "index": 0,
+        "label": "a",
+        "data": "a",
+        "sourceTag": "v0",
+        "features": {
+          "v0": [
+            {
+              "setPolicy": 0,
+              "name": "$seg-in",
+              "value": "d32dc401b9 v0:v1 4"
+            }
+          ],
+          "v1": [
+            {
+              "setPolicy": 0,
+              "name": "r_hints",
+              "value": "line-bottom-dotted snake-left"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_fore-color",
+              "value": "red"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_h-position",
+              "value": "@2:e"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_h-offset-x",
+              "value": "@2:1tw"
+            },
+            {
+              "setPolicy": 0,
+              "name": "$seg-out",
+              "value": "d32dc401b9 v0:v1 4"
+            }
+          ]
+        }
+      },
+      {
+        "id": 11,
+        "index": 0,
+        "label": "n",
+        "data": "n",
+        "sourceTag": "v0",
+        "features": {
+          "v0": [
+            {
+              "setPolicy": 0,
+              "name": "$seg-in",
+              "value": "d32dc401b9 v0:v1 5"
+            }
+          ],
+          "v1": [
+            {
+              "setPolicy": 0,
+              "name": "r_hints",
+              "value": "line-bottom-dotted snake-left"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_fore-color",
+              "value": "red"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_h-position",
+              "value": "@2:e"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_h-offset-x",
+              "value": "@2:1tw"
+            },
+            {
+              "setPolicy": 0,
+              "name": "$seg-out",
+              "value": "d32dc401b9 v0:v1 5"
+            }
+          ]
+        }
+      },
+      {
+        "id": 12,
+        "index": 0,
+        "label": "g",
+        "data": "g",
+        "sourceTag": "v0",
+        "features": {
+          "v0": [
+            {
+              "setPolicy": 0,
+              "name": "$seg-in",
+              "value": "d32dc401b9 v0:v1 6"
+            }
+          ],
+          "v1": [
+            {
+              "setPolicy": 0,
+              "name": "r_hints",
+              "value": "line-bottom-dotted snake-left"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_fore-color",
+              "value": "red"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_h-position",
+              "value": "@2:e"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_h-offset-x",
+              "value": "@2:1tw"
+            },
+            {
+              "setPolicy": 0,
+              "name": "$seg-out",
+              "value": "d32dc401b9 v0:v1 6"
+            }
+          ]
+        }
+      },
+      {
+        "id": 13,
+        "index": 0,
+        "label": "e",
+        "data": "e",
+        "sourceTag": "v0",
+        "features": {
+          "v0": [
+            {
+              "setPolicy": 0,
+              "name": "$seg-in",
+              "value": "d32dc401b9 v0:v1 7"
+            }
+          ],
+          "v1": [
+            {
+              "setPolicy": 0,
+              "name": "r_hints",
+              "value": "line-bottom-dotted snake-left"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_fore-color",
+              "value": "red"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_h-position",
+              "value": "@2:e"
+            },
+            {
+              "setPolicy": 0,
+              "name": "r_h-offset-x",
+              "value": "@2:1tw"
+            },
+            {
+              "setPolicy": 0,
+              "name": "$seg-out",
+              "value": "d32dc401b9 v0:v1 7"
+            }
+          ]
+        }
+      },
+      {
+        "id": 14,
+        "index": 0,
+        "label": "_",
+        "data": " ",
+        "sourceTag": "v0"
+      },
+      {
+        "id": 15,
+        "index": 0,
+        "label": "w",
+        "data": "w",
+        "sourceTag": "v0"
+      },
+      {
+        "id": 16,
+        "index": 0,
+        "label": "o",
+        "data": "o",
+        "sourceTag": "v0"
+      },
+      {
+        "id": 17,
+        "index": 0,
+        "label": "r",
+        "data": "r",
+        "sourceTag": "v0"
+      },
+      {
+        "id": 18,
+        "index": 0,
+        "label": "l",
+        "data": "l",
+        "sourceTag": "v0"
+      },
+      {
+        "id": 19,
+        "index": 0,
+        "label": "d",
+        "data": "d",
+        "sourceTag": "v0"
+      },
+      {
+        "id": 20,
+        "index": 0,
+        "label": "!",
+        "data": "!",
+        "sourceTag": "v0"
+      }
+    ],
+    "versionNodeIds": {
+      "v0": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+      ],
+      "v1": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+      ]
+    },
+    "globalFeatures": {
+      "v0": [],
+      "v1": []
+    }
+  }
+}

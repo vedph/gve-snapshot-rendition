@@ -2,6 +2,16 @@
 
 This file format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- 2026-07-02: rendition fixes:
+  - _offset units_ — tw/th now resolve against average character width/height instead of the whole reference-text bounding box:
+    - `svg-utils.ts` — added shared `getAverageCharWidth()` helper (reference char "m").
+    - `text-layout.ts` — refactored to use the shared helper (no behavior change).
+    - `hint-renderer.ts` — `applyHintPositionTransform` now resolves offsetX/offsetY against avg char width/height (from the component's default settings) instead of rbr.width/rbr.height.
+    - `text-renderer.ts` — same fix for r_t-offset-x/y, using the added text's effective (possibly overridden) font.
+  - _dotted line clobbered by animation_ — wipe-left/right/up/down in all 5 sample settings files (data/test.settings.json, h56-53, h5-48, aiucd, h5-03) now capture which drawable elements have an authored stroke-dasharray before the DrawSVGPlugin draw-in tween runs, and restore it (clear the inline style GSAP set) in onComplete, so custom dot/dash patterns survive the entrance animation.
+
+## [2.0.6]
+
 - 2026-06-26: issues fixed for renderer:
   - toolbar not updated on subsequent data changes.
   - `processData()` only called `toolbar.updateData()` during initial creation. On re-renders the toolbar showed the old step count. Fix: added an `else if (this._toolbar)` branch that calls `updateData()` when the toolbar already exists.
