@@ -104,6 +104,12 @@ export class GveSnapshotRendition extends HTMLElement {
   private _autoForwardEnabled: boolean = false;
   private _autoForwardTimerId: number | null = null;
   private _renderScheduled: boolean = false;
+  // Guards against re-entrant navigation: a slideshow tick (or a rapid
+  // double-click/keypress) firing while a previous goToVersionIndex() call
+  // is still awaiting its hint/text animations would otherwise re-run the
+  // whole render pipeline for the same transition, duplicating every
+  // element and animation involved (see goToVersionIndex()).
+  private _isNavigating: boolean = false;
 
   constructor() {
     super();
@@ -1025,68 +1031,87 @@ export class GveSnapshotRendition extends HTMLElement {
   private async goToVersionIndex(targetIndex: number): Promise<void> {
     if (!this._data || !this._textRenderer || !this._rootSvg) return;
 
-    this._logger.info(
-      `Navigating from v${this._currentVersionIndex} to v${targetIndex}`
-    );
-
     // Determine direction
     if (targetIndex === this._currentVersionIndex) {
       // Already at target
       return;
     }
 
-    // Stop any pending auto-forward when user manually navigates
-    this.stopAutoForward();
-
-    // Clear hilites before navigating
-    if (this._hilites && this._hilites.hasActiveHilites()) {
-      await this._hilites.clearHilites();
+    // Re-entrancy guard: a previous call may still be awaiting its hint/text
+    // animations (which can take arbitrarily long, since hints and their
+    // animations are user-defined). _currentVersionIndex is only updated
+    // once that call finishes, so without this guard a caller that fires
+    // again in the meantime (e.g. a slideshow tick, or a fast double-click)
+    // would re-run the whole render pipeline for the same transition,
+    // duplicating every hint/text element and animation it touches.
+    if (this._isNavigating) {
+      this._logger.warn(
+        `Ignoring navigation to v${targetIndex} - a navigation is already in progress`
+      );
+      return;
     }
-    if (this._versionsListArea) {
-      this._versionsListArea.clearHilites();
-    }
+    this._isNavigating = true;
 
-    if (targetIndex > this._currentVersionIndex) {
-      // FORWARD navigation: add elements
-      await this.navigateForward(targetIndex);
-    } else {
-      // BACKWARD navigation: remove elements
-      await this.navigateBackward(targetIndex);
-    }
+    try {
+      this._logger.info(
+        `Navigating from v${this._currentVersionIndex} to v${targetIndex}`
+      );
 
-    // Update versions list area
-    const versionTag = `v${targetIndex}`;
-    if (this._versionsListArea) {
-      this._versionsListArea.updateCurrentVersion(versionTag);
-    }
+      // Stop any pending auto-forward when user manually navigates
+      this.stopAutoForward();
 
-    // Update toolbar
-    if (this._toolbar) {
-      this._toolbar.setCurrentIndex(targetIndex);
-    }
+      // Clear hilites before navigating
+      if (this._hilites && this._hilites.hasActiveHilites()) {
+        await this._hilites.clearHilites();
+      }
+      if (this._versionsListArea) {
+        this._versionsListArea.clearHilites();
+      }
 
-    // Update version text area
-    this.updateVersionText(targetIndex);
+      if (targetIndex > this._currentVersionIndex) {
+        // FORWARD navigation: add elements
+        await this.navigateForward(targetIndex);
+      } else {
+        // BACKWARD navigation: remove elements
+        await this.navigateBackward(targetIndex);
+      }
 
-    // Update details area
-    this.updateDetailsArea(targetIndex);
+      // Update versions list area
+      const versionTag = `v${targetIndex}`;
+      if (this._versionsListArea) {
+        this._versionsListArea.updateCurrentVersion(versionTag);
+      }
 
-    // Re-setup hover listeners (new text elements may have been added)
-    this.setupTextElementHoverListeners();
+      // Update toolbar
+      if (this._toolbar) {
+        this._toolbar.setCurrentIndex(targetIndex);
+      }
 
-    // Check if we should auto-forward through grouped operations
-    // Only auto-forward if:
-    // 1. Feature is enabled
-    // 2. We moved forward (targetIndex > previous index)
-    // 3. Current operation has a groupId
-    // 4. Not already in slideshow mode
-    if (
-      this._autoForwardEnabled &&
-      targetIndex > 0 &&
-      targetIndex <= (this._data?.steps?.length || 0) &&
-      this._slideshowTimerId === null
-    ) {
-      this.checkAndTriggerAutoForward(targetIndex);
+      // Update version text area
+      this.updateVersionText(targetIndex);
+
+      // Update details area
+      this.updateDetailsArea(targetIndex);
+
+      // Re-setup hover listeners (new text elements may have been added)
+      this.setupTextElementHoverListeners();
+
+      // Check if we should auto-forward through grouped operations
+      // Only auto-forward if:
+      // 1. Feature is enabled
+      // 2. We moved forward (targetIndex > previous index)
+      // 3. Current operation has a groupId
+      // 4. Not already in slideshow mode
+      if (
+        this._autoForwardEnabled &&
+        targetIndex > 0 &&
+        targetIndex <= (this._data?.steps?.length || 0) &&
+        this._slideshowTimerId === null
+      ) {
+        this.checkAndTriggerAutoForward(targetIndex);
+      }
+    } finally {
+      this._isNavigating = false;
     }
   }
 
@@ -1652,9 +1677,24 @@ export class GveSnapshotRendition extends HTMLElement {
       this._toolbar.setNavigationDisabled(true);
     }
 
-    this._slideshowTimerId = window.setInterval(() => {
-      this.slideshowAdvance();
-    }, this._settings.slideshowInterval);
+    // Use a self-rescheduling setTimeout rather than setInterval: each tick
+    // is scheduled only after the previous slideshowAdvance() (and the
+    // navigation/animations it awaits) has fully completed. A fixed-tick
+    // setInterval would keep firing regardless of how long a transition's
+    // (user-defined) hint animations actually take, and once a tick landed
+    // mid-transition it would re-enter goToVersionIndex() for the very same
+    // transition, duplicating every hint/text element it renders.
+    const scheduleTick = () => {
+      this._slideshowTimerId = window.setTimeout(async () => {
+        await this.slideshowAdvance();
+        // Only reschedule if still active - slideshowAdvance() may have
+        // called stopSlideshow() (reached the end/start with no loop).
+        if (this._slideshowTimerId !== null) {
+          scheduleTick();
+        }
+      }, this._settings.slideshowInterval);
+    };
+    scheduleTick();
   }
 
   /**
@@ -1667,7 +1707,7 @@ export class GveSnapshotRendition extends HTMLElement {
     }
 
     this._logger.info("Stopping slideshow");
-    window.clearInterval(this._slideshowTimerId);
+    window.clearTimeout(this._slideshowTimerId);
     this._slideshowTimerId = null;
 
     if (this._toolbar) {
