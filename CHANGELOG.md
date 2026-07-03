@@ -2,6 +2,12 @@
 
 This file format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.8]
+
+- 2026-07-03: more hints.
+
+## [2.0.7]
+
 - 2026-07-02: rendition fixes:
   - _offset units_ — tw/th now resolve against average character width/height instead of the whole reference-text bounding box:
     - `svg-utils.ts` — added shared `getAverageCharWidth()` helper (reference char "m").
