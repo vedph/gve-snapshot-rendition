@@ -2900,9 +2900,8 @@ export class GveHintDesigner extends HTMLElement {
    */
   private syncSvgScroll(): void {
     if (!this._svgTextarea || !this._svgHighlightContainer) return;
-    const scrollTop = this._svgTextarea.scrollTop;
-    const scrollLeft = this._svgTextarea.scrollLeft;
-    this._svgHighlightContainer.style.transform = `translate(-${scrollLeft}px, -${scrollTop}px)`;
+    this._svgHighlightContainer.scrollTop = this._svgTextarea.scrollTop;
+    this._svgHighlightContainer.scrollLeft = this._svgTextarea.scrollLeft;
   }
 
   /**
@@ -2910,9 +2909,8 @@ export class GveHintDesigner extends HTMLElement {
    */
   private syncJsScroll(): void {
     if (!this._jsTextarea || !this._jsHighlightContainer) return;
-    const scrollTop = this._jsTextarea.scrollTop;
-    const scrollLeft = this._jsTextarea.scrollLeft;
-    this._jsHighlightContainer.style.transform = `translate(-${scrollLeft}px, -${scrollTop}px)`;
+    this._jsHighlightContainer.scrollTop = this._jsTextarea.scrollTop;
+    this._jsHighlightContainer.scrollLeft = this._jsTextarea.scrollLeft;
   }
 
   /**

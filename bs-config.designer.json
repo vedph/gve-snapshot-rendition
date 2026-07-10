@@ -3,6 +3,7 @@
   "server": {
     "baseDir": "./"
   },
-  "files": ["./dist/**/*.js", "./hint-designer.html", "./hint-designer-consumer.js"],
-  "startPath": "/hint-designer.html"
+  "files": ["./dist/index.js", "./hint-designer.html", "./hint-designer-consumer.js"],
+  "startPath": "/hint-designer.html",
+  "reloadDebounce": 500
 }

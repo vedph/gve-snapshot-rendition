@@ -148,6 +148,16 @@ document.addEventListener("DOMContentLoaded", () => {
         rotation: 0,
         animation: "#wipe-right",
       },
+      bowl: {
+        svg: '<g><path d="M 4.94,10.25 C 7.14,47.77 11.53,83.27 29.12,95.44 H 270.88 C 288.47,83.27 292.87,47.77 295.06,10.25" fill="none" stroke="{{r_fore-color}}" stroke-width="9" stroke-linecap="butt" stroke-linejoin="round" /></g>',
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1.1,
+        scaleY: 1.1,
+        rotation: 0,
+        animation: "#wipe-right",
+      },
       "line-bottom": {
         svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>\n  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
         position: "o",

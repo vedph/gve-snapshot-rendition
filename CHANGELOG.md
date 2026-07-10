@@ -2,6 +2,12 @@
 
 This file format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.9]
+
+- 2026-07-10:
+  - added bowl hint.
+  - fixed syntax highlighting in hint designer SVG code. In `gve-hint-designer.ts`, `syncSvgScroll`/`syncJsScroll` synced scroll by applying a CSS transform to the highlight `div` itself. Since that `div` is also the `overflow:hidden` clipping box, translating it moved the clip region along with the content — so scrolled-in text was clipped by the wrapper's own `overflow:hidden` and never painted (it was still there, hence text-selection made it visible via selection background). Fixed by setting `scrollTop`/`scrollLeft` directly instead, which shifts content within a fixed clip region (works fine on `overflow:hidden` elements programmatically).
+
 ## [2.0.8]
 
 - 2026-07-03: more hints.
