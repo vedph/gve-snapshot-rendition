@@ -13,6 +13,7 @@ import {
   getSafeBBox,
   getTextWidth,
   getAverageCharWidth,
+  rotateRectAroundPoint,
 } from "./svg-utils";
 import { parseOffset } from "../utils/text-utils";
 
@@ -99,10 +100,11 @@ export class TextRenderer {
       const pos = positions[i];
 
       // Cache bounds for spaces even though they're not rendered
-      // This is needed for RBR calculations that include spaces
+      // This is needed for RBR calculations that include spaces.
+      // Use the layout's space width (reference char width × fraction) so the
+      // cached bounds match the horizontal advance actually applied.
       if (isSpace(node)) {
-        const spaceWidth =
-          this._settings.fontSize * this._settings.spaceWidthFraction;
+        const spaceWidth = this._textLayout.getSpaceWidth();
         const spaceY = pos.y - this._settings.fontSize; // Approximate top of character
         // Create a DOMRect-like object for the space bounds
         const spaceBounds = {
@@ -179,6 +181,11 @@ export class TextRenderer {
         backColor: config.backColor,
         italic: config.italic,
         bold: config.bold,
+        underline: config.underline,
+        overline: config.overline,
+        strike: config.strike,
+        textLineStyle: config.textLineStyle,
+        textLineColor: config.textLineColor,
       });
     } else {
       applyTextStyle(textEl, {
@@ -188,14 +195,33 @@ export class TextRenderer {
         backColor: this._settings.backColor,
         italic: this._settings.italic,
         bold: this._settings.bold,
+        underline: this._settings.underline,
+        overline: this._settings.overline,
+        strike: this._settings.strike,
+        textLineStyle: this._settings.textLineStyle,
+        textLineColor: this._settings.textLineColor,
       });
+    }
+
+    // Per-character rotation (r_rotate): rotate each glyph around its own
+    // anchor point (the character's baseline position), not the SVG origin.
+    const rotate = config?.rotate;
+    if (rotate) {
+      textEl.setAttribute(
+        "transform",
+        `rotate(${rotate}, ${position.x}, ${position.y})`
+      );
     }
 
     rootSvg.appendChild(textEl);
 
-    // Cache bounds
+    // Cache bounds. getBBox() ignores the element's own transform, so for
+    // rotated characters the cached rect is recomputed around the anchor.
     const bbox = getSafeBBox(textEl);
-    this._boundsCache.set(`n_${node.id}`, bbox);
+    this._boundsCache.set(
+      `n_${node.id}`,
+      rotate ? rotateRectAroundPoint(bbox, rotate, position.x, position.y) : bbox
+    );
 
     // Animate if function provided
     if (animationFn) {
@@ -237,6 +263,7 @@ export class TextRenderer {
 
     if (nodes.length === 0) {
       this._logger.warn("No nodes to render");
+      this._logger.timeEnd(`renderAdditionalText-${versionTag}`);
       return;
     }
 
@@ -260,11 +287,11 @@ export class TextRenderer {
 
       // If r_t-value has fewer characters, we need to only render those nodes
       if (overrideChars.length < nodes.length) {
-        nodes = nodes.slice(0, overrideChars.length);
         this._logger.debug(
           "TextRenderer",
           `r_t-value has fewer characters (${overrideChars.length}) than nodes (${nodes.length}), only rendering first ${overrideChars.length} characters`,
         );
+        nodes = nodes.slice(0, overrideChars.length);
       }
     }
 
@@ -283,6 +310,7 @@ export class TextRenderer {
 
     if (rbrs.length === 0) {
       this._logger.warn("No RBRs calculated for additional text, skipping");
+      this._logger.timeEnd(`renderAdditionalText-${versionTag}`);
       return;
     }
 
@@ -335,7 +363,20 @@ export class TextRenderer {
         backColor: config.backColor,
         italic: config.italic,
         bold: config.bold,
+        underline: config.underline,
+        overline: config.overline,
+        strike: config.strike,
+        textLineStyle: config.textLineStyle,
+        textLineColor: config.textLineColor,
       });
+      // Per-character rotation (r_rotate) is a size transform: apply it
+      // before measuring so the EBR accounts for the rotated glyphs.
+      if (config.rotate) {
+        textEl.setAttribute(
+          "transform",
+          `rotate(${config.rotate}, ${pos.x}, ${pos.y})`
+        );
+      }
       tempGroup.appendChild(textEl);
       measuredElements.push({ el: textEl, node, initX: pos.x, initY: pos.y });
     }
@@ -421,13 +462,30 @@ export class TextRenderer {
 
     // 9. Move each element to its final position and add to the SVG
     for (const { el, node, initX, initY } of measuredElements) {
-      el.setAttribute("x", String(initX + dx));
-      el.setAttribute("y", String(initY + dy));
+      const finalX = initX + dx;
+      const finalY = initY + dy;
+      el.setAttribute("x", String(finalX));
+      el.setAttribute("y", String(finalY));
+      // Re-anchor the per-character rotation to the moved position, or the
+      // glyph would rotate around the pre-translation measuring anchor.
+      if (config.rotate) {
+        el.setAttribute(
+          "transform",
+          `rotate(${config.rotate}, ${finalX}, ${finalY})`
+        );
+      }
 
       rootSvg.appendChild(el);
 
+      // getBBox() ignores the element's own transform, so for rotated
+      // characters the cached rect is recomputed around the anchor.
       const bbox = getSafeBBox(el);
-      this._boundsCache.set(`n_${node.id}`, bbox);
+      this._boundsCache.set(
+        `n_${node.id}`,
+        config.rotate
+          ? rotateRectAroundPoint(bbox, config.rotate, finalX, finalY)
+          : bbox
+      );
 
       if (animationFn) {
         el.style.opacity = "0";
@@ -452,24 +510,37 @@ export class TextRenderer {
   ): CharPosition[] {
     const positions: CharPosition[] = [];
     let currentX = baseX;
-    const currentY = baseY;
+    let currentY = baseY;
+    let lineNumber = 0;
 
     const fontSize = config?.fontSize ?? this._settings.fontSize;
     const fontFamily = config?.fontFamily ?? this._settings.fontFamily;
     const bold = config?.bold ?? this._settings.bold;
     const italic = config?.italic ?? this._settings.italic;
 
+    // Space width follows the same rule as base text: a fraction
+    // (spaceWidthFraction) of the reference character's width in the
+    // effective font, not of the font size.
+    const spaceWidth =
+      getAverageCharWidth(fontFamily, fontSize, bold, italic, this._measurementRoot) *
+      this._settings.spaceWidthFraction;
+
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
 
       if (isLineBreak(node)) {
-        positions.push({ x: currentX, y: currentY, nodeId: node.id, lineNumber: 0 });
+        // Line break: start a new line, mirroring base text layout. Uses the
+        // effective font size so smaller/larger added text wraps accordingly.
+        currentX = baseX;
+        currentY +=
+          fontSize * this._settings.lineHeight + this._settings.lineSpacing;
+        lineNumber++;
+        positions.push({ x: currentX, y: currentY, nodeId: node.id, lineNumber });
       } else if (isSpace(node)) {
-        const spaceWidth = fontSize * 0.33;
-        positions.push({ x: currentX, y: currentY, nodeId: node.id, lineNumber: 0 });
+        positions.push({ x: currentX, y: currentY, nodeId: node.id, lineNumber });
         currentX += spaceWidth + this._settings.charSpacing;
       } else {
-        positions.push({ x: currentX, y: currentY, nodeId: node.id, lineNumber: 0 });
+        positions.push({ x: currentX, y: currentY, nodeId: node.id, lineNumber });
         const charWidth = getTextWidth(
           node.data,
           fontFamily,

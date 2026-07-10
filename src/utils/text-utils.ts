@@ -52,7 +52,11 @@ export function parseOffset(
 
 /**
  * Replace placeholders in SVG content.
- * Placeholders are in the format {{featureName}}.
+ * Placeholders are in the format {{featureName}}, or a fallback chain
+ * {{name ?? other ?? ...}}: names are tried left to right and the first one
+ * having a variable wins. There is no limit to the number of fallbacks.
+ * For instance {{r_fore-color ?? r_color}} resolves to the value of
+ * r_fore-color when defined, otherwise to the value of r_color.
  *
  * @param svgContent - The SVG content with placeholders
  * @param variables - Map of variable names to values
@@ -62,10 +66,23 @@ export function resolvePlaceholders(
   svgContent: string,
   variables: Map<string, string>
 ): string {
-  // Match {{placeholder}} where placeholder can contain letters, numbers, hyphens, and underscores
-  return svgContent.replace(/\{\{([\w\-]+)\}\}/g, (match, name) => {
-    return variables.get(name) || match; // Keep placeholder if not found
-  });
+  // Match {{name}} or {{name ?? name ?? ...}} where each name can contain
+  // letters, numbers, hyphens, and underscores
+  return svgContent.replace(
+    /\{\{\s*([\w\-]+(?:\s*\?\?\s*[\w\-]+)*)\s*\}\}/g,
+    (match, chain: string) => {
+      const names = chain.split("??").map((n) => n.trim());
+      for (const name of names) {
+        const value = variables.get(name);
+        // An empty string is a defined value; only a missing variable
+        // falls through to the next name in the chain
+        if (value !== undefined) {
+          return value;
+        }
+      }
+      return match; // Keep placeholder if no name in the chain resolves
+    }
+  );
 }
 
 /**

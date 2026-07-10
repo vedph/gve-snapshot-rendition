@@ -53,6 +53,12 @@ export interface GveRenditionSettings {
   /** Default strikethrough thickness in pixels (undefined = no strike) */
   strike?: number;
 
+  /** Default decoration line style: solid, dotted, dashed, wavy (undefined = solid) */
+  textLineStyle?: string;
+
+  /** Default decoration line color (undefined = same as text color) */
+  textLineColor?: string;
+
   // ==================== Spacing Settings ====================
 
   /** Fraction of reference character width to use for space width (default: 0.33) */
@@ -199,6 +205,8 @@ export const DEFAULT_SETTINGS: GveRenditionSettings = {
   underline: undefined,
   overline: undefined,
   strike: undefined,
+  textLineStyle: undefined,
+  textLineColor: undefined,
 
   // Spacing settings
   spaceWidthFraction: 0.33,

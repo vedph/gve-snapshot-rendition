@@ -107,7 +107,8 @@ export function applyTextStyle(
     underline?: number;
     overline?: number;
     strike?: number;
-    rotate?: number;
+    textLineStyle?: string;
+    textLineColor?: string;
   }
 ): void {
   const attrs: Record<string, string | number> = {};
@@ -122,19 +123,35 @@ export function applyTextStyle(
   }
   if (style.italic) attrs["font-style"] = "italic";
   if (style.bold) attrs["font-weight"] = "bold";
-  if (style.rotate) attrs["transform"] = `rotate(${style.rotate})`;
 
-  // Text decorations
+  setAttributes(element, attrs);
+
+  // Text decorations. Applied via inline CSS longhands (not the SVG
+  // text-decoration attribute) so that thickness, line style and color are
+  // honored by the text layout engine and follow the glyphs when the
+  // character is rotated. NOTE: per-character rotation is NOT handled here,
+  // because a plain rotate() would spin the glyph around the SVG origin;
+  // renderers apply rotate(deg, x, y) around each character's own anchor.
   const decorations: string[] = [];
   if (style.underline) decorations.push("underline");
   if (style.overline) decorations.push("overline");
   if (style.strike) decorations.push("line-through");
 
   if (decorations.length > 0) {
-    attrs["text-decoration"] = decorations.join(" ");
+    element.style.textDecorationLine = decorations.join(" ");
+    // CSS has a single thickness for all decoration lines of an element:
+    // use the first non-zero one (they are rarely combined).
+    const thickness = style.underline || style.overline || style.strike;
+    if (thickness && thickness > 0) {
+      element.style.textDecorationThickness = `${thickness}px`;
+    }
+    if (style.textLineStyle) {
+      element.style.textDecorationStyle = style.textLineStyle;
+    }
+    if (style.textLineColor) {
+      element.style.textDecorationColor = style.textLineColor;
+    }
   }
-
-  setAttributes(element, attrs);
 }
 
 /**
@@ -348,6 +365,41 @@ export function applyTransform(
   if (transforms.length > 0) {
     element.setAttribute("transform", transforms.join(" "));
   }
+}
+
+/**
+ * Compute the axis-aligned bounding box of a rectangle rotated around a
+ * point, using SVG rotation direction (positive = clockwise, y-axis down).
+ *
+ * Used to cache correct bounds for per-character rotated text: getBBox()
+ * returns LOCAL coordinates which ignore the rotate(deg, x, y) transform
+ * applied to the element, while getTransformedBBox() would also bake in
+ * ancestor transforms (e.g. the pan/zoom viewport), which must stay out
+ * of the bounds cache.
+ */
+export function rotateRectAroundPoint(
+  rect: { x: number; y: number; width: number; height: number },
+  degrees: number,
+  cx: number,
+  cy: number
+): DOMRect {
+  const rad = (degrees * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+
+  const corners: [number, number][] = [
+    [rect.x, rect.y],
+    [rect.x + rect.width, rect.y],
+    [rect.x, rect.y + rect.height],
+    [rect.x + rect.width, rect.y + rect.height],
+  ];
+
+  const xs = corners.map(([x, y]) => cx + (x - cx) * cos - (y - cy) * sin);
+  const ys = corners.map(([x, y]) => cy + (x - cx) * sin + (y - cy) * cos);
+
+  const minX = Math.min(...xs);
+  const minY = Math.min(...ys);
+  return new DOMRect(minX, minY, Math.max(...xs) - minX, Math.max(...ys) - minY);
 }
 
 /**

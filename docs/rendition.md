@@ -408,6 +408,8 @@ By default, the hint rendition features apply to ALL the hints in the operation 
 
 The SVG code in the hint's `svg` property can include placeholders, which are wrapped in `{{...}}` (whiskers) and are represented by the name of the feature we want to get the value from. For instance, `<rect width="100" height="50" fill="{{r_color}}" />` has a placeholder `{{r_color}}` meaning that we will have to replace it with the value of a feature named `r_color` (or with nothing, when that feature is not found).
 
+A placeholder can also specify any number of **fallback names**, separated by `??`. Names are tried from left to right, and the first one having a value wins; when none resolves, the placeholder is left as it is. For instance, `{{r_fore-color ?? r_color}}` resolves to the value of the `r_fore-color` feature when defined, and otherwise to the value of the `r_color` feature. There is no limit to the number of appended fallback names (e.g. `{{a ?? b ?? c}}`).
+
 When getting the hint's `svg`, the component must take care of resolving all these placeholders before proceeding further.
 
 ### Hint Transformation Properties

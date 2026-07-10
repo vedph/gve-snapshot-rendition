@@ -93,6 +93,8 @@ export class FeatureResolver {
       underline: baseSettings.underline,
       overline: baseSettings.overline,
       strike: baseSettings.strike,
+      textLineStyle: baseSettings.textLineStyle,
+      textLineColor: baseSettings.textLineColor,
       textOffsetX: 0,
       textOffsetY: 0,
     };
@@ -325,9 +327,13 @@ export class FeatureResolver {
       }
     }
 
-    // If no hints defined yet in config, we'll still store the override.
-    // It will be applied when hints are processed.
-    const hints: (string | number)[] = targetHints ?? (config.hints ?? ["*"]);
+    // Untargeted overrides (no "@" prefix) are always stored under the "*"
+    // wildcard key. Storing them under the hint keys from config.hints would
+    // (a) depend on whether r_hints was parsed before this feature, and
+    // (b) give them key-level priority, letting them overwrite an explicit
+    // "@key:" override for the same property — the documented precedence is
+    // ordinal > key > wildcard (see applyHintOverrides in HintRenderer).
+    const hints: (string | number)[] = targetHints ?? ["*"];
 
     for (const hintKey of hints) {
       // Get or create override object for this hint key / ordinal

@@ -842,13 +842,14 @@ export class GveSnapshotRendition extends HTMLElement {
         `No reference nodes found for operation ${operation.id}`
       );
       // Still fire event even if no reference nodes
+      const previousVersion = this._currentVersion;
       this._currentVersion = versionTag;
       // Extract version index from tag (e.g., "v2" → 2)
       const versionMatch = versionTag.match(/v(\d+)/);
       this._currentVersionIndex = versionMatch ? parseInt(versionMatch[1]) : 0;
       this.dispatchEvent(
         new CustomEvent("versionTagChange", {
-          detail: { from: this._currentVersion, to: versionTag },
+          detail: { from: previousVersion, to: versionTag },
         })
       );
       return;

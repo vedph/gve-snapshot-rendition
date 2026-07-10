@@ -184,12 +184,16 @@ export function parseDisplacedSpan(
 export function parseHintVars(value: string): Map<string, string> {
   const result = new Map<string, string>();
 
-  // Match pattern name=value
+  // Match pattern name=value, splitting at the first "=" only so that
+  // values containing "=" (e.g. URLs with query strings) survive intact
   const pairs = value.trim().split(/\s+/);
   for (const pair of pairs) {
-    const [name, val] = pair.split("=");
+    const sepIndex = pair.indexOf("=");
+    if (sepIndex <= 0) continue;
+    const name = pair.substring(0, sepIndex).trim();
+    const val = pair.substring(sepIndex + 1).trim();
     if (name && val) {
-      result.set(name.trim(), val.trim());
+      result.set(name, val);
     }
   }
 
