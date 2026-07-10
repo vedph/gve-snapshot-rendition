@@ -552,9 +552,16 @@ export class TextRenderer {
     if (nodes.length === 0) return [];
 
     const rbrs: BoundingRect[] = [];
-    const nodeElementIds = nodes.map((n) => `n_${n.id}`);
 
     // Group nodes by line by checking their Y coordinates.
+    // IMPORTANT: spaces and line breaks are skipped, exactly as in
+    // HintRenderer.calculateRBRs. They have no SVG element, so the baseline
+    // read below would fall back to their cached synthetic bounds top
+    // (baseline - fontSize), which differs from neighboring characters'
+    // baseline by ~fontSize — far beyond the 5px tolerance — falsely
+    // splitting a single line into one group per word. Interior spaces
+    // don't affect the union bounds anyway, since the flanking characters
+    // cover their x-range.
     // IMPORTANT: this compares the character's laid-out baseline Y (the `y`
     // attribute TextLayout assigned when positioning it), NOT its cached
     // getBBox().y. The tight ink bbox top varies per glyph shape (ascenders,
@@ -565,7 +572,12 @@ export class TextRenderer {
     let currentLineGroup: string[] = [];
     let lastBaselineY: number | null = null;
 
-    for (const elementId of nodeElementIds) {
+    for (const node of nodes) {
+      if (isSpace(node) || isLineBreak(node)) {
+        continue;
+      }
+
+      const elementId = `n_${node.id}`;
       const bounds = this._boundsCache.get(elementId);
       if (!bounds) {
         this._logger.warn(`Bounds not found for node element ${elementId}`);
@@ -591,6 +603,18 @@ export class TextRenderer {
     // Add last group
     if (currentLineGroup.length > 0) {
       lineGroups.push(currentLineGroup);
+    }
+
+    // Fallback: if every reference node is invisible (e.g. the operation's
+    // reference span is a lone space), use the cached synthetic bounds of
+    // all nodes as a single group so the added text still gets an RBR.
+    if (lineGroups.length === 0) {
+      const cachedIds = nodes
+        .map((n) => `n_${n.id}`)
+        .filter((id) => this._boundsCache.get(id) !== undefined);
+      if (cachedIds.length > 0) {
+        lineGroups.push(cachedIds);
+      }
     }
 
     // Calculate RBR for each line group

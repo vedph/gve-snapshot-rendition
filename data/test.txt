@@ -2,10 +2,15 @@
 test
 
 :base
-Hello strange world!
+53.
+Frankreichs traurig Geſchick es mögen’s Große bedenken ,
+Aber bedenken fürwahr ſollen es Kleine noch mehr .
+Große gingen zu Grunde : wer aber ſchützte die Menge
+Gegen die Menge ? da war Menge der Menge Tÿrann .
 
 :operations
-7×7: [r_hints="line-bottom-dotted snake-left" r_fore-color=red r_h-position=@2:e r_h-offset-x=@2:1tw]
+34×16="die Großen mögen’s" [r_fore-color=blue r_t-position=n accepted-source-of=A1 *log:="replace \"es mögen’s Große \" with \"die Großen mögen’s\"" reason=proposal]
+138×8="doch wer be" [r_fore-color=blue r_t-position=n accepted-source-of=A1 *log:="replace \"wer aber \" with \"doch wer be\"" *version^:=AS4 r_font-size=18 reason=proposal]
 
 :dsc
 Test data.

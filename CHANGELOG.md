@@ -2,6 +2,8 @@
 
 This file format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- 2026-07-10: fixes to added text rendition (changed only `text-renderer.ts`, in `calculateRBRs`): space and line-break nodes are now skipped before line-grouping, exactly as `HintRenderer.calculateRBRs` already does. Previously a space (which has no SVG element) fell back to its synthetic cached bounds top instead of the baseline, differing from its neighbors by ~fontSize, so every space falsely started a new line group — and `renderAdditionalText` then centered the added text over rbrs[0], i.e. just the first word ("es", "wer"). Added a safety fallback the hint renderer doesn't need: if every reference node is invisible (e.g. a span consisting of a lone space), all nodes with cached bounds form a single group, so the added text still gets an RBR instead of silently not rendering. The hint path was not touched; genuine multi-line splits still work because real line breaks change the baseline y of rendered characters, which is what the grouping now exclusively compares.
+
 ## [2.0.9]
 
 - 2026-07-10:
