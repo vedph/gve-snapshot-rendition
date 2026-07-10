@@ -7,6 +7,7 @@ import {
 import { OperationHint } from "../settings/hint-models";
 import { RelativePosition } from "../core/gve-snapshot-rendition";
 import { Logger } from "../core/logger";
+import { resolvePlaceholders } from "../utils/text-utils";
 import hljs from "highlight.js";
 import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import * as feather from "feather-icons";
@@ -77,22 +78,18 @@ export class GveHintDesigner extends HTMLElement {
   private _isPlaying: boolean = false;
   private _progressUpdateInterval?: number;
 
+  // Document-level pan handlers, stored so they can be removed on disconnect
+  // (otherwise each connect cycle would leak a new pair of listeners).
+  private _panMoveHandler?: (e: MouseEvent) => void;
+  private _panUpHandler?: () => void;
+
   constructor() {
     super();
 
     // Create logger
     this._logger = new Logger("GVE-HintDesigner", this._settings.debug);
 
-    // Register GSAP plugins
-    const gsap = (window as any).gsap;
-    if (gsap) {
-      gsap.registerPlugin(DrawSVGPlugin);
-      this._logger.debug(
-        "Component",
-        "DrawSVG plugin registered:",
-        gsap.plugins.drawSVG !== undefined
-      );
-    }
+    this.registerGsapPlugins();
 
     // Create shadow DOM
     this._shadow = this.attachShadow({ mode: "open" });
@@ -101,12 +98,35 @@ export class GveHintDesigner extends HTMLElement {
   }
 
   /**
+   * Register GSAP plugins when GSAP is available. Retried in
+   * connectedCallback because GSAP may be loaded after the component
+   * class is constructed.
+   */
+  private registerGsapPlugins(): void {
+    const gsap = (window as any).gsap;
+    if (gsap && !gsap.plugins?.drawSVG) {
+      gsap.registerPlugin(DrawSVGPlugin);
+      this._logger.debug(
+        "Component",
+        "DrawSVG plugin registered:",
+        gsap.plugins.drawSVG !== undefined
+      );
+    }
+  }
+
+  /**
    * Called when component is added to the DOM.
    */
   public connectedCallback(): void {
     this._logger.info("Component connected to DOM");
+    this.registerGsapPlugins();
     this.render();
     this.initializeEventListeners();
+    // Reflect any state assigned before the element was connected (a common
+    // pattern in vanilla consumers: set data/settings/hintId first, append
+    // later). render() builds empty dropdowns/tables, so populate them now.
+    this.refreshUI();
+    this.refreshVariablesTable();
   }
 
   /**
@@ -181,9 +201,10 @@ export class GveHintDesigner extends HTMLElement {
       this._hintVariables = value || [];
     }
     this.refreshVariablesTable();
-    this.fireEvent("hintVariablesChange", {
-      hintVariables: this._hintVariables,
-    });
+    // NOTE: no hintVariablesChange event here. Change events represent USER
+    // edits (add/edit/delete/populate, which fire it themselves); firing from
+    // the setter would echo programmatic assignments back to the consumer,
+    // which can loop forever with two-way bindings that clone the array.
   }
 
   // ==================== RENDERING ====================
@@ -1063,7 +1084,12 @@ export class GveHintDesigner extends HTMLElement {
       (panel as HTMLElement).style.cursor = "grabbing";
     });
 
-    document.addEventListener("mousemove", (e: MouseEvent) => {
+    // Remove any handlers from a previous connect cycle before adding new
+    // ones: connectedCallback re-runs initializeEventListeners each time the
+    // element is (re)attached, and document-level listeners would accumulate.
+    this.removeDocumentPanListeners();
+
+    this._panMoveHandler = (e: MouseEvent) => {
       if (!this._isPanning) return;
 
       const deltaX = e.clientX - this._lastPanX;
@@ -1076,18 +1102,38 @@ export class GveHintDesigner extends HTMLElement {
       this._lastPanY = e.clientY;
 
       this.updateSvgTransform();
-    });
+    };
+    document.addEventListener("mousemove", this._panMoveHandler);
 
-    document.addEventListener("mouseup", () => {
+    this._panUpHandler = () => {
       if (this._isPanning) {
         this._isPanning = false;
-        const panelEl = panel as HTMLElement;
-        panelEl.style.cursor = "grab";
+        const panelEl = this._shadow.querySelector(
+          ".svg-display-panel"
+        ) as HTMLElement | null;
+        if (panelEl) {
+          panelEl.style.cursor = "grab";
+        }
       }
-    });
+    };
+    document.addEventListener("mouseup", this._panUpHandler);
 
     // Set initial cursor
     (panel as HTMLElement).style.cursor = "grab";
+  }
+
+  /**
+   * Remove the document-level pan listeners, if any.
+   */
+  private removeDocumentPanListeners(): void {
+    if (this._panMoveHandler) {
+      document.removeEventListener("mousemove", this._panMoveHandler);
+      this._panMoveHandler = undefined;
+    }
+    if (this._panUpHandler) {
+      document.removeEventListener("mouseup", this._panUpHandler);
+      this._panUpHandler = undefined;
+    }
   }
 
   /**
@@ -1136,6 +1182,8 @@ export class GveHintDesigner extends HTMLElement {
       clearInterval(this._progressUpdateInterval);
       this._progressUpdateInterval = undefined;
     }
+    this.removeDocumentPanListeners();
+    this._isPanning = false;
   }
 
   // ==================== UI ACTIONS ====================
@@ -1543,14 +1591,15 @@ export class GveHintDesigner extends HTMLElement {
     const confirm = window.confirm(`Delete hint "${this._hintId}"?`);
     if (!confirm) return;
 
-    delete this._data.hints[this._hintId];
+    const deletedId = this._hintId;
+    delete this._data.hints[deletedId];
     this.hintId = undefined;
     this.refreshHintsDropdown();
     this.clearHintForm();
     this.showMessage("Hint deleted", "success");
     this.fireEvent("dataChange", { data: this._data });
 
-    this._logger.info("Deleted hint", this._hintId);
+    this._logger.info("Deleted hint", deletedId);
   }
 
   /**
@@ -1665,20 +1714,21 @@ export class GveHintDesigner extends HTMLElement {
 
   /**
    * Resolve variables in SVG code.
+   * Delegates to the same resolver used by the renderer (shared semantics:
+   * literal names — no regex injection — and "??" fallback chains like
+   * {{r_fore-color ?? r_color}}).
    */
   private resolveVariables(svgCode: string): string {
-    let resolved = svgCode;
-
-    this._hintVariables.forEach((variable) => {
-      const placeholder = `{{${variable.name}}}`;
-      resolved = resolved.replace(new RegExp(placeholder, "g"), variable.value);
-    });
-
-    return resolved;
+    const variables = new Map<string, string>(
+      this._hintVariables.map((v) => [v.name, v.value])
+    );
+    return resolvePlaceholders(svgCode, variables);
   }
 
   /**
    * Extract variable names from SVG code (variables in {{...}} placeholders).
+   * Placeholders may contain "??" fallback chains: each name in a chain is
+   * reported as a separate variable.
    */
   private extractVariablesFromSvg(svgCode: string): string[] {
     const variablePattern = /\{\{([^}]+)\}\}/g;
@@ -1686,9 +1736,11 @@ export class GveHintDesigner extends HTMLElement {
     let match;
 
     while ((match = variablePattern.exec(svgCode)) !== null) {
-      const varName = match[1].trim();
-      if (varName && !variables.includes(varName)) {
-        variables.push(varName);
+      for (const name of match[1].split("??")) {
+        const varName = name.trim();
+        if (varName && !variables.includes(varName)) {
+          variables.push(varName);
+        }
       }
     }
 

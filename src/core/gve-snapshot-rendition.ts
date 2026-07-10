@@ -507,6 +507,21 @@ export class GveSnapshotRendition extends HTMLElement {
    * The SVG rendition panel has no header and acts as the fixed background.
    */
   private initializeGoldenLayout(): void {
+    // Guard against stale rAF callbacks: render() can run more than once
+    // before the first scheduled callback fires (e.g. a consumer sets
+    // settings/data before the element is connected, then connectedCallback
+    // renders again). Without these checks two GoldenLayout instances would
+    // be created on the same container, duplicating panels and leaking the
+    // first instance's ResizeObserver.
+    if (!this.isConnected) {
+      this._logger.debug("GL", "Skipping GL init - component not connected");
+      return;
+    }
+    if (this._goldenLayout) {
+      this._goldenLayout.destroy();
+      this._goldenLayout = undefined;
+    }
+
     const glContainer = this._shadow.getElementById(
       "gl-container"
     ) as HTMLElement;
@@ -603,6 +618,18 @@ export class GveSnapshotRendition extends HTMLElement {
         showPopoutIcon: false,
         showMaximiseIcon: false,
         showCloseIcon: false,
+        // Tab dragging/docking is disabled: the four panels are fixed
+        // functional areas, and users only need the splitters to
+        // redistribute space. This prevents dragging a panel into another
+        // stack (or into limbo) and losing the intended layout. The
+        // "reset layout" toolbar button remains the escape hatch.
+        reorderEnabled: false,
+      },
+      dimensions: {
+        // Prevent panels from being collapsed to zero size via the
+        // splitters, which would make them hard to grab back.
+        defaultMinItemWidth: "80px",
+        defaultMinItemHeight: "60px",
       },
       root: {
         type: "column",

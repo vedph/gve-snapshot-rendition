@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1.1,
         scaleY: 1.1,
         rotation: 0,
-        animation: "#wipe-right",
+        animation: "#draw-on",
       },
       box: {
         svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1.1,
         scaleY: 1.1,
         rotation: 0,
-        animation: "#wipe-right",
+        animation: "#draw-on",
       },
       "line-bottom": {
         svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>\n  <line x1="0" y1="100" x2="300" y2="100" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 1.5,
         rotation: 0,
-        animation: "#wipe-down",
+        animation: "#draw-on",
       },
       snake: {
         svg: '<g>\n  <path\n     style="fill:none;stroke:{{r_fore-color}};stroke-width:5"\n     d="M 197.68715,3.0148358 156.47518,14.039149 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 l -25.56877,14.045081 v 0"\n     />\n</g>',
@@ -286,7 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1.2,
         scaleY: 2,
         rotation: 0,
-        animation: "#wipe-right",
+        animation: "#draw-on",
       },
       "snake-left": {
         svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>\n  <path\n     style="fill:none;stroke:{{r_fore-color}};stroke-width:5"\n     d="M 91.465289,2.7174008 50.253319,13.741714 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 L 1.2036293,97.231687 v 0"\n     />\n</g>',
@@ -296,7 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 2,
         rotation: 0,
-        animation: "#wipe-right",
+        animation: "#draw-on",
       },
       "snake-right": {
         svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/>\n  <path\n     style="fill:none;stroke:{{r_fore-color}};stroke-width:5"\n     d="M 298.46529,3.0148358 257.25332,14.039149 a 12.787826,12.680467 0 0 0 -9.33488,10.493488 l -6.78784,48.324095 a 14.545787,14.42367 0 0 1 -7.3582,10.627309 l -25.56877,14.045081 v 0"\n     />\n</g>',
@@ -306,7 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1,
         scaleY: 2,
         rotation: 0,
-        animation: "#wipe-right",
+        animation: "#draw-on",
       },
       "snake-callout": {
         svg: '<g>\n  <path\n     style="fill:none;stroke:{{r_fore-color}};stroke-width:5"\n     d="m 197.78287,15.856525 -41.29892,9.551979 a 12.814808,10.986948 0 0 0 -9.35458,9.092047 L 140.32721,76.3708 a 14.576478,12.49734 0 0 1 -7.37373,9.207996 l -25.62272,12.169313 v 0"\n     id="path1" />\n  <text\n     xml:space="preserve"\n     fill="{{r_fore-color}}"\n     x="146"\n     y="12"\n     id="text1">{{note}}</text>\n</g>',
@@ -316,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1.2,
         scaleY: 2,
         rotation: 0,
-        animation: "#wipe-right",
+        animation: "#draw-on",
       },
       "note-above": {
         svg: '<g>\n  <text id="placeholder" x="150" y="50" text-anchor="middle" dominant-baseline="middle" fill="{{r_fore-color}}" font-size="24">{{note}}</text>\n</g>',
@@ -345,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 2,
         scaleY: 2,
         rotation: 0,
-        animation: "#wipe-right",
+        animation: "#draw-on",
       },
       "circle-dotted": {
         svg: '<g><circle cx="150" cy="50" r="46" fill="none" stroke="{{r_fore-color}}" stroke-width="8" /><circle cx="150" cy="50" r="5" fill="{{r_fore-color}}" /></g>',
@@ -354,7 +354,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 1.5,
         scaleY: 1.5,
         rotation: 0,
-        animation: "#wipe-right",
+        animation: "#draw-on",
       },
       "nota-bene": {
         svg: '<g><path d="m 111.488,31.589 v 28.837 l 5.926,2.403 17.779,-58.876 7.111,42.054 c 9.482,-20.426 28.446,-44.457 42.669,-26.434 9.482,12.016 -21.334,21.628 -21.334,21.628 23.705,2.403 33.187,32.442 16.593,48.062 -16.593,14.419 -52.15,0 -62.818,0" fill="none" stroke="{{r_fore-color}}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" /></g>',
@@ -363,7 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleX: 2,
         scaleY: 2,
         rotation: 0,
-        animation: "#wipe-right",
+        animation: "#draw-on",
       },
     },
     animations: {
@@ -375,92 +375,149 @@ return new Promise(resolve => {
   );
 });
 `,
-      "scale-in": `// Scale in using GSAP
+      "scale-in": `// Scale in from the element's center using GSAP
 return new Promise(resolve => {
   gsap.fromTo(targetEl,
-    { opacity: 0, scale: 0.5 },
+    { opacity: 0, scale: 0.5, transformOrigin: '50% 50%' },
     { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.7)', onComplete: resolve }
   );
 });
 `,
-      "wipe-left": `// Wipe from right to left using GSAP DrawSVGPlugin
+      "wipe-left": `// Wipe from right to left by growing a clip rectangle.
+// Works with ANY content: dashed/dotted strokes, text, filled shapes.
 return new Promise(resolve => {
-  // Set initial state
   targetEl.style.opacity = '1';
-
-  // Find all drawable elements (line, path, polyline, polygon, circle, rect, ellipse)
-  const drawables = targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse');
-
-  gsap.fromTo(drawables,
-    { drawSVG: '100% 100%' },
-    {
-      drawSVG: '0% 100%',
-      duration: 0.8,
-      ease: 'power2.out',
-      stagger: 0.1,
-      onComplete: resolve
-    }
-  );
+  const ns = 'http://www.w3.org/2000/svg';
+  const bbox = targetEl.getBBox();
+  const pad = 12; // keep thick strokes and round linecaps unclipped
+  const clip = document.createElementNS(ns, 'clipPath');
+  clip.setAttribute('id', 'wipe-' + Math.random().toString(36).slice(2));
+  const rect = document.createElementNS(ns, 'rect');
+  rect.setAttribute('x', String(bbox.x + bbox.width + pad));
+  rect.setAttribute('y', String(bbox.y - pad));
+  rect.setAttribute('width', '0');
+  rect.setAttribute('height', String(bbox.height + pad * 2));
+  clip.appendChild(rect);
+  targetEl.appendChild(clip); // lives inside the hint: removed with it
+  targetEl.setAttribute('clip-path', 'url(#' + clip.id + ')');
+  gsap.to(rect, {
+    attr: { x: bbox.x - pad, width: bbox.width + pad * 2 },
+    duration: 0.8,
+    ease: 'power2.out',
+    onComplete: resolve
+  });
 });
 `,
-      "wipe-right": `// Wipe from left to right using GSAP DrawSVGPlugin
+      "wipe-right": `// Wipe from left to right by growing a clip rectangle.
+// Works with ANY content: dashed/dotted strokes, text, filled shapes.
 return new Promise(resolve => {
-  // Set initial state
   targetEl.style.opacity = '1';
-
-  // Find all drawable elements (line, path, polyline, polygon, circle, rect, ellipse)
-  const drawables = targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse');
-
-  gsap.fromTo(drawables,
-    { drawSVG: '0%' },
-    {
-      drawSVG: '100%',
-      duration: 0.8,
-      ease: 'power2.out',
-      stagger: 0.1,
-      onComplete: resolve
-    }
-  );
+  const ns = 'http://www.w3.org/2000/svg';
+  const bbox = targetEl.getBBox();
+  const pad = 12; // keep thick strokes and round linecaps unclipped
+  const clip = document.createElementNS(ns, 'clipPath');
+  clip.setAttribute('id', 'wipe-' + Math.random().toString(36).slice(2));
+  const rect = document.createElementNS(ns, 'rect');
+  rect.setAttribute('x', String(bbox.x - pad));
+  rect.setAttribute('y', String(bbox.y - pad));
+  rect.setAttribute('width', '0');
+  rect.setAttribute('height', String(bbox.height + pad * 2));
+  clip.appendChild(rect);
+  targetEl.appendChild(clip); // lives inside the hint: removed with it
+  targetEl.setAttribute('clip-path', 'url(#' + clip.id + ')');
+  gsap.to(rect, {
+    attr: { width: bbox.width + pad * 2 },
+    duration: 0.8,
+    ease: 'power2.out',
+    onComplete: resolve
+  });
 });
 `,
-      "wipe-up": `// Wipe from bottom to top using GSAP DrawSVGPlugin
+      "wipe-up": `// Wipe from bottom to top by growing a clip rectangle.
+// Works with ANY content: dashed/dotted strokes, text, filled shapes.
 return new Promise(resolve => {
-  // Set initial state
   targetEl.style.opacity = '1';
-
-  // Find all drawable elements (line, path, polyline, polygon, circle, rect, ellipse)
-  const drawables = targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse');
-
-  gsap.fromTo(drawables,
-    { drawSVG: '100%' },
-    {
-      drawSVG: '0%',
-      duration: 0.8,
-      ease: 'power2.out',
-      stagger: 0.1,
-      onComplete: resolve
-    }
-  );
+  const ns = 'http://www.w3.org/2000/svg';
+  const bbox = targetEl.getBBox();
+  const pad = 12; // keep thick strokes and round linecaps unclipped
+  const clip = document.createElementNS(ns, 'clipPath');
+  clip.setAttribute('id', 'wipe-' + Math.random().toString(36).slice(2));
+  const rect = document.createElementNS(ns, 'rect');
+  rect.setAttribute('x', String(bbox.x - pad));
+  rect.setAttribute('y', String(bbox.y + bbox.height + pad));
+  rect.setAttribute('width', String(bbox.width + pad * 2));
+  rect.setAttribute('height', '0');
+  clip.appendChild(rect);
+  targetEl.appendChild(clip); // lives inside the hint: removed with it
+  targetEl.setAttribute('clip-path', 'url(#' + clip.id + ')');
+  gsap.to(rect, {
+    attr: { y: bbox.y - pad, height: bbox.height + pad * 2 },
+    duration: 0.8,
+    ease: 'power2.out',
+    onComplete: resolve
+  });
 });
 `,
-      "wipe-down": `// Wipe from top to bottom using GSAP DrawSVGPlugin
+      "wipe-down": `// Wipe from top to bottom by growing a clip rectangle.
+// Works with ANY content: dashed/dotted strokes, text, filled shapes.
 return new Promise(resolve => {
-  // Set initial state
   targetEl.style.opacity = '1';
-
-  // Find all drawable elements (line, path, polyline, polygon, circle, rect, ellipse)
-  const drawables = targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse');
-
-  gsap.fromTo(drawables,
-    { drawSVG: '0%' },
-    {
-      drawSVG: '100%',
-      duration: 0.8,
-      ease: 'power2.out',
-      stagger: 0.1,
-      onComplete: resolve
+  const ns = 'http://www.w3.org/2000/svg';
+  const bbox = targetEl.getBBox();
+  const pad = 12; // keep thick strokes and round linecaps unclipped
+  const clip = document.createElementNS(ns, 'clipPath');
+  clip.setAttribute('id', 'wipe-' + Math.random().toString(36).slice(2));
+  const rect = document.createElementNS(ns, 'rect');
+  rect.setAttribute('x', String(bbox.x - pad));
+  rect.setAttribute('y', String(bbox.y - pad));
+  rect.setAttribute('width', String(bbox.width + pad * 2));
+  rect.setAttribute('height', '0');
+  clip.appendChild(rect);
+  targetEl.appendChild(clip); // lives inside the hint: removed with it
+  targetEl.setAttribute('clip-path', 'url(#' + clip.id + ')');
+  gsap.to(rect, {
+    attr: { height: bbox.height + pad * 2 },
+    duration: 0.8,
+    ease: 'power2.out',
+    onComplete: resolve
+  });
+});
+`,
+      "draw-on": `// Draw strokes progressively along their path (GSAP DrawSVGPlugin).
+// Elements that cannot be traced keep their styling and fade in instead:
+// dashed/dotted strokes (DrawSVG would overwrite their dash pattern),
+// unstroked/filled shapes, and text.
+return new Promise(resolve => {
+  targetEl.style.opacity = '1';
+  const all = Array.from(targetEl.querySelectorAll('line, path, polyline, polygon, circle, rect, ellipse, text'));
+  const traceable = [];
+  const fadeable = [];
+  for (const el of all) {
+    const cs = getComputedStyle(el);
+    const stroked = cs.stroke !== 'none' && parseFloat(cs.strokeWidth) > 0;
+    const dashed = cs.strokeDasharray && cs.strokeDasharray !== 'none';
+    if (el.tagName !== 'text' && stroked && !dashed) {
+      traceable.push(el);
+    } else if (el.tagName === 'text' || cs.fill !== 'none' || stroked) {
+      fadeable.push(el); // visible but not traceable
     }
-  );
+    // invisible elements (no stroke, no fill: e.g. sentinel rects) are skipped
+  }
+  let pending = (traceable.length ? 1 : 0) + (fadeable.length ? 1 : 0);
+  if (pending === 0) { resolve(); return; }
+  const done = () => { if (--pending === 0) resolve(); };
+  if (traceable.length) {
+    gsap.fromTo(traceable,
+      { drawSVG: '0%' },
+      { drawSVG: '100%', duration: 0.8, ease: 'power2.out', stagger: 0.1, onComplete: done }
+    );
+  }
+  if (fadeable.length) {
+    gsap.fromTo(fadeable,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.8, ease: 'power2.out', onComplete: done }
+    );
+  }
 });
 `,
     },

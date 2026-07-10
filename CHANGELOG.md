@@ -17,6 +17,29 @@ This file format is based on [Keep a Changelog](https://keepachangelog.com/en/1.
 - 🆕 `??` fallback chains in hint placeholders
 `resolvePlaceholders` (`text-utils.ts`) accepts `{{name ?? other ?? ...}}` with unlimited fallbacks: names are tried left to right, first defined variable wins, and the placeholder is kept verbatim when nothing resolves. Two deliberate semantics: an empty-string value counts as found (it no longer falls through, which also fixes the old || match quirk for single placeholders), and spaces inside the whiskers are tolerated. This benefits the hint designer too, since it shares the same utility.
 
+- **golden Layout robustness** (renderer): two fixes in `gve-snapshot-rendition.ts`:
+  - double-initialization race (`initializeGoldenLayout`): `render()` schedules GL init via `requestAnimationFrame`, but `render()` can run twice before the first callback fires (e.g. a consumer sets settings/data before the element is connected, then connectedCallback renders again — a realistic Angular/vanilla sequence). Both callbacks then ran, creating two GL instances on the same container — duplicated panels and a leaked ResizeObserver. The callback now bails if the component is disconnected and destroys any existing instance first.
+  - **layout config hardening** (getDefaultLayout): added dimensions.defaultMinItemWidth: "80px" / defaultMinItemHeight: "60px" so no panel can be collapsed to zero (previously a panel dragged to 0px was easy to "lose"), and set settings.reorderEnabled: false — tab dragging/docking is now off. The four panels are fixed functional areas; splitter resizing (the thing you asked to be freely usable) is unaffected, and this removes the whole class of "dragged Versions into the Details stack and now the layout is scrambled" states. This matches the original Split.js UX that GL replaced.
+
+- **hint designer component** (gve-hint-designer.ts):
+  - document-level listener leak: the pan handlers (mousemove/mouseup on document) were added on every connectedCallback and never removed. In Angular, each component destroy/recreate cycle leaked a pair of listeners holding the whole component. They're now stored and removed in disconnectedCallback (and before re-adding).
+  - state set before connection was invisible: connectedCallback rebuilt the UI but never re-populated it, so a consumer that sets data/hintId/hintVariables before appending the element got empty dropdowns and tables. connectedCallback now calls refreshUI() + refreshVariablesTable() after rendering.
+  - hintVariablesChange fired from the property setter — a two-way-binding echo that loops forever with consumers that clone the array on each event. Removed; the event now fires only from actual user edits (add/edit/delete/populate already fired it themselves). The hintId setter keeps its event since it's guarded by an equality check.
+  - variable resolution was regex-injectable and diverged from the renderer: resolveVariables built a RegExp from the raw variable name (a name like a+b breaks or throws) and didn't know the new ?? fallback syntax. It now delegates to the shared resolvePlaceholders, so designer preview and renderer behave identically. extractVariablesFromSvg also splits ?? chains, so the undefined-variables warning understands them.
+  - DrawSVG plugin registration happened only in the constructor; if GSAP loads after the element class, it was never registered. Now retried in connectedCallback. (Also fixed deleteHint logging undefined instead of the deleted id.)
+  - ⚠️ flagged, not fixed: the play-button's tween-capture mechanism (wrapping gsap.to/from/fromTo and rebuilding a timeline from tween._from/vars.startAt internals) is fragile — it doesn't capture animations that build their own gsap.timeline() internally, and it relies on GSAP private fields. It works for the gallery's fragment style (plain gsap.to/fromTo calls, which I kept to), but a rewrite would be its own task.
+
+- **stock animation gallery** (`hint-designer-consumer.js`):
+  - wipe-up was broken: it animated drawSVG: '100%' → '0%', i.e. from fully drawn to nothing — the hint ended invisible. (No stock hint referenced it, which is why it went unnoticed.)
+  - dotted/dashed lines were destroyed by the wipes: DrawSVGPlugin works by rewriting stroke-dasharray/dashoffset, so line-bottom-dotted/line-top-dotted rendered as solid lines during and after the "wipe". This was exactly your corner case.
+  - wipe direction was a lie: DrawSVG reveals along the path's drawing direction, so "wipe-right" on a right-to-left-authored path (e.g. slash-double) actually wiped left.
+
+The rework:
+
+- `wipe-left`/`right`/`up`/`down` are now clip-rectangle reveals: a `<clipPath>` rect grows across the target's bbox (with 12px padding for thick strokes/linecaps). This works for any `<g>` content — dashed/dotted strokes keep their pattern, text and filled shapes participate, direction is the true screen direction regardless of path authoring, and the sentinel rect is naturally irrelevant. The clip lives inside the target `<g>` (removed with it; scrub/restart in the designer replays correctly), and dotless-exclamation (a filled rect that DrawSVG previously couldn't animate at all) now actually animates.
+- new `draw-on` preserves the pen-tracing effect where it's the point: it traces solid-stroked elements with DrawSVG, and fades in what can't be traced (dashed strokes, text, filled shapes) instead of breaking them; invisible sentinel rects are skipped (they previously consumed a stagger slot). The curvy-path hints — scribble-wavy, bowl, checkmark, nota-bene, the snakes, circle-dotted, half-psi — were reassigned to it, so their look is preserved.
+- `scale-in` now scales from the element's center (transformOrigin: '50% 50%'); GSAP's SVG default scaled from the bbox corner, which looked lopsided for anything not centered at the origin.
+
 ## [2.0.9]
 
 - 2026-07-10:
