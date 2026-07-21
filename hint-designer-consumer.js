@@ -239,7 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-down",
       },
       "bracket-square-left": {
-        svg: '<g><rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/><path d="m 3.56006,8.56006 v 82.87988 h 15.41564 v -0.421105 h -8.05103 v -82.03767 h 8.05103 v -0.421105 z" style="fill:{{r_fore-color}};stroke:{{r_fore-color}};stroke-width:7;stroke-opacity:1" /></g>',
+        svg: '<g><rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/><path d="M 3.56006,8.56006 V 91.43994 H 18.9757 L 33.873708,91.479598 10.92467,91.018835 V 8.981165 l 10.354846,-0.3071754 13.054955,0.039658 z" style="fill:{{r_fore-color}};stroke:{{r_fore-color}};stroke-width:7;stroke-opacity:1" /></g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
@@ -249,7 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animation: "#wipe-down",
       },
       "bracket-square-right": {
-        svg: '<g><rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/><path d="m 296.43994,8.56006 v 82.87988 h -15.41564 v -0.421105 h 8.05103 v -82.03767 h -8.05103 v -0.421105 z" style="fill:{{r_fore-color}};stroke:{{r_fore-color}};stroke-width:7;stroke-opacity:1" /></g>',
+        svg: '<g><rect x="0" y="0" width="300" height="100" fill="none" stroke="none"/><path d="M 296.85194,8.56006 V 91.43994 H 281.4363 L 266.538292,91.479598 289.48733,91.018835 V 8.981165 L 279.132484,8.6739896 266.077529,8.7136476 Z" style="fill:{{r_fore-color}};stroke:{{r_fore-color}};stroke-width:7;stroke-opacity:1" /></g>',
         position: "o",
         offsetX: 0,
         offsetY: 0,
