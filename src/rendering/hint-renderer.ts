@@ -55,6 +55,9 @@ export class HintRenderer {
    * @param panZoomInstance - The svg-pan-zoom instance (for prolog)
    * @param viewportWidth - Width of the visible viewport (for prolog)
    * @param viewportHeight - Height of the visible viewport (for prolog)
+   * @param instant - When true (compressed time mode), skip the entrance
+   *   animation and any prolog panning animation, applying final state
+   *   immediately instead.
    * @returns Promise that resolves when rendering completes
    */
   async renderHint(
@@ -70,7 +73,8 @@ export class HintRenderer {
     hintOverrides?: Map<string | number, HintOverrides>,
     panZoomInstance?: any,
     viewportWidth?: number,
-    viewportHeight?: number
+    viewportHeight?: number,
+    instant?: boolean
   ): Promise<void> {
     this._logger.time(`renderHint-${hintId}`);
     this._logger.info(`Rendering hint: ${hintId} for operation ${operationId}`);
@@ -233,14 +237,16 @@ export class HintRenderer {
               finalBbox,
               viewportWidth,
               viewportHeight,
-              this._settings.prologDuration
+              instant ? 0 : this._settings.prologDuration
             );
           }
         }
 
-        // 12. Make visible (set initial opacity to 0 if animation present)
+        // 12. Make visible (set initial opacity to 0 if animation present).
+        // In instant mode (compressed time), skip the entrance animation
+        // entirely so the hint appears in its final state right away.
         currentHintGroup.removeAttribute("visibility");
-        if (effectiveHint.animation) {
+        if (effectiveHint.animation && !instant) {
           currentHintGroup.style.opacity = "0";
         }
 
@@ -249,7 +255,7 @@ export class HintRenderer {
         this._boundsCache.set(currentHintGroup.getAttribute("id")!, bbox);
 
         // 14. Animate entrance
-        if (effectiveHint.animation) {
+        if (effectiveHint.animation && !instant) {
           const animation = this._animationEngine
             .getFactory()
             .resolveAnimation(

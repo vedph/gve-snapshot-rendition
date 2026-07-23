@@ -243,6 +243,9 @@ export class TextRenderer {
    * @param panZoomInstance - The svg-pan-zoom instance (for prolog)
    * @param viewportWidth - Width of the visible viewport (for prolog)
    * @param viewportHeight - Height of the visible viewport (for prolog)
+   * @param instant - When true (compressed time mode), skip the per-character
+   *   entrance animation and any prolog panning animation, applying final
+   *   state immediately instead.
    * @returns Promise that resolves when rendering completes
    */
   public async renderAdditionalText(
@@ -255,6 +258,7 @@ export class TextRenderer {
     panZoomInstance?: any,
     viewportWidth?: number,
     viewportHeight?: number,
+    instant?: boolean,
   ): Promise<void> {
     this._logger.time(`renderAdditionalText-${versionTag}`);
     this._logger.info(
@@ -444,13 +448,14 @@ export class TextRenderer {
           textBounds,
           viewportWidth,
           viewportHeight,
-          this._settings.prologDuration,
+          instant ? 0 : this._settings.prologDuration,
         );
       }
     }
 
-    // 8. Get animation function if specified
-    const animationFn = this._settings.charAnimationId
+    // 8. Get animation function if specified. In instant mode (compressed
+    // time), skip resolving it entirely so characters appear immediately.
+    const animationFn = !instant && this._settings.charAnimationId
       ? this._animationEngine
           .getFactory()
           .resolveAnimation(

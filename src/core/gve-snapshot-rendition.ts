@@ -103,6 +103,12 @@ export class GveSnapshotRendition extends HTMLElement {
   private _currentVersionIndex: number = 0;
   private _autoForwardEnabled: boolean = false;
   private _autoForwardTimerId: number | null = null;
+  // When true, version navigation skips hint/text entrance animations,
+  // prolog panning animation, and the backward fade-out, applying each
+  // version's final state immediately. Lets users jump to any version
+  // without waiting for the (potentially many) animations/delays that
+  // would otherwise play for every operation in between.
+  private _compressedTimeMode: boolean = false;
   private _renderScheduled: boolean = false;
   // Guards against re-entrant navigation: a slideshow tick (or a rapid
   // double-click/keypress) firing while a previous goToVersionIndex() call
@@ -313,6 +319,7 @@ export class GveSnapshotRendition extends HTMLElement {
           this._settings.disabledButtonIds || []
         );
         this._toolbar.setAutoForwardEnabled(this._autoForwardEnabled);
+        this._toolbar.setCompressedTimeModeEnabled(this._compressedTimeMode);
 
         // Listen for toolbar navigation events
         toolbarContainer.addEventListener("toolbar-navigate", (e: Event) => {
@@ -335,6 +342,15 @@ export class GveSnapshotRendition extends HTMLElement {
           (e: Event) => {
             const customEvent = e as CustomEvent;
             this.setAutoForwardEnabled(customEvent.detail.enabled);
+          }
+        );
+
+        // Listen for toolbar compressed-time-mode events
+        toolbarContainer.addEventListener(
+          "toolbar-compressed-time",
+          (e: Event) => {
+            const customEvent = e as CustomEvent;
+            this.setCompressedTimeModeEnabled(customEvent.detail.enabled);
           }
         );
 
@@ -929,7 +945,8 @@ export class GveSnapshotRendition extends HTMLElement {
         this._baseNodes,
         this._panZoomInstance,
         viewportWidth,
-        viewportHeight
+        viewportHeight,
+        this._compressedTimeMode
       );
     }
 
@@ -1047,7 +1064,8 @@ export class GveSnapshotRendition extends HTMLElement {
         hintOverrides,
         this._panZoomInstance,
         viewportWidth,
-        viewportHeight
+        viewportHeight,
+        this._compressedTimeMode
       );
     }
   }
@@ -1360,8 +1378,9 @@ export class GveSnapshotRendition extends HTMLElement {
       `Removing ${elements.length} elements from v${versionIndex}`
     );
 
-    // Step 1: If backwardFadeOutTime > 0, animate fadeout
-    if (this._settings.backwardFadeOutTime > 0) {
+    // Step 1: If backwardFadeOutTime > 0, animate fadeout (skipped in
+    // compressed time mode, where elements are removed immediately)
+    if (this._settings.backwardFadeOutTime > 0 && !this._compressedTimeMode) {
       const fadeOutPromises: Promise<void>[] = [];
 
       elements.forEach((el) => {
@@ -1896,6 +1915,25 @@ export class GveSnapshotRendition extends HTMLElement {
    */
   public getAutoForwardEnabled(): boolean {
     return this._autoForwardEnabled;
+  }
+
+  /**
+   * Toggle compressed time mode. When enabled, navigating to any version
+   * skips hint/text entrance animations, prolog panning animation, and the
+   * backward fade-out, so the target version's final state is shown right
+   * away instead of playing every intervening operation's animations.
+   * @param enabled - Whether to enable compressed time mode
+   */
+  public setCompressedTimeModeEnabled(enabled: boolean): void {
+    this._compressedTimeMode = enabled;
+    this._logger.info(`Compressed time mode ${enabled ? "enabled" : "disabled"}`);
+  }
+
+  /**
+   * Get current compressed time mode state.
+   */
+  public getCompressedTimeModeEnabled(): boolean {
+    return this._compressedTimeMode;
   }
 
   /**

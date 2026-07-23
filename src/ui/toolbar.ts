@@ -37,6 +37,7 @@ export class Toolbar {
   private slideshowStopBtn!: HTMLButtonElement;
   private slideshowReverseBtn!: HTMLButtonElement;
   private autoForwardBtn!: HTMLButtonElement;
+  private compressedTimeBtn!: HTMLButtonElement;
 
   // Display buttons
   private zoomInBtn!: HTMLButtonElement;
@@ -54,6 +55,7 @@ export class Toolbar {
   private _disabledButtonIds: string[] = [];
   private _slideshowReverse: boolean = false;
   private _autoForwardEnabled: boolean = false;
+  private _compressedTimeModeEnabled: boolean = false;
 
   /**
    * Get slideshow reverse state.
@@ -108,6 +110,9 @@ export class Toolbar {
           </button>
           <button id="auto-forward-btn" class="toolbar-btn" title="Auto-Forward on Group: Continue through grouped operations automatically">
             <i data-feather="fast-forward"></i>
+          </button>
+          <button id="compressed-time-btn" class="toolbar-btn" title="Compressed Time: jump between versions instantly, without animations or delays">
+            <i data-feather="zap"></i>
           </button>
         </div>
 
@@ -164,6 +169,7 @@ export class Toolbar {
     this.slideshowStopBtn = this.container.querySelector("#slideshow-stop-btn")!;
     this.slideshowReverseBtn = this.container.querySelector("#slideshow-reverse-btn")!;
     this.autoForwardBtn = this.container.querySelector("#auto-forward-btn")!;
+    this.compressedTimeBtn = this.container.querySelector("#compressed-time-btn")!;
 
     this.zoomInBtn = this.container.querySelector("#zoom-in-btn")!;
     this.zoomOutBtn = this.container.querySelector("#zoom-out-btn")!;
@@ -223,6 +229,11 @@ export class Toolbar {
       this._autoForwardEnabled = !this._autoForwardEnabled;
       this.updateAutoForwardButton();
       this.dispatchAutoForwardEvent(this._autoForwardEnabled);
+    });
+    this.compressedTimeBtn.addEventListener("click", () => {
+      this._compressedTimeModeEnabled = !this._compressedTimeModeEnabled;
+      this.updateCompressedTimeButton();
+      this.dispatchCompressedTimeEvent(this._compressedTimeModeEnabled);
     });
 
     // Display buttons
@@ -491,6 +502,17 @@ export class Toolbar {
   }
 
   /**
+   * Update compressed time mode button visual state.
+   */
+  private updateCompressedTimeButton(): void {
+    if (this._compressedTimeModeEnabled) {
+      this.compressedTimeBtn.classList.add("active");
+    } else {
+      this.compressedTimeBtn.classList.remove("active");
+    }
+  }
+
+  /**
    * Apply disabled state to buttons from settings.
    */
   private applyDisabledButtons(): void {
@@ -504,6 +526,7 @@ export class Toolbar {
       "slideshow-start-btn": this.slideshowStartBtn,
       "slideshow-stop-btn": this.slideshowStopBtn,
       "slideshow-reverse-btn": this.slideshowReverseBtn,
+      "compressed-time-btn": this.compressedTimeBtn,
       "zoom-in-btn": this.zoomInBtn,
       "zoom-out-btn": this.zoomOutBtn,
       "fit-btn": this.fitBtn,
@@ -548,6 +571,18 @@ export class Toolbar {
   private dispatchAutoForwardEvent(enabled: boolean): void {
     this.container.dispatchEvent(
       new CustomEvent("toolbar-auto-forward", {
+        detail: { enabled },
+        bubbles: true,
+      })
+    );
+  }
+
+  /**
+   * Dispatch compressed time event for parent component to handle.
+   */
+  private dispatchCompressedTimeEvent(enabled: boolean): void {
+    this.container.dispatchEvent(
+      new CustomEvent("toolbar-compressed-time", {
         detail: { enabled },
         bubbles: true,
       })
@@ -648,5 +683,13 @@ export class Toolbar {
   setAutoForwardEnabled(enabled: boolean): void {
     this._autoForwardEnabled = enabled;
     this.updateAutoForwardButton();
+  }
+
+  /**
+   * Set compressed time mode enabled state and update button appearance.
+   */
+  setCompressedTimeModeEnabled(enabled: boolean): void {
+    this._compressedTimeModeEnabled = enabled;
+    this.updateCompressedTimeButton();
   }
 }
