@@ -128,6 +128,16 @@ document.addEventListener("DOMContentLoaded", () => {
         rotation: 0,
         animation: "#draw-on",
       },
+      "equals-tilted-up": {
+        svg: '<g><path style="fill:{{r_fore-color}};stroke:{{r_fore-color}};stroke-width:8;stroke-dasharray:none" d="m 112.44015,46.346597 c 75.1197,-18.193194 75.1197,-18.193194 75.1197,-18.193194" /><path style="fill:{{r_fore-color}};stroke:{{r_fore-color}};stroke-width:8;stroke-dasharray:none" d="m 112.44015,72.0808 c 75.1197,-18.193191 75.1197,-18.193191 75.1197,-18.193191" /></g>',
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        animation: "#wipe-right",
+      },
       box: {
         svg: '<g>\n  <rect x="0" y="0" width="300" height="100" fill="none" stroke="{{r_fore-color}}" stroke-width="5" />\n</g>',
         position: "o",
