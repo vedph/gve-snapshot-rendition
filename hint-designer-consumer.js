@@ -118,6 +118,16 @@ document.addEventListener("DOMContentLoaded", () => {
         rotation: 0,
         animation: "#wipe-right",
       },
+      "hook-top-left": {
+        svg: '<g><path d="m 137.471,7.661 c 31.69,-3.888 48.224,-3.888 52.357,3.888 4.133,7.775 -48.224,67.387 -79.914,84.233" fill="none" stroke="{{r_fore-color}}" stroke-width="9.3" stroke-linecap="round" stroke-linejoin="round" /></g>',
+        position: "o",
+        offsetX: 0,
+        offsetY: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+        animation: "#wipe-right",
+      },
       "scribble-wavy": {
         svg: '<g><path d="m 101.71765,72.575516 c 0,-31.957318 0,-63.9146364 10.43942,-68.4799676 10.43943,-4.5653312 19.57393,9.1306626 19.57393,31.9573186 0,22.826656 -9.1345,45.653312 -1.30493,54.783974 7.82957,9.130663 24.79364,9.130663 30.01336,-9.130662 5.21971,-18.261325 0,-50.218643 10.43943,-52.501309 10.43942,-2.282666 16.96407,6.847997 15.65914,22.826656 -1.30493,15.978659 -7.82957,27.391987 -2.60986,29.674653 5.21972,2.282665 11.74436,-6.847997 14.35421,-41.087981" fill="none" stroke="{{r_fore-color}}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" /></g>',
         position: "o",
